@@ -28,6 +28,8 @@ final class TranscriptionEngine {
     private var recognitionRouter: LocalRecognitionRouter?
     private var vadManager: VadManager?
     private var streamProcessors: [AudioSource: CallStreamProcessor] = [:]
+    private var fallbackPreparationTask: Task<Void, Never>?
+    private var whisperIsReady = false
 
     private var audioBuffers: [AudioSource: [Float]] = [.me: [], .them: []]
     private let bufferLock = OSAllocatedUnfairLock()
@@ -73,8 +75,7 @@ final class TranscriptionEngine {
         cloudNotice = nil
 
         var parakeetError: Error?
-        var whisperError: Error?
-        var vadError: Error?
+        var vadNotice: String?
 
         do {
             try await parakeetService.prepare()
@@ -84,57 +85,93 @@ final class TranscriptionEngine {
         }
 
         do {
-            try await whisperService.prepare()
-        } catch {
-            whisperError = error
-            NSLog("Parrot: local Whisper fallback unavailable — \(error.localizedDescription)")
-        }
-
-        do {
             vadManager = try await VadManager(
                 config: VadConfig(defaultThreshold: 0.55)
             )
         } catch {
-            vadError = error
             vadManager = nil
+            vadNotice = "Silero VAD unavailable — local energy detection active"
             NSLog("Parrot: Silero VAD unavailable, using local energy VAD — \(error.localizedDescription)")
         }
 
-        switch (parakeetError, whisperError) {
-        case (nil, nil):
+        if parakeetError == nil {
             recognitionRouter = LocalRecognitionRouter(
                 primary: parakeetService,
                 fallback: whisperService
             )
-        case (nil, _?):
-            recognitionRouter = LocalRecognitionRouter(
-                primary: parakeetService,
-                fallback: parakeetService
-            )
-            cloudNotice = "Local Whisper fallback unavailable — Parakeet remains active"
-        case (_?, nil):
-            recognitionRouter = LocalRecognitionRouter(
-                primary: whisperService,
-                fallback: whisperService
-            )
-            cloudNotice = "Parakeet unavailable — using local Whisper"
-        case (let parakeetFailure?, let whisperFailure?):
-            recognitionRouter = nil
-            let message = [
-                "Parakeet: \(parakeetFailure.localizedDescription)",
-                "Whisper: \(whisperFailure.localizedDescription)",
-            ].joined(separator: " | ")
-            modelState = .error(message)
+            modelState = .ready
+            isReady = true
+
+            if whisperIsReady {
+                cloudNotice = vadNotice
+            } else {
+                cloudNotice = Self.combinedNotice(
+                    "Local Whisper fallback is warming up — Parakeet is ready",
+                    vadNotice
+                )
+                prepareWhisperFallbackInBackground(vadNotice: vadNotice)
+            }
             return
         }
 
-        if vadError != nil {
-            let vadMessage = "Silero VAD unavailable — local energy detection active"
-            cloudNotice = cloudNotice.map { $0 + ". " + vadMessage } ?? vadMessage
+        // Parakeet is the fast path. If it cannot load at all, wait for the
+        // already-local Whisper model so the app still has a working engine.
+        if let fallbackPreparationTask {
+            await fallbackPreparationTask.value
+        } else if !whisperIsReady {
+            do {
+                try await whisperService.prepare()
+                whisperIsReady = true
+            } catch {
+                recognitionRouter = nil
+                let message = [
+                    "Parakeet: \(parakeetError?.localizedDescription ?? "unavailable")",
+                    "Whisper: \(error.localizedDescription)",
+                ].joined(separator: " | ")
+                modelState = .error(message)
+                return
+            }
         }
 
+        recognitionRouter = LocalRecognitionRouter(
+            primary: whisperService,
+            fallback: whisperService
+        )
+        cloudNotice = Self.combinedNotice(
+            "Parakeet unavailable — using local Whisper",
+            vadNotice
+        )
         modelState = .ready
         isReady = true
+    }
+
+    private func prepareWhisperFallbackInBackground(vadNotice: String?) {
+        guard fallbackPreparationTask == nil, !whisperIsReady else { return }
+        fallbackPreparationTask = Task { [weak self, whisperService] in
+            do {
+                try await whisperService.prepare()
+                await MainActor.run {
+                    guard let self else { return }
+                    self.whisperIsReady = true
+                    self.cloudNotice = vadNotice
+                    self.fallbackPreparationTask = nil
+                }
+            } catch {
+                NSLog("Parrot: local Whisper fallback unavailable — \(error.localizedDescription)")
+                await MainActor.run {
+                    guard let self else { return }
+                    self.cloudNotice = Self.combinedNotice(
+                        "Local Whisper fallback unavailable — Parakeet remains active",
+                        vadNotice
+                    )
+                    self.fallbackPreparationTask = nil
+                }
+            }
+        }
+    }
+
+    private static func combinedNotice(_ first: String, _ second: String?) -> String {
+        second.map { first + ". " + $0 } ?? first
     }
 
     // MARK: - Audio Input

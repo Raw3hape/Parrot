@@ -1,6 +1,131 @@
 import SwiftUI
 import AppKit
+import FluidAudio
 import WhisperKit
+
+/// Integration harness for the exact production Parakeet service. It converts
+/// any supported audio file to 16 kHz mono, prepares the cached/downloaded V3
+/// model, then reports text and real-time factor.
+enum ParakeetIntegrationTest {
+    static func run(audioPath: String) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task {
+            do {
+                let hasText = try await execute(audioPath: audioPath)
+                if !hasText { exit(2) }
+            } catch {
+                FileHandle.standardError.write(
+                    Data("parakeet-integration-test error: \(error)\n".utf8)
+                )
+                exit(1)
+            }
+            semaphore.signal()
+        }
+        semaphore.wait()
+        exit(0)
+    }
+
+    private static func execute(audioPath: String) async throws -> Bool {
+        let converter = AudioConverter()
+        let samples = try converter.resampleAudioFile(path: audioPath)
+        let service = ParakeetModelService()
+
+        let loadStart = Date()
+        try await service.prepare()
+        let loadSeconds = Date.now.timeIntervalSince(loadStart)
+
+        let decodeStart = Date()
+        let result = try await service.transcribe(samples: samples, language: nil)
+        let decodeSeconds = Date.now.timeIntervalSince(decodeStart)
+        let audioSeconds = Double(samples.count) / 16_000.0
+        let realTimeFactor = decodeSeconds / max(audioSeconds, 0.001)
+        let confidence = result.confidence.map { String($0) } ?? "n/a"
+
+        print("=== parakeet-integration-test ===")
+        print(String(format: "audio_seconds: %.3f", audioSeconds))
+        print(String(format: "load_seconds: %.3f", loadSeconds))
+        print(String(format: "decode_seconds: %.3f", decodeSeconds))
+        print(String(format: "real_time_factor: %.4f", realTimeFactor))
+        print("confidence: \(confidence)")
+        print("text: \(result.text)")
+        return !result.text.isEmpty
+    }
+}
+
+/// End-to-end replay through the production Silero VAD, utterance assembler,
+/// Parakeet router, preview gate, and finalized-segment callback.
+enum CallPipelineIntegrationTest {
+    private actor Sink {
+        struct Final: Sendable {
+            let text: String
+            let startSample: Int
+            let endSample: Int
+        }
+
+        private var previewCount = 0
+        private var finals: [Final] = []
+
+        func addPreview() { previewCount += 1 }
+        func addFinal(_ text: String, _ start: Int, _ end: Int) {
+            finals.append(Final(text: text, startSample: start, endSample: end))
+        }
+        func snapshot() -> (Int, [Final]) { (previewCount, finals) }
+    }
+
+    static func run(audioPath: String) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task {
+            do {
+                let hasSegments = try await execute(audioPath: audioPath)
+                if !hasSegments { exit(2) }
+            } catch {
+                FileHandle.standardError.write(
+                    Data("call-pipeline-test error: \(error)\n".utf8)
+                )
+                exit(1)
+            }
+            semaphore.signal()
+        }
+        semaphore.wait()
+        exit(0)
+    }
+
+    private static func execute(audioPath: String) async throws -> Bool {
+        let samples = try AudioConverter().resampleAudioFile(path: audioPath)
+        let service = ParakeetModelService()
+        try await service.prepare()
+        let vad = try await VadManager(config: VadConfig(defaultThreshold: 0.55))
+        let router = LocalRecognitionRouter(primary: service, fallback: service)
+        let sink = Sink()
+        let processor = CallStreamProcessor(
+            source: .them,
+            vad: vad,
+            router: router,
+            language: nil,
+            onPreview: { _, _ in await sink.addPreview() },
+            onFinal: { result, start, end in
+                await sink.addFinal(result.text, start, end)
+            }
+        )
+
+        for start in stride(from: 0, to: samples.count, by: VadManager.chunkSize) {
+            let end = min(samples.count, start + VadManager.chunkSize)
+            await processor.append(Array(samples[start..<end]))
+        }
+        await processor.finish()
+
+        let (previews, finals) = await sink.snapshot()
+        print("=== call-pipeline-test ===")
+        print("previews: \(previews)")
+        print("final_segments: \(finals.count)")
+        for (index, segment) in finals.enumerated() {
+            let start = Double(segment.startSample) / 16_000.0
+            let end = Double(segment.endSample) / 16_000.0
+            print(String(format: "[%02d] %.2f-%.2f %@", index + 1, start, end, segment.text))
+        }
+        return !finals.isEmpty
+    }
+}
 
 /// Dev-only: transcribes a real audio file with the production decoding options to
 /// verify the output is clean (no "<|...|>" tokens, no repetition loops) without

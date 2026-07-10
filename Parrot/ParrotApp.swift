@@ -20,6 +20,14 @@ struct ParrotMain {
             TranscribeTest.run(audioPath: args[i + 1], modelFolder: modelFolder)
             return
         }
+        if let i = args.firstIndex(of: "--parakeet-test"), i + 1 < args.count {
+            ParakeetIntegrationTest.run(audioPath: args[i + 1])
+            return
+        }
+        if let i = args.firstIndex(of: "--call-pipeline-test"), i + 1 < args.count {
+            CallPipelineIntegrationTest.run(audioPath: args[i + 1])
+            return
+        }
         if args.contains("--profile-test") {
             MainActor.assumeIsolated { ProfileTest.run() }
             return

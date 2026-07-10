@@ -18,6 +18,7 @@ actor WhisperModelService: LocalSpeechRecognizing {
     private(set) var isReady = false
 
     func prepare(modelName: String = fallbackModel) async throws {
+        guard !isReady else { return }
         let config = WhisperKitConfig(
             model: modelName,
             verbose: false,

@@ -18,6 +18,7 @@ actor ParakeetModelService: LocalSpeechRecognizing {
     func prepare(
         progressHandler: ProgressHandler? = nil
     ) async throws {
+        guard !isReady else { return }
         let models = try await AsrModels.downloadAndLoad(
             version: .v3,
             encoderPrecision: .int8,
