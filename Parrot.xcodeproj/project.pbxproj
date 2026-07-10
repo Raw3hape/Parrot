@@ -252,7 +252,7 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					5E194284719FA718D210B51F = {
-						DevelopmentTeam = 5D8KQ6NJGF;
+						DevelopmentTeam = 5C2PL8729F;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -471,7 +471,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5D8KQ6NJGF;
+				DEVELOPMENT_TEAM = 5C2PL8729F;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Parrot/Info.plist;
@@ -496,7 +496,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5D8KQ6NJGF;
+				DEVELOPMENT_TEAM = 5C2PL8729F;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Parrot/Info.plist;
