@@ -52,6 +52,50 @@ enum ParakeetIntegrationTest {
     }
 }
 
+/// Regression harness for the exact WhisperKit repository identifier that the
+/// previous build reported as "Model not found".
+enum WhisperFallbackIntegrationTest {
+    static func run(audioPath: String) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task {
+            do {
+                let hasText = try await execute(audioPath: audioPath)
+                if !hasText { exit(2) }
+            } catch {
+                FileHandle.standardError.write(
+                    Data("whisper-fallback-test error: \(error)\n".utf8)
+                )
+                exit(1)
+            }
+            semaphore.signal()
+        }
+        semaphore.wait()
+        exit(0)
+    }
+
+    private static func execute(audioPath: String) async throws -> Bool {
+        let samples = try AudioConverter().resampleAudioFile(path: audioPath)
+        let service = WhisperModelService()
+
+        let loadStart = Date()
+        try await service.prepare()
+        let loadSeconds = Date.now.timeIntervalSince(loadStart)
+
+        let decodeStart = Date()
+        let result = try await service.transcribe(samples: samples, language: nil)
+        let decodeSeconds = Date.now.timeIntervalSince(decodeStart)
+        let audioSeconds = Double(samples.count) / 16_000.0
+
+        print("=== whisper-fallback-test ===")
+        print("model: \(WhisperModelService.fallbackModel)")
+        print(String(format: "audio_seconds: %.3f", audioSeconds))
+        print(String(format: "load_seconds: %.3f", loadSeconds))
+        print(String(format: "decode_seconds: %.3f", decodeSeconds))
+        print("text: \(result.text)")
+        return !result.text.isEmpty
+    }
+}
+
 /// End-to-end replay through the production Silero VAD, utterance assembler,
 /// Parakeet router, preview gate, and finalized-segment callback.
 enum CallPipelineIntegrationTest {

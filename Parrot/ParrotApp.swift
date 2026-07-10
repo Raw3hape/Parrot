@@ -24,6 +24,10 @@ struct ParrotMain {
             ParakeetIntegrationTest.run(audioPath: args[i + 1])
             return
         }
+        if let i = args.firstIndex(of: "--whisper-fallback-test"), i + 1 < args.count {
+            WhisperFallbackIntegrationTest.run(audioPath: args[i + 1])
+            return
+        }
         if let i = args.firstIndex(of: "--call-pipeline-test"), i + 1 < args.count {
             CallPipelineIntegrationTest.run(audioPath: args[i + 1])
             return
