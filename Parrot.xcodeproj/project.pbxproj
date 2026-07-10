@@ -15,6 +15,7 @@
 		1D4BBB5AC90C7DF3C6401C2A /* SentimentStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8813E4A864B3AC242C6CD070 /* SentimentStripView.swift */; };
 		28B471FA2550C26972D86C1E /* KnowledgeBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD509ED2AEBB5B6CDC6B6B3E /* KnowledgeBase.swift */; };
 		2D78F88F85C6B10D387F5B45 /* ParrotApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200FE5120F42A3BB47933EB7 /* ParrotApp.swift */; };
+		2ED138021E00AFE135A39584 /* LocalRecognitionRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BAF8C33EC2A173B52C77958 /* LocalRecognitionRouter.swift */; };
 		380525791BF03BA5FAB10711 /* ReportContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72A118B3116F40C4BA68FCB /* ReportContentView.swift */; };
 		3E88E883A67B78EDF2742F25 /* ProfilePresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEF53506253A5F3525BE76 /* ProfilePresets.swift */; };
 		40C8A49A749AC3C631BFD47C /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D747E3068C0EE4F4A0760BAE /* OnboardingView.swift */; };
@@ -23,6 +24,7 @@
 		542440B7C1D44E7FB9D30E78 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC76FF2DEA6B36A17FAC22B /* SettingsView.swift */; };
 		57299C564AB573D2E1CB6C06 /* AIUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1988FAC07E8204688E45A40 /* AIUsage.swift */; };
 		573D95F4E0286525EB01DEF0 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BE4F80615AF9579E1AFB408 /* SidebarView.swift */; };
+		58C241AB39556AF687D210BE /* WhisperModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1778EF5969F47F4C222F51D0 /* WhisperModelService.swift */; };
 		624116F74848046FA507BB4D /* SnapshotTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE74071DA1946404F9FD84C /* SnapshotTool.swift */; };
 		670465176804DAB6090CD626 /* EchoCanceller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59587E1F3FF92A07FD404042 /* EchoCanceller.swift */; };
 		81E0F3E53AA25CB928F901B4 /* Meeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE0CCC714BADC67C8D26E20 /* Meeting.swift */; };
@@ -44,6 +46,7 @@
 		E3F64FC26CFB13D0A8F0EE14 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0B438750BCCD12502A5BAA43 /* WhisperKit */; };
 		E4E9A631759BFBCB14131A34 /* AudioCaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778ACCC175C1E526BD4A8D8 /* AudioCaptureManager.swift */; };
 		EC36D27018D1EBD3547E3DF1 /* CSpeexDSP in Frameworks */ = {isa = PBXBuildFile; productRef = 4DB9F1B471B3029789F107CC /* CSpeexDSP */; };
+		F07D4B9B74A65AA9F5C7245D /* ParakeetModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0AD39875609423CFFE8A0E /* ParakeetModelService.swift */; };
 		F0B27F4AD985CBF71B7A7C1F /* Insight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786AEE931B2D103312603940 /* Insight.swift */; };
 		F8CA7DA639E64F49A7FC3601 /* KnowledgeBaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A6B590044A90A31AD495C0 /* KnowledgeBaseService.swift */; };
 		FE86BA35CE14B2DD8BEF3E6A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ECD50C879A39AA006003B8 /* DashboardView.swift */; };
@@ -53,6 +56,7 @@
 		04253CBD6575607A1D88BFA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		09FD0006B2D617872DB79534 /* CopilotPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopilotPanelView.swift; sourceTree = "<group>"; };
 		174EB3CD17618DB5EDD3FB75 /* ProfileTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTest.swift; sourceTree = "<group>"; };
+		1778EF5969F47F4C222F51D0 /* WhisperModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelService.swift; sourceTree = "<group>"; };
 		1882BEFAA60FA52BB4F31BF5 /* CallAnalysisEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallAnalysisEngine.swift; sourceTree = "<group>"; };
 		1DC1D58E1A4501FB741B72EE /* LiveRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRecordingView.swift; sourceTree = "<group>"; };
 		200FE5120F42A3BB47933EB7 /* ParrotApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParrotApp.swift; sourceTree = "<group>"; };
@@ -73,6 +77,7 @@
 		8813E4A864B3AC242C6CD070 /* SentimentStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentimentStripView.swift; sourceTree = "<group>"; };
 		8AC76FF2DEA6B36A17FAC22B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		94A6B590044A90A31AD495C0 /* KnowledgeBaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseService.swift; sourceTree = "<group>"; };
+		9BAF8C33EC2A173B52C77958 /* LocalRecognitionRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRecognitionRouter.swift; sourceTree = "<group>"; };
 		9BE4F80615AF9579E1AFB408 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		9F5C78AFBC3F48C895B6A0F9 /* DiarizationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiarizationEngine.swift; sourceTree = "<group>"; };
 		A2ECD50C879A39AA006003B8 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -80,6 +85,7 @@
 		A62937E9A4891AC4B439793B /* RecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingManager.swift; sourceTree = "<group>"; };
 		AA31CC3FCD8BF29F0AC5E399 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		B1988FAC07E8204688E45A40 /* AIUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIUsage.swift; sourceTree = "<group>"; };
+		BB0AD39875609423CFFE8A0E /* ParakeetModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParakeetModelService.swift; sourceTree = "<group>"; };
 		C63A84D1204A30379B79627C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CC03201495BC61ECCEE539C2 /* CallProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallProfile.swift; sourceTree = "<group>"; };
 		CD509ED2AEBB5B6CDC6B6B3E /* KnowledgeBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBase.swift; sourceTree = "<group>"; };
@@ -193,11 +199,14 @@
 				59587E1F3FF92A07FD404042 /* EchoCanceller.swift */,
 				7F0AD1CD85BAA4D58B50B569 /* ExportService.swift */,
 				94A6B590044A90A31AD495C0 /* KnowledgeBaseService.swift */,
+				9BAF8C33EC2A173B52C77958 /* LocalRecognitionRouter.swift */,
+				BB0AD39875609423CFFE8A0E /* ParakeetModelService.swift */,
 				4DFEF53506253A5F3525BE76 /* ProfilePresets.swift */,
 				E421570CA8E3B9BFF8E223CC /* ProfileStore.swift */,
 				A62937E9A4891AC4B439793B /* RecordingManager.swift */,
 				37F04EA6D7B41CE261416199 /* TranscriptionEngine.swift */,
 				59309BB8EF47DCDAE921BFB6 /* UtteranceSegmentation.swift */,
+				1778EF5969F47F4C222F51D0 /* WhisperModelService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -299,10 +308,12 @@
 				28B471FA2550C26972D86C1E /* KnowledgeBase.swift in Sources */,
 				F8CA7DA639E64F49A7FC3601 /* KnowledgeBaseService.swift in Sources */,
 				C8804B03958954B9D8BEA6FA /* LiveRecordingView.swift in Sources */,
+				2ED138021E00AFE135A39584 /* LocalRecognitionRouter.swift in Sources */,
 				81E0F3E53AA25CB928F901B4 /* Meeting.swift in Sources */,
 				D80161EBEE86C38E11105708 /* MeetingDetailView.swift in Sources */,
 				11BC5507E559179C868B9AD5 /* MenuBarView.swift in Sources */,
 				40C8A49A749AC3C631BFD47C /* OnboardingView.swift in Sources */,
+				F07D4B9B74A65AA9F5C7245D /* ParakeetModelService.swift in Sources */,
 				2D78F88F85C6B10D387F5B45 /* ParrotApp.swift in Sources */,
 				3E88E883A67B78EDF2742F25 /* ProfilePresets.swift in Sources */,
 				83B320AE88C486EBF06C3744 /* ProfileStore.swift in Sources */,
@@ -318,6 +329,7 @@
 				0E3D91715DEE87D51AA23C18 /* TranscriptSegment.swift in Sources */,
 				CC22CC7B3CBD14D2B4606E16 /* TranscriptionEngine.swift in Sources */,
 				521D6138B6F54FE5332EAAE5 /* UtteranceSegmentation.swift in Sources */,
+				58C241AB39556AF687D210BE /* WhisperModelService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

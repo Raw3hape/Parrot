@@ -28,6 +28,7 @@ enum ProfileTest {
         testNearDuplicate()
         testHallucinationFilter()
         testUtteranceSegmentation()
+        testRecognitionFallbackPolicy()
         testWAVEncoder()
         testAIUsageCost()
         print(failures == 0 ? "ALL PASS" : "FAILURES: \(failures)")
@@ -252,6 +253,49 @@ enum ProfileTest {
         _ = idle.append(Array(repeating: 0.0, count: 32_000), absoluteStartSample: 0)
         check("utterance idle buffer is preroll only",
               idle.retainedSampleCount == CallSegmentationConfig.callDefault.retainedPrerollSamples)
+    }
+
+    static func testRecognitionFallbackPolicy() {
+        let policy = RecognitionFallbackPolicy(confidenceThreshold: 0.45)
+        let strong = LocalRecognitionResult(
+            text: "Dzień dobry",
+            confidence: 0.91,
+            engine: .parakeet
+        )
+        let weak = LocalRecognitionResult(
+            text: "Dzień dobry",
+            confidence: 0.20,
+            engine: .parakeet
+        )
+        let empty = LocalRecognitionResult(text: "  ", confidence: 0.9, engine: .parakeet)
+
+        check("fallback keeps confident Parakeet", !policy.needsFallback(.success(strong)))
+        check("fallback catches low confidence", policy.needsFallback(.success(weak)))
+        check("fallback catches empty text", policy.needsFallback(.success(empty)))
+        check("fallback catches primary error",
+              policy.needsFallback(.failure(LocalRecognitionTestError.primary)))
+
+        let whisper = LocalRecognitionResult(text: "Добрый день", confidence: nil, engine: .whisper)
+        let resolved = policy.resolve(primary: .success(weak), fallback: .success(whisper))
+        check("fallback selects Whisper result", (try? resolved.get()) == whisper)
+
+        let retained = policy.resolve(
+            primary: .success(weak),
+            fallback: .failure(LocalRecognitionTestError.fallback)
+        )
+        check("fallback failure retains nonempty primary", (try? retained.get()) == weak)
+
+        let bothFailed = policy.resolve(
+            primary: .failure(LocalRecognitionTestError.primary),
+            fallback: .failure(LocalRecognitionTestError.fallback)
+        )
+        check("fallback reports failure when both engines fail",
+              (try? bothFailed.get()) == nil)
+    }
+
+    private enum LocalRecognitionTestError: Error {
+        case primary
+        case fallback
     }
 
     static func testWAVEncoder() {
