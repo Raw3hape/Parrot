@@ -39,9 +39,10 @@
 		D41FEC78937277879CA64EBB /* AnalysisProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCC0E7326A41C441C77FAC4 /* AnalysisProvider.swift */; };
 		D7B87E120F1187AE11BD8F89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 531A69C106428442DDDF25EF /* Assets.xcassets */; };
 		D80161EBEE86C38E11105708 /* MeetingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7875A6957E23D516981F6F7 /* MeetingDetailView.swift */; };
-		E13FE9BAA4062AF67B22D528 /* CSpeexDSP in Frameworks */ = {isa = PBXBuildFile; productRef = 4DB9F1B471B3029789F107CC /* CSpeexDSP */; };
+		E13FE9BAA4062AF67B22D528 /* FluidAudio in Frameworks */ = {isa = PBXBuildFile; productRef = C7797B2CF6DA8D2CB6534776 /* FluidAudio */; };
 		E3F64FC26CFB13D0A8F0EE14 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0B438750BCCD12502A5BAA43 /* WhisperKit */; };
 		E4E9A631759BFBCB14131A34 /* AudioCaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778ACCC175C1E526BD4A8D8 /* AudioCaptureManager.swift */; };
+		EC36D27018D1EBD3547E3DF1 /* CSpeexDSP in Frameworks */ = {isa = PBXBuildFile; productRef = 4DB9F1B471B3029789F107CC /* CSpeexDSP */; };
 		F0B27F4AD985CBF71B7A7C1F /* Insight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786AEE931B2D103312603940 /* Insight.swift */; };
 		F8CA7DA639E64F49A7FC3601 /* KnowledgeBaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A6B590044A90A31AD495C0 /* KnowledgeBaseService.swift */; };
 		FE86BA35CE14B2DD8BEF3E6A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ECD50C879A39AA006003B8 /* DashboardView.swift */; };
@@ -96,7 +97,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3F64FC26CFB13D0A8F0EE14 /* WhisperKit in Frameworks */,
-				E13FE9BAA4062AF67B22D528 /* CSpeexDSP in Frameworks */,
+				E13FE9BAA4062AF67B22D528 /* FluidAudio in Frameworks */,
+				EC36D27018D1EBD3547E3DF1 /* CSpeexDSP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +217,7 @@
 			name = Parrot;
 			packageProductDependencies = (
 				0B438750BCCD12502A5BAA43 /* WhisperKit */,
+				C7797B2CF6DA8D2CB6534776 /* FluidAudio */,
 				4DB9F1B471B3029789F107CC /* CSpeexDSP */,
 			);
 			productName = Parrot;
@@ -237,7 +240,6 @@
 				};
 			};
 			buildConfigurationList = 29CF82032821332FBAF0EC2E /* Build configuration list for PBXProject "Parrot" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -247,10 +249,12 @@
 			mainGroup = 523F1B653038F8179FAFFDCF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				E74A7AB8F94BEF86F8FD77E3 /* XCRemoteSwiftPackageReference "FluidAudio" */,
 				701AD7E50560638E5301D170 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 				A0B08B113371A84B6C9045E9 /* XCLocalSwiftPackageReference "Vendor/CSpeexDSP" */,
 			);
 			preferredProjectObjectVersion = 77;
+			productRefGroup = 6C68E8299E2B92A3BDBE4098 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -524,6 +528,14 @@
 				minimumVersion = 0.9.0;
 			};
 		};
+		E74A7AB8F94BEF86F8FD77E3 /* XCRemoteSwiftPackageReference "FluidAudio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/FluidInference/FluidAudio.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.15.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -535,6 +547,11 @@
 		4DB9F1B471B3029789F107CC /* CSpeexDSP */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CSpeexDSP;
+		};
+		C7797B2CF6DA8D2CB6534776 /* FluidAudio */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E74A7AB8F94BEF86F8FD77E3 /* XCRemoteSwiftPackageReference "FluidAudio" */;
+			productName = FluidAudio;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
