@@ -137,6 +137,7 @@ final class RecordingManager {
             modelContext.delete(meeting)
             throw error
         }
+        currentMeeting = meeting
 
         // Arm the sink and transcription intake before hardware starts so the
         // first system/mic buffers cannot fall through a setup gap.
@@ -145,9 +146,10 @@ final class RecordingManager {
         }
 
         // Wire transcription output to storage and the live copilot
-        transcriptionEngine.onSegment = { [weak self] result in
-            self?.addSegment(result)
-            self?.callAnalysisEngine.ingest(
+        transcriptionEngine.onSegment = { [weak self, weak meeting] result in
+            guard let self, let meeting else { return }
+            self.addSegment(result, to: meeting)
+            self.callAnalysisEngine.ingest(
                 text: result.text,
                 at: result.endTime,
                 source: result.source
@@ -159,6 +161,7 @@ final class RecordingManager {
         guard transcriptionEngine.startTranscribing(meetingStartTime: .now) else {
             audioCaptureManager.onAudioBuffer = nil
             transcriptionEngine.onSegment = nil
+            if currentMeeting === meeting { currentMeeting = nil }
             modelContext.delete(meeting)
             try? modelContext.save()
             throw RecordingError.modelNotReady
@@ -172,6 +175,7 @@ final class RecordingManager {
             audioCaptureManager.onAudioBuffer = nil
             await transcriptionEngine.stopTranscribing()
             transcriptionEngine.onSegment = nil
+            if currentMeeting === meeting { currentMeeting = nil }
             modelContext.delete(meeting)
             try? modelContext.save()
             throw error
@@ -186,6 +190,7 @@ final class RecordingManager {
             audioCaptureManager.onAudioBuffer = nil
             await transcriptionEngine.stopTranscribing()
             transcriptionEngine.onSegment = nil
+            if currentMeeting === meeting { currentMeeting = nil }
             modelContext.delete(meeting)
             try? modelContext.save()
             throw error
@@ -195,7 +200,6 @@ final class RecordingManager {
         callAnalysisEngine.provider.resetUsage()  // this call's token meter starts at zero
         callAnalysisEngine.start(profile: profile, brief: nextCallBrief)
 
-        currentMeeting = meeting
         recordingStartTime = .now
         isRecording = true
 
@@ -310,7 +314,8 @@ final class RecordingManager {
     /// Deletes a meeting and its audio files. The only removal path in the app —
     /// without it storage grows forever. Refuses the active recording.
     func delete(_ meeting: Meeting) {
-        guard !(isRecording && meeting.id == currentMeeting?.id) else { return }
+        guard !((isStarting || isRecording || isStopping)
+                && meeting.id == currentMeeting?.id) else { return }
         postProcessingTasks.removeValue(forKey: meeting.id)?.cancel()
         for path in [meeting.systemAudioPath.nilIfEmpty, meeting.micAudioPath?.nilIfEmpty].compactMap({ $0 }) {
             try? FileManager.default.removeItem(atPath: path)
@@ -322,7 +327,10 @@ final class RecordingManager {
 
     // MARK: - Segment Storage
 
-    private func addSegment(_ result: TranscriptionEngine.TranscriptionResult) {
+    private func addSegment(
+        _ result: TranscriptionEngine.TranscriptionResult,
+        to meeting: Meeting
+    ) {
         // Use the live meeting object directly. The previous code looked the
         // meeting up via model(for: meetingID) where meetingID was captured before
         // the context was saved — i.e. a TEMPORARY identifier that goes stale after
@@ -330,7 +338,7 @@ final class RecordingManager {
         // to segment.meeting tripped a SwiftData assertion (crash). currentMeeting
         // is the same registered instance in the same context, set before any
         // segment can arrive.
-        guard let modelContext, let meeting = currentMeeting else { return }
+        guard let modelContext else { return }
 
         let segment = TranscriptSegment(
             startTime: result.startTime,

@@ -46,6 +46,10 @@ final class AudioCaptureManager: NSObject {
     // queue, off the audio render thread.
     private let systemWriteQueue = DispatchQueue(label: "com.uygar.parrot.audio.system")
     private let micWriteQueue = DispatchQueue(label: "com.uygar.parrot.audio.mic")
+    private let systemCaptureQueue = DispatchQueue(
+        label: "com.uygar.parrot.capture.system",
+        qos: .userInteractive
+    )
 
     /// All objects that may outlive a capture callback are owned by one immutable
     /// session identity. File handles are queue-confined; the remaining mutable
@@ -60,6 +64,9 @@ final class AudioCaptureManager: NSObject {
         var audioEngine: AVAudioEngine?
         var starvationReported = false
         var stopping = false
+        var callbackAdmissionOpen = true
+        var inFlightCallbacks = 0
+        var callbackWaiters: [CheckedContinuation<Void, Never>] = []
         var systemAudioFile: AVAudioFile?
         var micAudioFile: AVAudioFile?
 
@@ -248,6 +255,10 @@ final class AudioCaptureManager: NSObject {
         if let stream = resources.0 {
             try? await stream.stopCapture()
         }
+        // ScreenCaptureKit uses our serial queue. Once stopCapture returns, this
+        // barrier drains every callback already submitted before we close
+        // callback admission below.
+        systemCaptureQueue.sync {}
 
         resources.1?.stop()
         resources.1?.inputNode.removeTap(onBus: 0)
@@ -256,6 +267,11 @@ final class AudioCaptureManager: NSObject {
             session.systemStream = nil
             session.systemStreamID = nil
         }
+
+        // A mic/SCK callback may already be converting a buffer. Close admission
+        // atomically and wait for every admitted callback to enqueue both its CAF
+        // write and transcription emit before closing the generation.
+        await closeCallbackAdmissionAndWait(for: session)
 
         // Close callback admission only after hardware is stopped, then flush
         // every already-queued write and finalize this session's CAF headers.
@@ -301,7 +317,7 @@ final class AudioCaptureManager: NSObject {
         // (see the SCStreamOutput handler), so it always matches what we write.
 
         let stream = SCStream(filter: filter, configuration: config, delegate: nil)
-        try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: .global(qos: .userInteractive))
+        try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: systemCaptureQueue)
         let registered = captureState.withLock { state -> Bool in
             guard state.session === session, state.gate.accepts(session.token) else { return false }
             session.systemStream = stream
@@ -361,7 +377,8 @@ final class AudioCaptureManager: NSObject {
         let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self, session] buffer, _ in
-            guard let self, self.accepts(session) else { return }
+            guard let self, self.beginCallback(for: session) else { return }
+            defer { self.endCallback(for: session) }
 
             // Convert to target format
             guard let converter else { return }
@@ -525,6 +542,48 @@ final class AudioCaptureManager: NSObject {
         }
     }
 
+    private func beginCallback(
+        for session: CaptureSession,
+        matchingSystemStream stream: SCStream? = nil
+    ) -> Bool {
+        captureState.withLock { state in
+            guard state.session === session,
+                  state.gate.accepts(session.token),
+                  session.callbackAdmissionOpen else { return false }
+            if let stream,
+               session.systemStreamID != ObjectIdentifier(stream) {
+                return false
+            }
+            session.inFlightCallbacks += 1
+            return true
+        }
+    }
+
+    private func endCallback(for session: CaptureSession) {
+        let waiters: [CheckedContinuation<Void, Never>] = captureState.withLock { _ in
+            session.inFlightCallbacks = max(0, session.inFlightCallbacks - 1)
+            guard session.inFlightCallbacks == 0,
+                  !session.callbackWaiters.isEmpty else { return [] }
+            let waiters = session.callbackWaiters
+            session.callbackWaiters.removeAll(keepingCapacity: false)
+            return waiters
+        }
+        for waiter in waiters { waiter.resume() }
+    }
+
+    private func closeCallbackAdmissionAndWait(for session: CaptureSession) async {
+        await withCheckedContinuation { continuation in
+            let resumeImmediately = captureState.withLock { state -> Bool in
+                guard state.session === session else { return true }
+                session.callbackAdmissionOpen = false
+                if session.inFlightCallbacks == 0 { return true }
+                session.callbackWaiters.append(continuation)
+                return false
+            }
+            if resumeImmediately { continuation.resume() }
+        }
+    }
+
     private func closeGate(for session: CaptureSession) {
         captureState.withLock { state in
             state.gate.end(session.token)
@@ -604,10 +663,13 @@ extension AudioCaptureManager: SCStreamOutput {
         let session = captureState.withLock { state -> CaptureSession? in
             guard let session = state.session,
                   state.gate.accepts(session.token),
+                  session.callbackAdmissionOpen,
                   session.systemStreamID == ObjectIdentifier(stream) else { return nil }
+            session.inFlightCallbacks += 1
             return session
         }
         guard let session else { return }
+        defer { endCallback(for: session) }
 
         // Convert CMSampleBuffer to AVAudioPCMBuffer for WhisperKit
         guard let pcmBuffer = sampleBuffer.toAVAudioPCMBuffer(sampleRate: sampleRate, channels: channels) else {

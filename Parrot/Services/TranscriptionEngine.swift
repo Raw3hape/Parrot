@@ -28,6 +28,15 @@ struct AudioSampleQueue: Sendable {
         return result
     }
 
+    @discardableResult
+    mutating func discardOldest(_ requestedCount: Int) -> Int {
+        let count = min(max(0, requestedCount), self.count)
+        guard count > 0 else { return 0 }
+        head += count
+        compactIfNeeded()
+        return count
+    }
+
     private mutating func compactIfNeeded() {
         if head == storage.count {
             storage.removeAll(keepingCapacity: true)
@@ -48,9 +57,11 @@ private enum AudioIntakeStatus: Equatable {
 /// The only transcription state touched by realtime audio callbacks. Keeping it
 /// behind one unfair lock makes `appendAudio` safe without hopping to MainActor.
 private struct AudioIntakeState: Sendable {
+    private static let maximumBufferedSamplesPerSource = 2_880_000 // 3 min
     private var generation: Int?
     private var isAccepting = false
     private var queues: [AudioSource: AudioSampleQueue] = Self.emptyQueues
+    private var droppedSamples = 0
 
     var acceptedGeneration: Int? {
         guard isAccepting else { return nil }
@@ -61,6 +72,7 @@ private struct AudioIntakeState: Sendable {
         self.generation = generation
         isAccepting = true
         queues = Self.emptyQueues
+        droppedSamples = 0
     }
 
     mutating func append(
@@ -69,7 +81,11 @@ private struct AudioIntakeState: Sendable {
         generation expectedGeneration: Int
     ) {
         guard isAccepting, generation == expectedGeneration else { return }
-        queues[source, default: AudioSampleQueue()].append(samples)
+        var queue = queues[source, default: AudioSampleQueue()]
+        queue.append(samples)
+        let overflow = max(0, queue.count - Self.maximumBufferedSamplesPerSource)
+        droppedSamples += queue.discardOldest(overflow)
+        queues[source] = queue
     }
 
     mutating func close(generation expectedGeneration: Int) {
@@ -82,6 +98,7 @@ private struct AudioIntakeState: Sendable {
         generation = nil
         isAccepting = false
         queues = Self.emptyQueues
+        droppedSamples = 0
     }
 
     func status(for expectedGeneration: Int) -> AudioIntakeStatus {
@@ -101,6 +118,11 @@ private struct AudioIntakeState: Sendable {
         let result = queue.dequeue(upTo: maximumCount)
         queues[source] = queue
         return result
+    }
+
+    mutating func consumeDroppedSamples() -> Int {
+        defer { droppedSamples = 0 }
+        return droppedSamples
     }
 
     private static var emptyQueues: [AudioSource: AudioSampleQueue] {
@@ -147,6 +169,7 @@ final class TranscriptionEngine {
     private var completedSessions: Set<Int> = []
     private var drainWaiters: [Int: CheckedContinuation<Bool, Never>] = [:]
     private var drainTimeoutTasks: [Int: Task<Void, Never>] = [:]
+    private var intakeOverflowReported = false
 
     private(set) var isReady = false
     private(set) var isTranscribing = false
@@ -262,7 +285,7 @@ final class TranscriptionEngine {
 
         recognitionRouter = LocalRecognitionRouter(
             primary: whisperService,
-            fallback: whisperService
+            fallback: nil
         )
         cloudNotice = Self.combinedNotice(
             "Parakeet unavailable — using local Whisper",
@@ -327,6 +350,7 @@ final class TranscriptionEngine {
         sessionGeneration += 1
         let session = sessionGeneration
         completedSessions.removeAll()
+        intakeOverflowReported = false
         intakeLock.withLock { $0.begin(generation: session) }
         isTranscribing = true
 
@@ -361,6 +385,20 @@ final class TranscriptionEngine {
             guard let self else { return }
 
             while !Task.isCancelled {
+                let newlyDroppedSamples = self.intakeLock.withLock {
+                    $0.consumeDroppedSamples()
+                }
+                if newlyDroppedSamples > 0, !self.intakeOverflowReported {
+                    self.intakeOverflowReported = true
+                    self.cloudNotice = Self.combinedNotice(
+                        "Live transcription fell behind — saved audio is intact",
+                        self.cloudNotice
+                    )
+                    NSLog(
+                        "ParrotMetric event=intake_overflow dropped_samples=%d",
+                        newlyDroppedSamples
+                    )
+                }
                 let intakeStatus = self.intakeLock.withLock {
                     $0.status(for: session)
                 }

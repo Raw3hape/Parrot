@@ -295,6 +295,16 @@ enum ProfileTest {
         )
         check("fallback never repeats nonempty Whisper",
               !policy.needsFallback(.success(whisperPrimary)))
+        check("fallback-only route does not repeat empty Whisper",
+              !policy.shouldAttemptFallback(
+                .success(LocalRecognitionResult(text: "", confidence: nil, engine: .whisper)),
+                fallbackAvailable: false
+              ))
+        check("fallback-only route does not repeat failed Whisper",
+              !policy.shouldAttemptFallback(
+                .failure(LocalRecognitionTestError.primary),
+                fallbackAvailable: false
+              ))
 
         check("Whisper confidence normalizes log probability",
               abs(WhisperModelService.normalizedConfidence([-0.2, -0.4]) - exp(-0.3)) < 0.0001)
@@ -336,6 +346,12 @@ enum ProfileTest {
         }
         check("sample queue preserves FIFO order", fifoIsOrdered)
         check("sample queue compacts consumed storage", queue.storageCount < 8_192)
+
+        var bounded = AudioSampleQueue()
+        bounded.append((0..<20).map(Float.init))
+        check("sample queue drops requested oldest samples", bounded.discardOldest(12) == 12)
+        check("sample queue keeps newest samples after overflow policy",
+              bounded.dequeue(upTo: 20) == (12..<20).map(Float.init))
     }
 
     static func testCaptureSessionGate() {

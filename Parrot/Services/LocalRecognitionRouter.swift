@@ -41,6 +41,13 @@ struct RecognitionFallbackPolicy: Sendable {
         }
     }
 
+    func shouldAttemptFallback(
+        _ primary: Result<LocalRecognitionResult, Error>,
+        fallbackAvailable: Bool
+    ) -> Bool {
+        fallbackAvailable && needsFallback(primary)
+    }
+
     func resolve(
         primary: Result<LocalRecognitionResult, Error>,
         fallback: Result<LocalRecognitionResult, Error>
@@ -62,12 +69,12 @@ struct RecognitionFallbackPolicy: Sendable {
 
 actor LocalRecognitionRouter {
     private let primary: any LocalSpeechRecognizing
-    private let fallback: any LocalSpeechRecognizing
+    private let fallback: (any LocalSpeechRecognizing)?
     private let policy: RecognitionFallbackPolicy
 
     init(
         primary: any LocalSpeechRecognizing,
-        fallback: any LocalSpeechRecognizing,
+        fallback: (any LocalSpeechRecognizing)?,
         policy: RecognitionFallbackPolicy = RecognitionFallbackPolicy(
             confidenceThreshold: 0.45
         )
@@ -99,9 +106,17 @@ actor LocalRecognitionRouter {
             primaryAttempt = .failure(error)
         }
 
-        guard policy.needsFallback(primaryAttempt) else {
+        guard policy.shouldAttemptFallback(
+            primaryAttempt,
+            fallbackAvailable: fallback != nil
+        ) else {
             return try primaryAttempt.get()
         }
+
+        // Whisper-primary recovery deliberately has no second recognizer. An
+        // empty/error result must propagate once rather than running the exact
+        // same 1.5 GB model twice.
+        guard let fallback else { return try primaryAttempt.get() }
 
         try Task.checkCancellation()
         let fallbackAttempt: Result<LocalRecognitionResult, Error>
