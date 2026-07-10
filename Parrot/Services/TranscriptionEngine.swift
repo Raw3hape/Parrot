@@ -1,10 +1,10 @@
 import AVFoundation
-import WhisperKit
-import Combine
+import FluidAudio
+import Foundation
 import os
 
 /// Which capture stream a piece of audio came from.
-enum AudioSource: CaseIterable {
+enum AudioSource: CaseIterable, Sendable {
     /// Microphone — the user.
     case me
     /// System audio — everyone else on the call.
@@ -18,33 +18,31 @@ enum AudioSource: CaseIterable {
     }
 }
 
-/// Wraps WhisperKit for real-time streaming transcription. The microphone ("Me")
-/// and system audio ("Them") streams are buffered and transcribed separately, so
-/// every segment knows who was talking — no diarization model needed.
+/// Fully on-device, call-oriented transcription. The microphone and system
+/// streams have independent VAD/utterance state, so every finalized segment is
+/// already attributed without a diarization model.
 @Observable
 final class TranscriptionEngine {
-    private var whisperKit: WhisperKit?
+    private let parakeetService = ParakeetModelService()
+    private let whisperService = WhisperModelService()
+    private var recognitionRouter: LocalRecognitionRouter?
+    private var vadManager: VadManager?
+    private var streamProcessors: [AudioSource: CallStreamProcessor] = [:]
+
     private var audioBuffers: [AudioSource: [Float]] = [.me: [], .them: []]
     private let bufferLock = OSAllocatedUnfairLock()
     private var transcriptionTask: Task<Void, Never>?
-    /// Live Deepgram sockets, one per source, when the deepgram backend is
-    /// active. Audio routes straight to them instead of the chunk buffers.
-    /// Same benign cross-thread pattern as `isCapturing`.
-    private var deepgramStreamers: [AudioSource: DeepgramStreamer] = [:]
-    /// Set on the first Deepgram failure: audio falls back to the local
-    /// buffer/loop path for the rest of the session.
-    private var deepgramFailed = false
+    private var sessionGeneration = 0
 
     private(set) var isReady = false
     private(set) var isTranscribing = false
     private(set) var currentText = ""
     private(set) var modelState: ModelState = .notLoaded
-    /// One-line notice when a cloud backend can't be used (missing key, API
-    /// errors) and the session is running on-device instead. Shown in the
-    /// live device bar.
+    /// Retained for the existing live status bar. It now reports only local
+    /// degradation (for example, Whisper unavailable), never a cloud fallback.
     private(set) var cloudNotice: String?
 
-    /// Called when a finalized transcript segment is ready
+    /// Called when a finalized transcript segment is ready.
     var onSegment: ((TranscriptionResult) -> Void)?
 
     enum ModelState {
@@ -65,39 +63,90 @@ final class TranscriptionEngine {
 
     // MARK: - Model Management
 
-    /// Load WhisperKit with the specified model
-    func loadModel(_ modelName: String = "base") async {
+    /// Prepare the local Parakeet primary model, local Whisper fallback, and
+    /// Silero VAD. The argument remains for source compatibility with the old
+    /// settings UI; this personal build intentionally pins its tested models.
+    func loadModel(_ ignoredModelName: String = WhisperModelService.fallbackModel) async {
+        guard !isTranscribing else { return }
         modelState = .loading
+        isReady = false
+        cloudNotice = nil
+
+        var parakeetError: Error?
+        var whisperError: Error?
+        var vadError: Error?
+
         do {
-            let config = WhisperKitConfig(
-                model: modelName,
-                verbose: false,
-                logLevel: .none,
-                prewarm: true,
-                load: true
-            )
-            whisperKit = try await WhisperKit(config)
-            modelState = .ready
-            isReady = true
+            try await parakeetService.prepare()
         } catch {
-            modelState = .error(error.localizedDescription)
-            isReady = false
+            parakeetError = error
+            NSLog("Parrot: local Parakeet model unavailable — \(error.localizedDescription)")
         }
+
+        do {
+            try await whisperService.prepare()
+        } catch {
+            whisperError = error
+            NSLog("Parrot: local Whisper fallback unavailable — \(error.localizedDescription)")
+        }
+
+        do {
+            vadManager = try await VadManager(
+                config: VadConfig(defaultThreshold: 0.55)
+            )
+        } catch {
+            vadError = error
+            vadManager = nil
+            NSLog("Parrot: Silero VAD unavailable, using local energy VAD — \(error.localizedDescription)")
+        }
+
+        switch (parakeetError, whisperError) {
+        case (nil, nil):
+            recognitionRouter = LocalRecognitionRouter(
+                primary: parakeetService,
+                fallback: whisperService
+            )
+        case (nil, _?):
+            recognitionRouter = LocalRecognitionRouter(
+                primary: parakeetService,
+                fallback: parakeetService
+            )
+            cloudNotice = "Local Whisper fallback unavailable — Parakeet remains active"
+        case (_?, nil):
+            recognitionRouter = LocalRecognitionRouter(
+                primary: whisperService,
+                fallback: whisperService
+            )
+            cloudNotice = "Parakeet unavailable — using local Whisper"
+        case (let parakeetFailure?, let whisperFailure?):
+            recognitionRouter = nil
+            let message = [
+                "Parakeet: \(parakeetFailure.localizedDescription)",
+                "Whisper: \(whisperFailure.localizedDescription)",
+            ].joined(separator: " | ")
+            modelState = .error(message)
+            return
+        }
+
+        if vadError != nil {
+            let vadMessage = "Silero VAD unavailable — local energy detection active"
+            cloudNotice = cloudNotice.map { $0 + ". " + vadMessage } ?? vadMessage
+        }
+
+        modelState = .ready
+        isReady = true
     }
 
     // MARK: - Audio Input
 
-    /// Feed audio buffer from AudioCaptureManager, tagged with its stream
+    /// Feed 16 kHz mono audio from AudioCaptureManager, tagged by capture stream.
     func appendAudio(_ buffer: AVAudioPCMBuffer, source: AudioSource) {
-        guard let channelData = buffer.floatChannelData?[0] else { return }
+        guard isTranscribing,
+              let channelData = buffer.floatChannelData?[0] else { return }
         let frameCount = Int(buffer.frameLength)
-        let samples = Array(UnsafeBufferPointer(start: channelData, count: frameCount))
-
-        // Streaming backend: straight to the socket, no chunk buffering.
-        if !deepgramFailed, let streamer = deepgramStreamers[source] {
-            streamer.send(samples)
-            return
-        }
+        let samples = Array(
+            UnsafeBufferPointer(start: channelData, count: frameCount)
+        )
 
         bufferLock.withLock {
             audioBuffers[source, default: []].append(contentsOf: samples)
@@ -106,312 +155,126 @@ final class TranscriptionEngine {
 
     // MARK: - Transcription Loop
 
-    /// Start the continuous transcription loop
     func startTranscribing(meetingStartTime: Date) {
-        guard isReady else { return }
-        // Never run two loops: cancel any prior task before starting a new one.
+        guard isReady, let recognitionRouter else { return }
+
         transcriptionTask?.cancel()
         transcriptionTask = nil
+        bufferLock.withLock { audioBuffers = [.me: [], .them: []] }
+        currentText = ""
         isTranscribing = true
+        sessionGeneration += 1
+        let session = sessionGeneration
 
-        // Resolve the transcription backend for this session. Cloud backends
-        // need their key; anything missing falls back to on-device with a
-        // visible notice. (Deepgram streaming lands separately; until then it
-        // behaves as local.)
-        var backend = TranscriptionBackend.selected
-        var groqKey: String?
-        cloudNotice = nil
-        deepgramFailed = false
-        deepgramStreamers = [:]
-        if backend == .groq {
-            groqKey = APIKeyStore.load(account: TranscriptionBackend.groq.keychainAccount!)
-            if groqKey?.isEmpty != false {
-                backend = .local
-                cloudNotice = "Groq key missing — using on-device Whisper"
-            }
-        }
-
-        // Resolve the user's transcription language ("auto"/nil = auto-detect).
         let setting = UserDefaults.standard.string(forKey: "transcriptionLanguage")
         let language = (setting == nil || setting == "auto") ? nil : setting
+        let vadManager = self.vadManager
 
-        if backend == .deepgram {
-            if let key = APIKeyStore.load(account: TranscriptionBackend.deepgram.keychainAccount!), !key.isEmpty {
-                startDeepgram(apiKey: key, language: language)
-            } else {
-                backend = .local
-                cloudNotice = "Deepgram key missing — using on-device Whisper"
-            }
+        var processors: [AudioSource: CallStreamProcessor] = [:]
+        for source in AudioSource.allCases {
+            processors[source] = CallStreamProcessor(
+                source: source,
+                vad: vadManager,
+                router: recognitionRouter,
+                language: language,
+                onPreview: { [weak self] text, _ in
+                    await MainActor.run {
+                        guard let self,
+                              self.sessionGeneration == session,
+                              self.isTranscribing else { return }
+                        self.currentText = text
+                    }
+                },
+                onFinal: { [weak self] result, startSample, endSample in
+                    await MainActor.run {
+                        guard let self,
+                              self.sessionGeneration == session else { return }
+                        self.currentText = result.text
+                        self.onSegment?(TranscriptionResult(
+                            text: result.text,
+                            source: source,
+                            startTime: Double(startSample) / 16_000.0,
+                            endTime: Double(endSample) / 16_000.0,
+                            confidence: result.confidence
+                        ))
+                    }
+                }
+            )
         }
-        var decodeOptions = DecodingOptions(
-            task: .transcribe,
-            language: language,
-            detectLanguage: language == nil
-        )
+        streamProcessors = processors
 
-        // Custom vocabulary: prime Whisper with the user's names/terms so it stops
-        // mangling proper nouns (e.g. "LaunchEase" → "Lawn Cheese"). Fed as an
-        // initial prompt, the standard Whisper mechanism for biasing spelling.
-        let vocab = (UserDefaults.standard.string(forKey: "customVocabulary") ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        if !vocab.isEmpty, let tokenizer = whisperKit?.tokenizer {
-            let terms = vocab
-                .components(separatedBy: CharacterSet(charactersIn: ",\n"))
-                .map { $0.trimmingCharacters(in: .whitespaces) }
-                .filter { !$0.isEmpty }
-            if !terms.isEmpty {
-                let promptText = "Glossary: " + terms.joined(separator: ", ") + "."
-                let tokens = tokenizer.encode(text: " " + promptText)
-                    .filter { $0 < tokenizer.specialTokens.specialTokenBegin }
-                decodeOptions.promptTokens = tokens
-                decodeOptions.usePrefillPrompt = true
-            }
-        }
-
-        // Quality + anti-garbage decoding. We derive each segment's timestamps from
-        // sample offsets, so suppress Whisper's special + timestamp tokens — they were
-        // leaking into the live line as "<|0.00|> ... <|1.00|>" gibberish. The
-        // thresholds trip a temperature fallback that breaks Whisper's repetition loops
-        // (the "What's your name?" ×N hallucination on near-silent / noisy chunks), and
-        // noSpeechThreshold drops silence instead of hallucinating over it.
-        decodeOptions.skipSpecialTokens = true
-        decodeOptions.withoutTimestamps = true
-        decodeOptions.compressionRatioThreshold = 2.4
-        decodeOptions.logProbThreshold = -1.0
-        decodeOptions.noSpeechThreshold = 0.6
-        decodeOptions.temperatureFallbackCount = 3
-
-        transcriptionTask = Task { [weak self] in
+        transcriptionTask = Task { [weak self, processors] in
             guard let self else { return }
 
-            // Trigger a transcription pass once a stream has buffered at least
-            // ~2 s of audio (32k samples at 16 kHz).
-            let chunkSize = 32000
-            // Hard cap on how much audio a single pass consumes. Without this, a
-            // slow Whisper pass (CPU spike, larger model) lets the buffer grow
-            // unbounded and the next pass transcribes 30–70 s of speech as ONE
-            // giant segment — the "silent for minutes, then a wall of text" bug.
-            // Capping keeps every emitted segment ~2 s; under sustained load
-            // latency grows gracefully instead of dumping a paragraph.
-            let maxChunkSamples = 32000
-            // Total samples consumed (and freed) per stream. The audio buffers only
-            // ever hold not-yet-transcribed samples, so memory stays flat over a long
-            // call; these running totals keep segment timestamps absolute regardless.
-            var consumedSamples: [AudioSource: Int] = [.me: 0, .them: 0]
-
             while !Task.isCancelled {
-                // isTranscribing == false flips the loop into drain mode: keep
-                // consuming the backlog (any chunk size, down to the final <2 s
-                // tail) and exit once the buffers are empty. Capture must already
-                // be stopped by then or the buffers keep growing — that ordering
-                // is RecordingManager.stopRecording's contract.
                 let draining = !self.isTranscribing
                 var didWork = false
 
                 for source in AudioSource.allCases {
-                    // Pull one bounded window for this stream under the lock —
-                    // freeing the consumed audio so it doesn't pile up for the whole
-                    // call, and avoiding any index race with a reset.
                     let chunk: [Float] = self.bufferLock.withLock {
                         guard let buffered = self.audioBuffers[source],
-                              buffered.count >= (draining ? 1 : chunkSize) else { return [] }
-                        let take = min(buffered.count, maxChunkSamples)
-                        self.audioBuffers[source] = Array(buffered[take...])
-                        return Array(buffered[..<take])
+                              !buffered.isEmpty else { return [] }
+                        if !draining, buffered.count < VadManager.chunkSize {
+                            return []
+                        }
+                        let count = min(buffered.count, VadManager.chunkSize)
+                        self.audioBuffers[source] = Array(buffered.dropFirst(count))
+                        return Array(buffered.prefix(count))
                     }
-                    guard !chunk.isEmpty else { continue }
+                    guard !chunk.isEmpty, let processor = processors[source] else { continue }
                     didWork = true
-
-                    let startSample = consumedSamples[source] ?? 0
-                    let endSample = startSample + chunk.count
-                    consumedSamples[source] = endSample
-                    let startTime = Double(startSample) / 16000.0
-                    let endTime = Double(endSample) / 16000.0
-
-                    // Skip near-silent chunks — saves Whisper passes and avoids
-                    // hallucinated text on silence. (0.001 let too much room
-                    // noise through; hallucination filter below catches the rest.)
-                    let energy = chunk.reduce(into: Float(0)) { $0 += abs($1) } / Float(chunk.count)
-                    guard energy > 0.002 else { continue }
-
-                    // On-device decode — the default path, and the per-chunk
-                    // fallback when a cloud backend hiccups (never lose a chunk).
-                    func decodeLocally() async throws -> [(text: String, confidence: Float?)] {
-                        guard let whisperKit = self.whisperKit else { return [] }
-                        // Stream interim words to the live view as they decode; strip
-                        // any stray special/timestamp tokens defensively.
-                        let interimCallback: TranscriptionCallback = { [weak self] progress in
-                            let partial = Self.cleaned(progress.text)
-                            if !partial.isEmpty {
-                                Task { @MainActor in self?.currentText = partial }
-                            }
-                            return nil
-                        }
-                        let result = try await whisperKit.transcribe(
-                            audioArray: chunk,
-                            decodeOptions: decodeOptions,
-                            callback: interimCallback
-                        )
-                        return result.map { transcription in
-                            (transcription.text,
-                             transcription.segments.map(\.avgLogprob).reduce(0, +)
-                                / Float(max(transcription.segments.count, 1)))
-                        }
-                    }
-
-                    do {
-                        let pieces: [(text: String, confidence: Float?)]
-                        if backend == .groq, let groqKey {
-                            do {
-                                pieces = [(try await GroqTranscriber.transcribe(
-                                    samples: chunk, language: language, apiKey: groqKey), nil)]
-                            } catch {
-                                NSLog("Parrot: Groq transcription failed — \(error.localizedDescription)")
-                                await MainActor.run {
-                                    self.cloudNotice = "Groq error — on-device fallback for failed chunks"
-                                }
-                                pieces = try await decodeLocally()
-                            }
-                        } else {
-                            pieces = try await decodeLocally()
-                        }
-
-                        for piece in pieces {
-                            let text = Self.cleaned(piece.text)
-                            guard !text.isEmpty else { continue }
-                            // Silence hallucinations ("you", "Thank you.",
-                            // "Okay.") flooded real transcripts — drop them
-                            // when the chunk was near-silent.
-                            guard !Self.isLikelyHallucination(text, energy: energy) else { continue }
-
-                            await MainActor.run {
-                                self.currentText = text
-                                self.onSegment?(TranscriptionResult(
-                                    text: text,
-                                    source: source,
-                                    startTime: startTime,
-                                    endTime: endTime,
-                                    confidence: piece.confidence
-                                ))
-                            }
-                        }
-                    } catch {
-                        print("Transcription error (\(source.label)): \(error)")
-                    }
+                    await processor.append(chunk)
                 }
 
-                // Pause only when caught up. When a backlog exists (CPU spike or a
-                // slow pass), keep draining bounded windows back-to-back so
-                // transcription keeps pace with real time instead of falling
-                // progressively behind — the regression that left the back half of a
-                // call untranscribed.
                 if !didWork {
-                    if draining { break }  // buffers empty → fully drained, exit
-                    try? await Task.sleep(for: .milliseconds(250))
+                    if draining {
+                        for source in AudioSource.allCases {
+                            await processors[source]?.finish()
+                        }
+                        break
+                    }
+                    try? await Task.sleep(for: .milliseconds(50))
                 }
             }
         }
     }
 
-    /// Wire up one Deepgram socket per audio source. Interims drive the live
-    /// line; finals become segments with Deepgram's stream-relative timestamps
-    /// (= meeting-relative, streaming starts with the recording). Any failure
-    /// flips the session to the local buffer/loop path.
-    private func startDeepgram(apiKey: String, language: String?) {
-        for source in AudioSource.allCases {
-            let streamer = DeepgramStreamer()
-            streamer.onInterim = { [weak self] text in
-                let partial = Self.cleaned(text)
-                guard !partial.isEmpty else { return }
-                Task { @MainActor in self?.currentText = partial }
-            }
-            streamer.onFinal = { [weak self] text, start, end in
-                guard let self else { return }
-                let cleanedText = Self.cleaned(text)
-                // energy 1.0: Deepgram runs its own voice-activity detection,
-                // so only punctuation-only junk is filtered here.
-                guard !cleanedText.isEmpty,
-                      !Self.isLikelyHallucination(cleanedText, energy: 1.0) else { return }
-                Task { @MainActor in
-                    self.currentText = cleanedText
-                    self.onSegment?(TranscriptionResult(
-                        text: cleanedText, source: source,
-                        startTime: start, endTime: end, confidence: nil))
-                }
-            }
-            streamer.onError = { [weak self] message in
-                guard let self else { return }
-                NSLog("Parrot: Deepgram stream failed (\(source.label)) — \(message)")
-                self.deepgramFailed = true
-                Task { @MainActor in
-                    self.cloudNotice = "Deepgram error — switched to on-device Whisper"
-                }
-            }
-            streamer.connect(apiKey: apiKey, language: language)
-            deepgramStreamers[source] = streamer
-        }
-    }
-
-    /// Stop transcription, draining the buffered backlog first so the final words
-    /// of the call (previously always dropped — the loop needed ≥2 s buffered)
-    /// make it into the transcript. Await this before assembling the transcript.
-    // ponytail: drain is uncapped — a hung whisper pass hangs stop; upgrade path
-    // is a wall-clock cap + surfaced timeout.
+    /// Drain both streams and finalize any short tail that remained below one
+    /// VAD frame. Capture must already be stopped before calling this method.
     func stopTranscribing() async {
-        // Streaming backend: flush finals, then tear down. When the stream is
-        // healthy, the chunk buffers only hold pre-connection audio — clear
-        // them so the drain can't re-emit the call's first words at the end.
-        if !deepgramStreamers.isEmpty {
-            for streamer in deepgramStreamers.values { streamer.finish() }
-            try? await Task.sleep(for: .seconds(1.2))  // grace for final results
-            for streamer in deepgramStreamers.values { streamer.close() }
-            if !deepgramFailed {
-                bufferLock.withLock { audioBuffers = [.me: [], .them: []] }
-            }
-            deepgramStreamers = [:]
-        }
-
-        isTranscribing = false          // flips the loop into drain mode
-        await transcriptionTask?.value  // deliberately not cancel(): let it finish
+        isTranscribing = false
+        await transcriptionTask?.value
         transcriptionTask = nil
-
-        bufferLock.withLock {
-            audioBuffers = [.me: [], .them: []]
-        }
-
+        streamProcessors = [:]
+        bufferLock.withLock { audioBuffers = [.me: [], .them: []] }
         currentText = ""
     }
 
     /// The classic Whisper silence hallucinations — phrases the model invents
-    /// verbatim on near-silent chunks (YouTube-outro residue in its training
-    /// data). Matched against normalized text, only for low-energy chunks.
+    /// verbatim on near-silent chunks. Applied to both local recognizers.
     static let hallucinationPhrases: Set<String> = [
         "you", "okay", "ok", "thank you", "thanks", "bye", "bye-bye",
         "thank you for watching", "thanks for watching", "hmm", "mm-hmm",
         "uh", "um", "the end", "subtitles by", "1", "2",
     ]
 
-    /// True when a decoded chunk is almost certainly invented: punctuation-only
-    /// text, or a known silence-hallucination phrase produced from a chunk that
-    /// carried no confident speech energy. A real "Okay." at speaking volume
-    /// (energy well above the floor) is never dropped.
     static func isLikelyHallucination(_ text: String, energy: Float) -> Bool {
         let normalized = text.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?…-—"))
             .trimmingCharacters(in: .whitespaces)
-        if normalized.isEmpty { return true }  // "." and friends, at any volume
-        // ponytail: 0.006 mean-abs ≈ room noise ceiling; speech runs 0.01+.
-        // Tune here if quiet-talker reports come in.
+        if normalized.isEmpty { return true }
         guard energy < 0.006 else { return false }
         return hallucinationPhrases.contains(normalized)
     }
 
-    /// Strips any Whisper special/timestamp tokens (e.g. "<|startoftranscript|>",
-    /// "<|0.00|>") that can leak into raw decoder text, and trims whitespace.
     static func cleaned(_ text: String) -> String {
         text
-            .replacingOccurrences(of: #"<\|[^|>]*\|>"#, with: "", options: .regularExpression)
+            .replacingOccurrences(
+                of: #"<\|[^|>]*\|>"#,
+                with: "",
+                options: .regularExpression
+            )
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

@@ -45,6 +45,7 @@
 		E13FE9BAA4062AF67B22D528 /* FluidAudio in Frameworks */ = {isa = PBXBuildFile; productRef = C7797B2CF6DA8D2CB6534776 /* FluidAudio */; };
 		E3F64FC26CFB13D0A8F0EE14 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0B438750BCCD12502A5BAA43 /* WhisperKit */; };
 		E4E9A631759BFBCB14131A34 /* AudioCaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778ACCC175C1E526BD4A8D8 /* AudioCaptureManager.swift */; };
+		E655D019E3AFFC142B0898BD /* CallStreamProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2534DD7CD4C3E6CC2A756EEA /* CallStreamProcessor.swift */; };
 		EC36D27018D1EBD3547E3DF1 /* CSpeexDSP in Frameworks */ = {isa = PBXBuildFile; productRef = 4DB9F1B471B3029789F107CC /* CSpeexDSP */; };
 		F07D4B9B74A65AA9F5C7245D /* ParakeetModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0AD39875609423CFFE8A0E /* ParakeetModelService.swift */; };
 		F0B27F4AD985CBF71B7A7C1F /* Insight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786AEE931B2D103312603940 /* Insight.swift */; };
@@ -60,6 +61,7 @@
 		1882BEFAA60FA52BB4F31BF5 /* CallAnalysisEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallAnalysisEngine.swift; sourceTree = "<group>"; };
 		1DC1D58E1A4501FB741B72EE /* LiveRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRecordingView.swift; sourceTree = "<group>"; };
 		200FE5120F42A3BB47933EB7 /* ParrotApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParrotApp.swift; sourceTree = "<group>"; };
+		2534DD7CD4C3E6CC2A756EEA /* CallStreamProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallStreamProcessor.swift; sourceTree = "<group>"; };
 		28857A0DAA1D83C066023B14 /* CloudTranscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudTranscription.swift; sourceTree = "<group>"; };
 		2AA62BB3552276743C5C57CB /* Parrot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Parrot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CE74071DA1946404F9FD84C /* SnapshotTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTool.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 				5FCC0E7326A41C441C77FAC4 /* AnalysisProvider.swift */,
 				F778ACCC175C1E526BD4A8D8 /* AudioCaptureManager.swift */,
 				1882BEFAA60FA52BB4F31BF5 /* CallAnalysisEngine.swift */,
+				2534DD7CD4C3E6CC2A756EEA /* CallStreamProcessor.swift */,
 				28857A0DAA1D83C066023B14 /* CloudTranscription.swift */,
 				9F5C78AFBC3F48C895B6A0F9 /* DiarizationEngine.swift */,
 				59587E1F3FF92A07FD404042 /* EchoCanceller.swift */,
@@ -296,6 +299,7 @@
 				E4E9A631759BFBCB14131A34 /* AudioCaptureManager.swift in Sources */,
 				1716FE76548519959BF84773 /* CallAnalysisEngine.swift in Sources */,
 				9889613E7875868152583C8F /* CallProfile.swift in Sources */,
+				E655D019E3AFFC142B0898BD /* CallStreamProcessor.swift in Sources */,
 				D28B45E6E6089E715CAA52C0 /* CloudTranscription.swift in Sources */,
 				C8002A3F47345F064BB3BA98 /* ContentView.swift in Sources */,
 				8B131BE512D811DC7F495E0A /* CopilotPanelView.swift in Sources */,

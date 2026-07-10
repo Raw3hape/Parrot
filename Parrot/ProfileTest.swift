@@ -29,6 +29,7 @@ enum ProfileTest {
         testHallucinationFilter()
         testUtteranceSegmentation()
         testRecognitionFallbackPolicy()
+        testLiveTranscriptStability()
         testWAVEncoder()
         testAIUsageCost()
         print(failures == 0 ? "ALL PASS" : "FAILURES: \(failures)")
@@ -296,6 +297,32 @@ enum ProfileTest {
     private enum LocalRecognitionTestError: Error {
         case primary
         case fallback
+    }
+
+    static func testLiveTranscriptStability() {
+        var gate = PreviewGenerationGate()
+        check("preview gate accepts first generation", gate.acceptsPreview(generation: 0))
+        gate.acceptFinal(generation: 1)
+        check("preview gate rejects stale work", !gate.acceptsPreview(generation: 0))
+        check("preview gate accepts current work", gate.acceptsPreview(generation: 1))
+        gate.acceptFinal(generation: 3)
+        check("preview gate advances monotonically", !gate.acceptsPreview(generation: 2))
+
+        check("overlap removes repeated Polish words",
+              TranscriptOverlapTrimmer.trim(
+                previous: "To jest bardzo ważny projekt",
+                next: "ważny projekt dla naszego zespołu"
+              ) == "dla naszego zespołu")
+        check("overlap removes repeated Russian words",
+              TranscriptOverlapTrimmer.trim(
+                previous: "Мы обсудили новый дизайн",
+                next: "новый дизайн приложения сегодня"
+              ) == "приложения сегодня")
+        check("overlap preserves unrelated English text",
+              TranscriptOverlapTrimmer.trim(
+                previous: "The release is ready",
+                next: "Can we ship tomorrow?"
+              ) == "Can we ship tomorrow?")
     }
 
     static func testWAVEncoder() {
