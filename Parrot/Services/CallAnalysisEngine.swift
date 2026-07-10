@@ -61,7 +61,8 @@ final class CallAnalysisEngine {
     }
 
     var isEnabled: Bool {
-        UserDefaults.standard.bool(forKey: "copilotEnabled")
+        PersonalBuildPolicy.cloudFeaturesAllowed
+            && UserDefaults.standard.bool(forKey: "copilotEnabled")
     }
 
     func start(profile: CallProfile?, brief: String = "") {

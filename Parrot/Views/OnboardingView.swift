@@ -158,44 +158,31 @@ struct OnboardingView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text("Choose a Model")
+            Text("Private Local Models")
                 .font(.title)
                 .fontWeight(.semibold)
 
-            Text("Parrot uses WhisperKit for transcription.\nLarger models are more accurate but use more memory.")
+            Text("Parrot automatically uses the fastest accurate stack for Polish, Russian, and English calls.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 380)
 
-            VStack(spacing: 8) {
-                ModelOption(
-                    name: "tiny",
-                    size: "~40 MB",
-                    description: "Fastest, basic accuracy",
-                    isSelected: selectedModel == "tiny",
-                    action: { selectModel("tiny") }
+            VStack(alignment: .leading, spacing: 8) {
+                LocalModelRow(
+                    icon: "bolt.fill",
+                    title: "NVIDIA Parakeet TDT 0.6B V3",
+                    detail: "Primary model — fast multilingual transcription"
                 )
-                ModelOption(
-                    name: "base",
-                    size: "~140 MB",
-                    description: "Good balance of speed and accuracy",
-                    isSelected: selectedModel == "base",
-                    action: { selectModel("base") }
+                LocalModelRow(
+                    icon: "checkmark.shield.fill",
+                    title: "Whisper Large V3 Turbo",
+                    detail: "Automatic fallback for uncertain phrases"
                 )
-                ModelOption(
-                    name: "small",
-                    size: "~460 MB",
-                    description: "Better accuracy, moderate speed",
-                    isSelected: selectedModel == "small",
-                    action: { selectModel("small") }
-                )
-                ModelOption(
-                    name: "large-v3-turbo",
-                    size: "~1.5 GB",
-                    description: "Best accuracy, needs more RAM",
-                    isSelected: selectedModel == "large-v3-turbo",
-                    action: { selectModel("large-v3-turbo") }
+                LocalModelRow(
+                    icon: "waveform.badge.mic",
+                    title: "Silero VAD",
+                    detail: "Finds natural phrase boundaries during calls"
                 )
             }
             .frame(maxWidth: 380)
@@ -208,12 +195,9 @@ struct OnboardingView: View {
         .padding()
     }
 
-    @AppStorage("whisperModel") private var selectedModel = "base"
-
-    private func selectModel(_ model: String) {
-        selectedModel = model
+    private func downloadModels() {
         Task {
-            await recordingManager.transcriptionEngine.loadModel(model)
+            await recordingManager.transcriptionEngine.loadModel()
         }
     }
 
@@ -236,8 +220,8 @@ struct OnboardingView: View {
                 .foregroundStyle(.red)
                 .font(.caption)
         default:
-            Button("Download Model") {
-                selectModel(selectedModel)
+            Button("Download Local Models") {
+                downloadModels()
             }
             .buttonStyle(.bordered)
         }
@@ -285,43 +269,27 @@ struct PermissionRow: View {
     }
 }
 
-// MARK: - Model Option
+// MARK: - Local Model Row
 
-struct ModelOption: View {
-    let name: String
-    let size: String
-    let description: String
-    let isSelected: Bool
-    let action: () -> Void
+struct LocalModelRow: View {
+    let icon: String
+    let title: String
+    let detail: String
 
     var body: some View {
-        Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name)
-                        .font(.headline)
-                    Text("\(description) (\(size))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Color.accentColor)
-                }
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 26)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).fontWeight(.medium)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .padding(10)
-            .background(
-                isSelected ? Color.accentColor.opacity(0.1) : Color.clear,
-                in: RoundedRectangle(cornerRadius: 8)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.2), lineWidth: 1)
-            )
+            Spacer()
         }
-        .buttonStyle(.plain)
+        .padding(10)
+        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 }

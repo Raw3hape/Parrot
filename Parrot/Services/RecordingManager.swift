@@ -39,14 +39,12 @@ final class RecordingManager {
         callAnalysisEngine.knowledgeBase = knowledgeBase
     }
 
-    /// Initialize and load the default WhisperKit model
+    /// Initialize the tested all-local recognition stack.
     func prepare(modelContext: ModelContext) async {
         self.modelContext = modelContext
         Self.reconcileOrphanedRecordings(in: modelContext)
         profileStore.seedAndMigrateIfNeeded(context: modelContext, knowledgeBase: knowledgeBase)
-        await transcriptionEngine.loadModel(
-            UserDefaults.standard.string(forKey: "whisperModel") ?? "base"
-        )
+        await transcriptionEngine.loadModel()
     }
 
     /// A meeting left in `.recording` or `.processing` means a previous session was
@@ -214,7 +212,7 @@ final class RecordingManager {
             // the FINAL text — never from a transcript that's about to change.
             let meetingRef = meeting
             Task {
-                let polishSeconds = await self.polishTranscript(meeting: meetingRef)
+                let polishSeconds = 0.0
                 await self.postProcess(meeting: meetingRef)
                 if self.callAnalysisEngine.isEnabled, self.callAnalysisEngine.provider.isConfigured {
                     await self.generateSummary(meeting: meetingRef)
@@ -323,7 +321,8 @@ final class RecordingManager {
     /// 0 when polish didn't run.
     @discardableResult
     private func polishTranscript(meeting: Meeting) async -> Double {
-        guard UserDefaults.standard.bool(forKey: "polishAfterCall"),
+        guard PersonalBuildPolicy.cloudFeaturesAllowed,
+              UserDefaults.standard.bool(forKey: "polishAfterCall"),
               let key = APIKeyStore.load(account: TranscriptionBackend.groq.keychainAccount!),
               !key.isEmpty,
               let modelContext else { return 0 }
@@ -372,7 +371,7 @@ final class RecordingManager {
         usage.copilot = callAnalysisEngine.provider.usageTotals
         // ponytail: reads the backend setting at stop time; a mid-call engine
         // switch or cloud→local fallback mislabels one estimated row.
-        usage.transcriptionBackend = TranscriptionBackend.selected.rawValue
+        usage.transcriptionBackend = TranscriptionBackend.local.rawValue
         usage.transcriptionSeconds = meeting.duration
         usage.transcriptionTracks = meeting.micAudioPath?.nilIfEmpty != nil ? 2 : 1
         usage.polishSeconds = polishSeconds

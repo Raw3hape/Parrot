@@ -24,6 +24,7 @@ struct ParrotMain {
             MainActor.assumeIsolated { ProfileTest.run() }
             return
         }
+        PersonalBuildPolicy.apply()
         ParrotApp.main()
     }
 }

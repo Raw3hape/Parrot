@@ -8,17 +8,10 @@ struct SettingsView: View {
     var isEmbedded = false
 
     @Environment(RecordingManager.self) private var recordingManager
-    @AppStorage("whisperModel") private var selectedModel = "base"
     @AppStorage("appearance") private var appearance = Appearance.system
-    @AppStorage("copilotEnabled") private var copilotEnabled = false
     @AppStorage("transcriptionLanguage") private var transcriptionLanguage = "auto"
     @AppStorage("customVocabulary") private var customVocabulary = ""
     @AppStorage("echoCancellationEnabled") private var echoCancellation = true
-    @AppStorage(TranscriptionBackend.defaultsKey) private var transcriptionBackend = TranscriptionBackend.local.rawValue
-    @AppStorage("polishAfterCall") private var polishAfterCall = false
-    @State private var apiKey = APIKeyStore.load() ?? ""
-    @State private var keySaved = false
-    @State private var keySaveFailed = false
     @State private var showFileImporter = false
 
     var body: some View {
@@ -31,11 +24,6 @@ struct SettingsView: View {
             audioTab
                 .tabItem {
                     Label("Audio", systemImage: "waveform")
-                }
-
-            copilotTab
-                .tabItem {
-                    Label("Copilot", systemImage: "sparkles")
                 }
 
             ProfilesSettingsView()
@@ -62,90 +50,40 @@ struct SettingsView: View {
 
     private var generalTab: some View {
         Form {
-            Section("Transcription Engine") {
-                Picker("Engine", selection: $transcriptionBackend) {
-                    Text("On-device Whisper — private, free").tag(TranscriptionBackend.local.rawValue)
-                    Text("Groq cloud — big-model accuracy, ~$0.04/hr").tag(TranscriptionBackend.groq.rawValue)
-                    Text("Deepgram cloud — fastest, word-by-word streaming (~$1/hr)").tag(TranscriptionBackend.deepgram.rawValue)
+            Section("Local Transcription") {
+                LabeledContent("Primary model") {
+                    Text("NVIDIA Parakeet TDT 0.6B V3")
+                        .fontWeight(.medium)
                 }
-                .pickerStyle(.radioGroup)
-
-                if transcriptionBackend == TranscriptionBackend.groq.rawValue {
-                    ProviderKeyField(
-                        label: "Groq API key",
-                        account: TranscriptionBackend.groq.keychainAccount!,
-                        placeholder: "gsk_…",
-                        hint: "Audio chunks are sent to Groq for transcription. Get a key at console.groq.com. Applies from the next recording; on-device remains the automatic fallback."
-                    )
+                LabeledContent("Fallback model") {
+                    Text("Whisper Large V3 Turbo")
                 }
-
-                if transcriptionBackend == TranscriptionBackend.deepgram.rawValue {
-                    ProviderKeyField(
-                        label: "Deepgram API key",
-                        account: TranscriptionBackend.deepgram.keychainAccount!,
-                        placeholder: "40-character hex key",
-                        hint: "Audio streams live to Deepgram (both mic and system tracks — billed per track). New accounts include $200 credit at console.deepgram.com. Applies from the next recording; on-device remains the automatic fallback."
-                    )
+                LabeledContent("Speech detection") {
+                    Text("Silero VAD")
                 }
-
-                Text("On-device keeps every second of audio on this Mac. Cloud engines trade that for accuracy — bring your own key, pay the provider directly.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Divider()
-
-                Toggle("Polish transcript after each call (Groq)", isOn: $polishAfterCall)
-                Text("When you hit Stop, the saved audio is re-transcribed with a large model (~$0.04 per call hour, ~15s per hour of audio) and the report is regenerated from the cleaner text. The live view is unaffected.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                if polishAfterCall && transcriptionBackend != TranscriptionBackend.groq.rawValue {
-                    ProviderKeyField(
-                        label: "Groq API key",
-                        account: TranscriptionBackend.groq.keychainAccount!,
-                        placeholder: "gsk_…",
-                        hint: "Polish uses Groq — get a key at console.groq.com."
-                    )
-                }
-            }
-
-            Section("WhisperKit Model") {
-                Picker("Model", selection: $selectedModel) {
-                    Text("Tiny (~40MB) — Fastest, lower accuracy").tag("tiny")
-                    Text("Base (~140MB) — Good balance").tag("base")
-                    Text("Small (~460MB) — Better accuracy").tag("small")
-                    Text("Large V3 Turbo (~1.5GB) — Best accuracy").tag("large-v3-turbo")
-                }
-                .pickerStyle(.radioGroup)
 
                 modelStatusView
 
-                Button("Download / Reload Model") {
+                Button("Download / Reload Local Models") {
                     Task {
-                        await recordingManager.transcriptionEngine.loadModel(selectedModel)
+                        await recordingManager.transcriptionEngine.loadModel()
                     }
                 }
+
+                Label("Free and on-device. Call audio and transcript text never go to a cloud service.",
+                      systemImage: "lock.shield.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Transcription Language") {
                 Picker("Language", selection: $transcriptionLanguage) {
                     Text("Auto-detect").tag("auto")
-                    Text("English").tag("en")
-                    Text("Turkish").tag("tr")
-                    Text("Spanish").tag("es")
-                    Text("German").tag("de")
-                    Text("French").tag("fr")
-                    Text("Italian").tag("it")
-                    Text("Portuguese").tag("pt")
-                    Text("Dutch").tag("nl")
+                    Text("Polish").tag("pl")
                     Text("Russian").tag("ru")
-                    Text("Arabic").tag("ar")
-                    Text("Chinese").tag("zh")
-                    Text("Japanese").tag("ja")
-                    Text("Korean").tag("ko")
-                    Text("Hindi").tag("hi")
+                    Text("English").tag("en")
                 }
-                Text("Applies to the next recording. Auto-detect works well for most calls; pick a language if it keeps guessing wrong.")
+                Text("Auto-detect is recommended when Polish, Russian, and English may appear in the same call. A fixed language applies from the next recording.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -155,7 +93,7 @@ struct SettingsView: View {
                     .frame(height: 64)
                     .font(.callout)
                     .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.secondary.opacity(0.2)))
-                Text("Names, products, or jargon Whisper keeps mis-hearing — comma or line separated (e.g. LaunchEase, Shopify, Uygar). Primes the next recording so it spells them right.")
+                Text("Names, products, or jargon the local models keep mis-hearing — comma or line separated.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -220,52 +158,6 @@ struct SettingsView: View {
                 Button("Show in Finder") {
                     NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: path)
                 }
-            }
-        }
-        .padding()
-    }
-
-    // MARK: - Copilot Tab
-
-    private var copilotTab: some View {
-        Form {
-            Section("Live Call Copilot") {
-                Toggle("Enable Copilot during recordings", isOn: $copilotEnabled)
-
-                Text("Watches the live transcript for the whole call and suggests answers, flags blockers, and captures action items in real time — no button needed.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("Claude API Key") {
-                SecureField("sk-ant-...", text: $apiKey)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: apiKey) {
-                        keySaved = false
-                        keySaveFailed = false
-                    }
-
-                HStack {
-                    Button("Save Key") {
-                        keySaveFailed = !APIKeyStore.save(apiKey.trimmingCharacters(in: .whitespacesAndNewlines))
-                        keySaved = !keySaveFailed
-                    }
-                    .disabled(apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                    if keySaved {
-                        Label("Saved", systemImage: "checkmark.circle")
-                            .foregroundStyle(.green)
-                            .font(.caption)
-                    } else if keySaveFailed {
-                        Label("Keychain rejected the key — try again", systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.orange)
-                            .font(.caption)
-                    }
-                }
-
-                Text("Stored in your keychain. Copilot sends transcript text to Anthropic's API — your audio never leaves your Mac. Get a key at console.anthropic.com.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
         .padding()

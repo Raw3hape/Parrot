@@ -30,6 +30,7 @@ enum ProfileTest {
         testUtteranceSegmentation()
         testRecognitionFallbackPolicy()
         testLiveTranscriptStability()
+        testPersonalBuildPolicy()
         testWAVEncoder()
         testAIUsageCost()
         print(failures == 0 ? "ALL PASS" : "FAILURES: \(failures)")
@@ -323,6 +324,38 @@ enum ProfileTest {
                 previous: "The release is ready",
                 next: "Can we ship tomorrow?"
               ) == "Can we ship tomorrow?")
+    }
+
+    static func testPersonalBuildPolicy() {
+        let suiteName = "Parrot.ProfileTest.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            check("personal policy test defaults", false)
+            return
+        }
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        defaults.set(TranscriptionBackend.deepgram.rawValue,
+                     forKey: TranscriptionBackend.defaultsKey)
+        defaults.set(true, forKey: "polishAfterCall")
+        defaults.set(true, forKey: "copilotEnabled")
+        defaults.set("pl", forKey: "transcriptionLanguage")
+
+        PersonalBuildPolicy.apply(to: defaults)
+
+        check("personal policy forces local transcription",
+              defaults.string(forKey: TranscriptionBackend.defaultsKey)
+                == TranscriptionBackend.local.rawValue)
+        check("personal policy disables cloud polish",
+              !defaults.bool(forKey: "polishAfterCall"))
+        check("personal policy disables cloud copilot",
+              !defaults.bool(forKey: "copilotEnabled"))
+        check("personal policy pins exact Whisper fallback",
+              defaults.string(forKey: "whisperModel")
+                == WhisperModelService.fallbackModel)
+        check("personal policy defaults to Parakeet",
+              defaults.string(forKey: "localSpeechEngine") == "parakeet")
+        check("personal policy preserves chosen call language",
+              defaults.string(forKey: "transcriptionLanguage") == "pl")
     }
 
     static func testWAVEncoder() {
