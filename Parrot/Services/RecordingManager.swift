@@ -247,11 +247,15 @@ final class RecordingManager {
         // the transcript is assembled for the summary/coaching reports.
         await transcriptionEngine.stopTranscribing()
         transcriptionEngine.onSegment = nil
+        let transcriptTimedOut = transcriptionEngine.lastStopTimedOut
 
         // Update meeting
         if let meeting = currentMeeting {
             meeting.duration = elapsedTime
-            meeting.status = .processing
+            meeting.status = transcriptTimedOut ? .failed : .processing
+            if transcriptTimedOut {
+                meeting.errorMessage = "Local transcription stopped responding before the final phrases completed. All recorded audio is preserved and can still be played or opened from local storage."
+            }
 
             // Persist the copilot's insights so they survive into the meeting report.
             // Same SwiftData rule as addSegment: insert before setting the relationship.
@@ -271,7 +275,9 @@ final class RecordingManager {
             // transcript (optional, best-effort), diarization refines labels on
             // whatever transcript survived, and the report is generated from
             // the FINAL text — never from a transcript that's about to change.
-            enqueuePostProcessing(for: meeting)
+            if !transcriptTimedOut {
+                enqueuePostProcessing(for: meeting)
+            }
         }
 
         isRecording = false

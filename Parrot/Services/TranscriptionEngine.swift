@@ -173,6 +173,7 @@ final class TranscriptionEngine {
 
     private(set) var isReady = false
     private(set) var isTranscribing = false
+    private(set) var lastStopTimedOut = false
     private(set) var currentText = ""
     private(set) var modelState: ModelState = .notLoaded
     /// Retained for the existing live status bar. It now reports only local
@@ -347,6 +348,7 @@ final class TranscriptionEngine {
 
         _ = meetingStartTime
         currentText = ""
+        lastStopTimedOut = false
         sessionGeneration += 1
         let session = sessionGeneration
         completedSessions.removeAll()
@@ -486,8 +488,13 @@ final class TranscriptionEngine {
         isTranscribing = false
         intakeLock.withLock { $0.close(generation: session) }
 
-        let drained = await waitForDrain(session: session, timeout: .seconds(4))
+        // Parakeet normally clears even a capped three-minute backlog in a few
+        // seconds; local Whisper can need longer on first use. Thirty seconds is
+        // finite for a hung Core ML request but avoids discarding a healthy slow
+        // fallback tail.
+        let drained = await waitForDrain(session: session, timeout: .seconds(30))
         if !drained {
+            lastStopTimedOut = true
             // Inference libraries are not guaranteed to cooperate with task
             // cancellation. Invalidate immediately so late callbacks cannot
             // mutate the finished meeting, then return without awaiting them.
@@ -495,7 +502,7 @@ final class TranscriptionEngine {
             transcriptionTask?.cancel()
             intakeLock.withLock { $0.invalidate(generation: session) }
             cloudNotice = Self.combinedNotice(
-                "Final transcript drain timed out — saved audio remains available for recovery",
+                "Final transcript could not finish — saved audio remains available",
                 cloudNotice
             )
         } else {
