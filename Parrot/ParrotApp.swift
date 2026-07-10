@@ -1,6 +1,27 @@
 import SwiftUI
 import SwiftData
 
+@MainActor
+final class ParrotApplicationDelegate: NSObject, NSApplicationDelegate {
+    weak var recordingManager: RecordingManager?
+    private var terminationPending = false
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let recordingManager,
+              recordingManager.isStarting || recordingManager.isRecording || recordingManager.isStopping else {
+            return .terminateNow
+        }
+        guard !terminationPending else { return .terminateLater }
+        terminationPending = true
+        Task { @MainActor [weak self] in
+            await recordingManager.prepareForTermination()
+            self?.terminationPending = false
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+}
+
 @main
 struct ParrotMain {
     /// Entry point. `--snapshot <path>` renders the report offscreen to a PNG for
@@ -42,6 +63,7 @@ struct ParrotMain {
 }
 
 struct ParrotApp: App {
+    @NSApplicationDelegateAdaptor(ParrotApplicationDelegate.self) private var appDelegate
     @State private var recordingManager = RecordingManager()
     @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
 
@@ -63,6 +85,9 @@ struct ParrotApp: App {
             ContentView()
                 .environment(recordingManager)
                 .environment(recordingManager.profileStore)
+                .onAppear {
+                    appDelegate.recordingManager = recordingManager
+                }
                 .sheet(isPresented: $showOnboarding) {
                     OnboardingView(isPresented: $showOnboarding)
                         .environment(recordingManager)

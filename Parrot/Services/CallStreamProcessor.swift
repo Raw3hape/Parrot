@@ -13,13 +13,55 @@ struct PreviewGenerationGate: Sendable {
     }
 }
 
+/// Ordered audio retained for finalized recognition. Dequeued audio remains in
+/// the retained count until `complete` because the inference task still owns
+/// that memory while it is in flight.
+struct FinalRecognitionBacklog: Sendable {
+    private let maximumRetainedSamples: Int
+    private var queue: [UtteranceAudio] = []
+    private(set) var retainedSampleCount = 0
+
+    init(maximumRetainedSamples: Int) {
+        self.maximumRetainedSamples = max(0, maximumRetainedSamples)
+    }
+
+    var isEmpty: Bool { queue.isEmpty }
+
+    mutating func enqueue(_ audio: UtteranceAudio) -> Bool {
+        let sampleCount = audio.samples.count
+        guard sampleCount <= maximumRetainedSamples - retainedSampleCount else {
+            return false
+        }
+        queue.append(audio)
+        retainedSampleCount += sampleCount
+        return true
+    }
+
+    mutating func dequeue() -> UtteranceAudio? {
+        guard !queue.isEmpty else { return nil }
+        return queue.removeFirst()
+    }
+
+    mutating func complete(sampleCount: Int) {
+        retainedSampleCount = max(0, retainedSampleCount - max(0, sampleCount))
+    }
+
+    mutating func discardQueued() -> Int {
+        let discarded = queue.reduce(into: 0) { $0 += $1.samples.count }
+        queue.removeAll(keepingCapacity: false)
+        retainedSampleCount = max(0, retainedSampleCount - discarded)
+        return discarded
+    }
+}
+
 enum TranscriptOverlapTrimmer {
     static func trim(previous: String, next: String, maximumWords: Int = 12) -> String {
+        let originalNext = next.trimmingCharacters(in: .whitespacesAndNewlines)
         let previousWords = words(previous)
         let nextOriginal = next.split(whereSeparator: \.isWhitespace).map(String.init)
         let nextWords = nextOriginal.map(normalized)
         guard !previousWords.isEmpty, !nextWords.isEmpty else {
-            return next.trimmingCharacters(in: .whitespacesAndNewlines)
+            return originalNext
         }
 
         let limit = min(maximumWords, previousWords.count, nextWords.count)
@@ -32,6 +74,10 @@ enum TranscriptOverlapTrimmer {
                 }
             }
         }
+        // A complete repeated hypothesis can be a genuine short reply (for
+        // example "yes yes yes"), not only forced-split context. Never erase a
+        // whole finalized segment; only remove a proper overlapping prefix.
+        if overlap == nextWords.count { return originalNext }
         return nextOriginal.dropFirst(overlap).joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -47,9 +93,102 @@ enum TranscriptOverlapTrimmer {
     }
 }
 
+actor LocalPipelineMetrics {
+    struct Snapshot: Sendable {
+        let vadFailures: Int
+        let recognitionFailures: Int
+        let rejectedNoiseFrames: Int
+        let finalBacklogOverflows: Int
+        let droppedFinalSamples: Int
+    }
+
+    static let shared = LocalPipelineMetrics()
+
+    private var vadFailures = 0
+    private var recognitionFailures = 0
+    private var rejectedNoiseFrames = 0
+    private var finalBacklogOverflows = 0
+    private var droppedFinalSamples = 0
+
+    func recordVADFailure(source: AudioSource) {
+        vadFailures += 1
+        NSLog(
+            "ParrotMetric event=vad_failure source=%@ total=%d",
+            source.label,
+            vadFailures
+        )
+    }
+
+    func recordRecognitionFailure(source: AudioSource) {
+        recognitionFailures += 1
+        if Self.shouldLog(total: recognitionFailures) {
+            NSLog(
+                "ParrotMetric event=recognition_failure source=%@ total=%d",
+                source.label,
+                recognitionFailures
+            )
+        }
+    }
+
+    func recordNoiseRejection(source: AudioSource) {
+        rejectedNoiseFrames += 1
+        if Self.shouldLog(total: rejectedNoiseFrames) {
+            NSLog(
+                "ParrotMetric event=noise_frame_rejected source=%@ total=%d",
+                source.label,
+                rejectedNoiseFrames
+            )
+        }
+    }
+
+    func recordFinalBacklogOverflow(
+        source: AudioSource,
+        droppedSamples: Int,
+        retainedSamples: Int
+    ) {
+        finalBacklogOverflows += 1
+        droppedFinalSamples += max(0, droppedSamples)
+        if Self.shouldLog(total: finalBacklogOverflows) {
+            NSLog(
+                "ParrotMetric event=final_backlog_overflow source=%@ total=%d dropped_samples=%d retained_samples=%d",
+                source.label,
+                finalBacklogOverflows,
+                droppedSamples,
+                retainedSamples
+            )
+        }
+    }
+
+    func recordCancelledFinalBacklog(source: AudioSource, droppedSamples: Int) {
+        guard droppedSamples > 0 else { return }
+        droppedFinalSamples += droppedSamples
+        NSLog(
+            "ParrotMetric event=final_backlog_cancelled source=%@ dropped_samples=%d",
+            source.label,
+            droppedSamples
+        )
+    }
+
+    func snapshot() -> Snapshot {
+        Snapshot(
+            vadFailures: vadFailures,
+            recognitionFailures: recognitionFailures,
+            rejectedNoiseFrames: rejectedNoiseFrames,
+            finalBacklogOverflows: finalBacklogOverflows,
+            droppedFinalSamples: droppedFinalSamples
+        )
+    }
+
+    private static func shouldLog(total: Int) -> Bool {
+        total > 0 && (total & (total - 1)) == 0
+    }
+}
+
 /// Processes one ordered capture source. The microphone and system streams each
 /// receive their own instance, VAD state, utterance buffer, and timestamps.
 actor CallStreamProcessor {
+    private static let maximumRetainedFinalSamples = 2_880_000 // 3 min at 16 kHz
+
     typealias PreviewHandler = @Sendable (_ text: String, _ generation: Int) async -> Void
     typealias FinalHandler = @Sendable (
         _ result: LocalRecognitionResult,
@@ -81,6 +220,12 @@ actor CallStreamProcessor {
     private var generationGate = PreviewGenerationGate()
     private var previousFinalText = ""
     private var previousFinalEndSample = 0
+    private var finalBacklog = FinalRecognitionBacklog(
+        maximumRetainedSamples: CallStreamProcessor.maximumRetainedFinalSamples
+    )
+    private var finalWorkerTask: Task<Void, Never>?
+    private var finalWorkerGeneration = 0
+    private var isFinishing = false
 
     init(
         source: AudioSource,
@@ -101,7 +246,7 @@ actor CallStreamProcessor {
     }
 
     func append(_ samples: [Float]) async {
-        guard !samples.isEmpty else { return }
+        guard !isFinishing, !samples.isEmpty else { return }
         pendingSamples.append(contentsOf: samples)
 
         while pendingSamples.count >= VadManager.chunkSize {
@@ -112,6 +257,12 @@ actor CallStreamProcessor {
     }
 
     func finish() async {
+        if isFinishing {
+            await waitForFinalWorker()
+            return
+        }
+        isFinishing = true
+
         if !pendingSamples.isEmpty {
             let tail = pendingSamples
             pendingSamples.removeAll(keepingCapacity: false)
@@ -122,8 +273,8 @@ actor CallStreamProcessor {
 
         await handle(assembler.flush(atSample: processedSamples))
         previewTask?.cancel()
-        await previewTask?.value
         previewTask = nil
+        await waitForFinalWorker()
     }
 
     func cancelPreviews() async {
@@ -154,7 +305,11 @@ actor CallStreamProcessor {
                     }
                 }
             } catch {
+                if vadState.triggered {
+                    energyDetector.seedActive()
+                }
                 vadUnavailable = true
+                await LocalPipelineMetrics.shared.recordVADFailure(source: source)
             }
         }
 
@@ -163,6 +318,9 @@ actor CallStreamProcessor {
                 frame,
                 absoluteStartSample: frameStart
             )
+            if energyDetector.consumeNoiseRejection() {
+                await LocalPipelineMetrics.shared.recordNoiseRejection(source: source)
+            }
             if case .started = boundary { startBoundary = boundary }
             if case .ended = boundary { endBoundary = boundary }
         }
@@ -183,7 +341,7 @@ actor CallStreamProcessor {
             case .preview(let audio):
                 schedulePreview(audio)
             case .final(let audio):
-                await publishFinal(audio)
+                await enqueueFinal(audio)
             }
         }
     }
@@ -227,11 +385,79 @@ actor CallStreamProcessor {
         await onPreview(text, generation)
     }
 
-    private func publishFinal(_ audio: UtteranceAudio) async {
+    private func enqueueFinal(_ audio: UtteranceAudio) async {
         generationGate.acceptFinal(generation: audio.generation)
         previewTask?.cancel()
         previewSequence += 1
         previewTask = nil
+
+        guard finalBacklog.enqueue(audio) else {
+            await LocalPipelineMetrics.shared.recordFinalBacklogOverflow(
+                source: source,
+                droppedSamples: audio.samples.count,
+                retainedSamples: finalBacklog.retainedSampleCount
+            )
+            return
+        }
+        startFinalWorkerIfNeeded()
+    }
+
+    private func startFinalWorkerIfNeeded() {
+        guard finalWorkerTask == nil, !finalBacklog.isEmpty else { return }
+        finalWorkerGeneration += 1
+        let generation = finalWorkerGeneration
+        finalWorkerTask = Task { [weak self] in
+            guard let self else { return }
+            await self.runFinalWorker(generation: generation)
+        }
+    }
+
+    private func runFinalWorker(generation: Int) async {
+        while !Task.isCancelled, let audio = finalBacklog.dequeue() {
+            await recognizeFinal(audio)
+            finalBacklog.complete(sampleCount: audio.samples.count)
+        }
+
+        if Task.isCancelled {
+            let discarded = finalBacklog.discardQueued()
+            await LocalPipelineMetrics.shared.recordCancelledFinalBacklog(
+                source: source,
+                droppedSamples: discarded
+            )
+        }
+
+        guard finalWorkerGeneration == generation else { return }
+        finalWorkerTask = nil
+        if !isFinishing, !finalBacklog.isEmpty {
+            startFinalWorkerIfNeeded()
+        }
+    }
+
+    private func waitForFinalWorker() async {
+        while let worker = finalWorkerTask {
+            await withTaskCancellationHandler {
+                await worker.value
+            } onCancel: { [weak self] in
+                worker.cancel()
+                Task {
+                    guard let self else { return }
+                    await self.cancelQueuedFinals()
+                }
+            }
+            if Task.isCancelled { return }
+        }
+    }
+
+    private func cancelQueuedFinals() async {
+        finalWorkerTask?.cancel()
+        let discarded = finalBacklog.discardQueued()
+        await LocalPipelineMetrics.shared.recordCancelledFinalBacklog(
+            source: source,
+            droppedSamples: discarded
+        )
+    }
+
+    private func recognizeFinal(_ audio: UtteranceAudio) async {
 
         do {
             var result = try await router.transcribeFinal(audio, language: language)
@@ -256,23 +482,39 @@ actor CallStreamProcessor {
         } catch {
             // Both on-device recognizers failed. Audio is still saved on disk and
             // the failure remains isolated to this utterance.
+            if !(error is CancellationError) {
+                await LocalPipelineMetrics.shared.recordRecognitionFailure(source: source)
+            }
         }
     }
 }
 
-private struct EnergyBoundaryDetector: Sendable {
+struct EnergyBoundaryDetector: Sendable {
     private let threshold: Float = 0.002
     private let endSilenceSamples = 10_400 // 650 ms
     private let paddingSamples = 2_400     // 150 ms
     private var active = false
     private var silenceStartSample: Int?
+    private var rejectedNoiseInLastFrame = false
+
+    mutating func seedActive() {
+        active = true
+        silenceStartSample = nil
+    }
+
+    mutating func consumeNoiseRejection() -> Bool {
+        defer { rejectedNoiseInLastFrame = false }
+        return rejectedNoiseInLastFrame
+    }
 
     mutating func process(
         _ samples: [Float],
         absoluteStartSample: Int
     ) -> SpeechBoundary? {
-        let energy = samples.reduce(into: Float.zero) { $0 += abs($1) }
+        rejectedNoiseInLastFrame = Self.isImplausibleStationaryNoise(samples)
+        let measuredEnergy = samples.reduce(into: Float.zero) { $0 += abs($1) }
             / Float(max(samples.count, 1))
+        let energy = rejectedNoiseInLastFrame ? 0 : measuredEnergy
         let frameEnd = absoluteStartSample + samples.count
 
         if energy > threshold {
@@ -292,5 +534,40 @@ private struct EnergyBoundaryDetector: Sendable {
         active = false
         self.silenceStartSample = nil
         return .ended(atSample: silenceStartSample + paddingSamples)
+    }
+
+    /// Alternating full-scale samples have enough average energy to look like
+    /// speech, but their near-constant envelope and sample-by-sample polarity
+    /// changes are not a plausible voice waveform. Keep the gate deliberately
+    /// narrow so short real speech and ordinary sibilants still pass.
+    static func isImplausibleStationaryNoise(_ samples: [Float]) -> Bool {
+        guard samples.count >= 32 else { return false }
+
+        var crossings = 0
+        var magnitudeSum: Float = 0
+        var magnitudes: [Float] = []
+        magnitudes.reserveCapacity(samples.count)
+
+        var previous = samples[0]
+        for sample in samples {
+            let magnitude = abs(sample)
+            guard magnitude.isFinite else { return true }
+            magnitudes.append(magnitude)
+            magnitudeSum += magnitude
+            if (previous < 0 && sample > 0) || (previous > 0 && sample < 0) {
+                crossings += 1
+            }
+            previous = sample
+        }
+
+        let meanMagnitude = magnitudeSum / Float(samples.count)
+        guard meanMagnitude > 0.002 else { return false }
+        let crossingRate = Float(crossings) / Float(samples.count - 1)
+        guard crossingRate > 0.80 else { return false }
+
+        let envelopeDeviation = magnitudes.reduce(into: Float.zero) {
+            $0 += abs($1 - meanMagnitude)
+        } / Float(samples.count)
+        return envelopeDeviation / meanMagnitude < 0.12
     }
 }

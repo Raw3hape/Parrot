@@ -4,6 +4,7 @@ import SwiftData
 
 /// Offscreen logic harness. Run: `.build/debug/Parrot --profile-test`
 /// Prints PASS/FAIL per check and exits non-zero on any failure.
+@MainActor
 enum ProfileTest {
     private static var failures = 0
 
@@ -11,7 +12,6 @@ enum ProfileTest {
         if cond() { print("PASS \(name)") } else { print("FAIL \(name)"); failures += 1 }
     }
 
-    @MainActor
     static func run() {
         testKindStyleFallback()
         testHexColor()
@@ -29,6 +29,9 @@ enum ProfileTest {
         testHallucinationFilter()
         testUtteranceSegmentation()
         testRecognitionFallbackPolicy()
+        testAudioSampleQueue()
+        testCaptureSessionGate()
+        testEnergyFallbackHandoff()
         testLiveTranscriptStability()
         testPersonalBuildPolicy()
         testWAVEncoder()
@@ -277,6 +280,25 @@ enum ProfileTest {
         check("fallback catches primary error",
               policy.needsFallback(.failure(LocalRecognitionTestError.primary)))
 
+        let invalidConfidence = LocalRecognitionResult(
+            text: "Dzień dobry",
+            confidence: .nan,
+            engine: .parakeet
+        )
+        check("fallback catches non-finite confidence",
+              policy.needsFallback(.success(invalidConfidence)))
+
+        let whisperPrimary = LocalRecognitionResult(
+            text: "Добрый день",
+            confidence: -0.2,
+            engine: .whisper
+        )
+        check("fallback never repeats nonempty Whisper",
+              !policy.needsFallback(.success(whisperPrimary)))
+
+        check("Whisper confidence normalizes log probability",
+              abs(WhisperModelService.normalizedConfidence([-0.2, -0.4]) - exp(-0.3)) < 0.0001)
+
         let whisper = LocalRecognitionResult(text: "Добрый день", confidence: nil, engine: .whisper)
         let resolved = policy.resolve(primary: .success(weak), fallback: .success(whisper))
         check("fallback selects Whisper result", (try? resolved.get()) == whisper)
@@ -293,6 +315,62 @@ enum ProfileTest {
         )
         check("fallback reports failure when both engines fail",
               (try? bothFailed.get()) == nil)
+    }
+
+    static func testAudioSampleQueue() {
+        var queue = AudioSampleQueue()
+        var fifoIsOrdered = true
+        for batch in 0..<20_000 {
+            let start = Float(batch * 4)
+            queue.append([start, start + 1, start + 2, start + 3])
+            if batch.isMultiple(of: 2) {
+                let values = queue.dequeue(upTo: 8)
+                fifoIsOrdered = fifoIsOrdered && values == values.sorted()
+            }
+        }
+        var previous = -Float.infinity
+        while !queue.isEmpty {
+            let values = queue.dequeue(upTo: 4096)
+            fifoIsOrdered = fifoIsOrdered && (values.first.map { $0 > previous } ?? true)
+            if let last = values.last { previous = last }
+        }
+        check("sample queue preserves FIFO order", fifoIsOrdered)
+        check("sample queue compacts consumed storage", queue.storageCount < 8_192)
+    }
+
+    static func testCaptureSessionGate() {
+        var gate = CaptureSessionGate()
+        let first = gate.begin()
+        check("capture gate accepts active generation", gate.accepts(first))
+        gate.end(first)
+        let second = gate.begin()
+        check("capture gate rejects stale generation", !gate.accepts(first))
+        check("capture gate accepts replacement generation", gate.accepts(second))
+        gate.end(second)
+        check("capture gate closes current generation", !gate.accepts(second))
+    }
+
+    static func testEnergyFallbackHandoff() {
+        var detector = EnergyBoundaryDetector()
+        detector.seedActive()
+        var end: SpeechBoundary?
+        for offset in stride(from: 0, through: 12_288, by: 4_096) {
+            end = detector.process(
+                Array(repeating: 0, count: 4_096),
+                absoluteStartSample: offset
+            ) ?? end
+        }
+        check("energy fallback closes VAD-active utterance", end != nil)
+
+        let alternating = (0..<4_096).map { $0.isMultiple(of: 2) ? Float(0.01) : -Float(0.01) }
+        check("energy fallback rejects stationary alternating noise",
+              EnergyBoundaryDetector.isImplausibleStationaryNoise(alternating))
+
+        let speechLike = (0..<2_400).map { sample in
+            Float(sin(Double(sample) * 2 * .pi * 220 / 16_000) * 0.08)
+        }
+        check("energy fallback keeps plausible short speech",
+              !EnergyBoundaryDetector.isImplausibleStationaryNoise(speechLike))
     }
 
     private enum LocalRecognitionTestError: Error {
@@ -324,6 +402,11 @@ enum ProfileTest {
                 previous: "The release is ready",
                 next: "Can we ship tomorrow?"
               ) == "Can we ship tomorrow?")
+        check("overlap never erases a complete repeated final",
+              TranscriptOverlapTrimmer.trim(
+                previous: "yes yes yes",
+                next: "yes yes yes"
+              ) == "yes yes yes")
     }
 
     static func testPersonalBuildPolicy() {

@@ -31,7 +31,12 @@ struct RecognitionFallbackPolicy: Sendable {
             if result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 return true
             }
+            // Whisper is already the recovery engine. Sending a valid Whisper
+            // result through the same fallback again only repeats an expensive
+            // large-model inference and cannot improve engine diversity.
+            if result.engine == .whisper { return false }
             guard let confidence = result.confidence else { return false }
+            guard confidence.isFinite else { return true }
             return confidence < confidenceThreshold
         }
     }
@@ -76,13 +81,15 @@ actor LocalRecognitionRouter {
         _ audio: UtteranceAudio,
         language: String?
     ) async throws -> LocalRecognitionResult {
-        try await primary.transcribe(samples: audio.samples, language: language)
+        try Task.checkCancellation()
+        return try await primary.transcribe(samples: audio.samples, language: language)
     }
 
     func transcribeFinal(
         _ audio: UtteranceAudio,
         language: String?
     ) async throws -> LocalRecognitionResult {
+        try Task.checkCancellation()
         let primaryAttempt: Result<LocalRecognitionResult, Error>
         do {
             primaryAttempt = .success(
@@ -96,6 +103,7 @@ actor LocalRecognitionRouter {
             return try primaryAttempt.get()
         }
 
+        try Task.checkCancellation()
         let fallbackAttempt: Result<LocalRecognitionResult, Error>
         do {
             fallbackAttempt = .success(

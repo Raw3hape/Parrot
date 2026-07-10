@@ -1,5 +1,5 @@
 import Foundation
-import WhisperKit
+@preconcurrency import WhisperKit
 
 actor WhisperModelService: LocalSpeechRecognizing {
     static let fallbackModel = "large-v3-v20240930_turbo"
@@ -15,25 +15,64 @@ actor WhisperModelService: LocalSpeechRecognizing {
     }
 
     private var whisperKit: WhisperKit?
+    private var preparationTask: Task<PreparedWhisper, Error>?
+    private var preparationGeneration = UUID()
     private(set) var isReady = false
+    private(set) var preparationLaunchCount = 0
+
+    private final class PreparedWhisper: @unchecked Sendable {
+        let value: WhisperKit
+
+        init(_ value: WhisperKit) {
+            self.value = value
+        }
+    }
 
     func prepare(modelName: String = fallbackModel) async throws {
         guard !isReady else { return }
-        let config = WhisperKitConfig(
-            model: modelName,
-            verbose: false,
-            logLevel: .none,
-            prewarm: true,
-            load: true
-        )
-        whisperKit = try await WhisperKit(config)
-        isReady = true
+
+        let task: Task<PreparedWhisper, Error>
+        let generation: UUID
+        if let existing = preparationTask {
+            task = existing
+            generation = preparationGeneration
+        } else {
+            generation = UUID()
+            preparationGeneration = generation
+            preparationLaunchCount += 1
+            task = Task {
+                let config = WhisperKitConfig(
+                    model: modelName,
+                    verbose: false,
+                    logLevel: .none,
+                    prewarm: true,
+                    load: true
+                )
+                return PreparedWhisper(try await WhisperKit(config))
+            }
+            preparationTask = task
+        }
+
+        do {
+            let prepared = try await task.value
+            whisperKit = prepared.value
+            isReady = true
+            if preparationGeneration == generation {
+                preparationTask = nil
+            }
+        } catch {
+            if preparationGeneration == generation {
+                preparationTask = nil
+            }
+            throw error
+        }
     }
 
     func transcribe(
         samples: [Float],
         language: String?
     ) async throws -> LocalRecognitionResult {
+        try Task.checkCancellation()
         guard let whisperKit else { throw ServiceError.notLoaded }
         var options = DecodingOptions(
             task: .transcribe,
@@ -62,6 +101,7 @@ actor WhisperModelService: LocalSpeechRecognizing {
             }
         }
 
+        try Task.checkCancellation()
         let results = try await whisperKit.transcribe(
             audioArray: samples,
             decodeOptions: options
@@ -70,7 +110,7 @@ actor WhisperModelService: LocalSpeechRecognizing {
         let segments = results.flatMap(\.segments)
         let confidence: Float? = segments.isEmpty
             ? nil
-            : segments.map(\.avgLogprob).reduce(0, +) / Float(segments.count)
+            : Self.normalizedConfidence(segments.map(\.avgLogprob))
 
         return LocalRecognitionResult(
             text: Self.cleaned(text),
@@ -83,5 +123,18 @@ actor WhisperModelService: LocalSpeechRecognizing {
         text
             .replacingOccurrences(of: #"<\|[^|>]*\|>"#, with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Whisper exposes average token log-probability, while the router expects
+    /// a conventional 0...1 confidence. Convert in probability space so the
+    /// value is comparable and always finite.
+    static func normalizedConfidence(_ logProbabilities: [Float]) -> Float {
+        guard !logProbabilities.isEmpty,
+              logProbabilities.allSatisfy(\.isFinite) else { return 0 }
+        let mean = logProbabilities.reduce(Float.zero, +)
+            / Float(logProbabilities.count)
+        let probability = Foundation.exp(mean)
+        guard probability.isFinite else { return mean > 0 ? 1 : 0 }
+        return min(1, max(0, probability))
     }
 }

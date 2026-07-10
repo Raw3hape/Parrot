@@ -38,11 +38,13 @@ enum TranscriptionBackend: String, CaseIterable {
 
 enum CloudTranscriptionError: LocalizedError {
     case missingKey
+    case disabled
     case badResponse(String)
 
     var errorDescription: String? {
         switch self {
         case .missingKey: "No API key set for the selected transcription engine."
+        case .disabled: "Cloud transcription is disabled in this local-only build."
         case .badResponse(let message): message
         }
     }
@@ -86,6 +88,9 @@ enum GroqTranscriber {
 
     private static func post(fileData: Data, fileName: String,
                              fields: [(String, String)], apiKey: String) async throws -> Data {
+        guard PersonalBuildPolicy.cloudFeaturesAllowed else {
+            throw CloudTranscriptionError.disabled
+        }
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.timeoutInterval = 60
@@ -184,6 +189,10 @@ final class DeepgramStreamer {
     var onError: ((String) -> Void)?
 
     func connect(apiKey: String, language: String?) {
+        guard PersonalBuildPolicy.cloudFeaturesAllowed else {
+            fail(CloudTranscriptionError.disabled.localizedDescription)
+            return
+        }
         var components = URLComponents(string: "wss://api.deepgram.com/v1/listen")!
         components.queryItems = [
             URLQueryItem(name: "model", value: "nova-3"),

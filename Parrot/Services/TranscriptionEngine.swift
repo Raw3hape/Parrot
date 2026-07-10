@@ -3,6 +3,111 @@ import FluidAudio
 import Foundation
 import os
 
+/// FIFO storage for realtime audio intake. Advancing a head index keeps the
+/// common dequeue path O(1); consumed storage is compacted only occasionally,
+/// so long calls do not repeatedly copy their entire remaining backlog.
+struct AudioSampleQueue: Sendable {
+    private var storage: [Float] = []
+    private var head = 0
+
+    var isEmpty: Bool { head >= storage.count }
+    var storageCount: Int { storage.count }
+    var count: Int { max(storage.count - head, 0) }
+
+    mutating func append(_ samples: [Float]) {
+        guard !samples.isEmpty else { return }
+        storage.append(contentsOf: samples)
+    }
+
+    mutating func dequeue(upTo maximumCount: Int) -> [Float] {
+        guard maximumCount > 0, !isEmpty else { return [] }
+        let end = min(head + maximumCount, storage.count)
+        let result = Array(storage[head..<end])
+        head = end
+        compactIfNeeded()
+        return result
+    }
+
+    private mutating func compactIfNeeded() {
+        if head == storage.count {
+            storage.removeAll(keepingCapacity: true)
+            head = 0
+        } else if head >= 4_096, head >= storage.count / 2 {
+            storage.removeFirst(head)
+            head = 0
+        }
+    }
+}
+
+private enum AudioIntakeStatus: Equatable {
+    case accepting
+    case draining
+    case stale
+}
+
+/// The only transcription state touched by realtime audio callbacks. Keeping it
+/// behind one unfair lock makes `appendAudio` safe without hopping to MainActor.
+private struct AudioIntakeState: Sendable {
+    private var generation: Int?
+    private var isAccepting = false
+    private var queues: [AudioSource: AudioSampleQueue] = Self.emptyQueues
+
+    var acceptedGeneration: Int? {
+        guard isAccepting else { return nil }
+        return generation
+    }
+
+    mutating func begin(generation: Int) {
+        self.generation = generation
+        isAccepting = true
+        queues = Self.emptyQueues
+    }
+
+    mutating func append(
+        _ samples: [Float],
+        source: AudioSource,
+        generation expectedGeneration: Int
+    ) {
+        guard isAccepting, generation == expectedGeneration else { return }
+        queues[source, default: AudioSampleQueue()].append(samples)
+    }
+
+    mutating func close(generation expectedGeneration: Int) {
+        guard generation == expectedGeneration else { return }
+        isAccepting = false
+    }
+
+    mutating func invalidate(generation expectedGeneration: Int) {
+        guard generation == expectedGeneration else { return }
+        generation = nil
+        isAccepting = false
+        queues = Self.emptyQueues
+    }
+
+    func status(for expectedGeneration: Int) -> AudioIntakeStatus {
+        guard generation == expectedGeneration else { return .stale }
+        return isAccepting ? .accepting : .draining
+    }
+
+    mutating func dequeue(
+        source: AudioSource,
+        generation expectedGeneration: Int,
+        maximumCount: Int,
+        allowPartial: Bool
+    ) -> [Float] {
+        guard generation == expectedGeneration,
+              var queue = queues[source],
+              allowPartial || queue.count >= maximumCount else { return [] }
+        let result = queue.dequeue(upTo: maximumCount)
+        queues[source] = queue
+        return result
+    }
+
+    private static var emptyQueues: [AudioSource: AudioSampleQueue] {
+        [.me: AudioSampleQueue(), .them: AudioSampleQueue()]
+    }
+}
+
 /// Which capture stream a piece of audio came from.
 enum AudioSource: CaseIterable, Sendable {
     /// Microphone — the user.
@@ -22,6 +127,7 @@ enum AudioSource: CaseIterable, Sendable {
 /// streams have independent VAD/utterance state, so every finalized segment is
 /// already attributed without a diarization model.
 @Observable
+@MainActor
 final class TranscriptionEngine {
     private let parakeetService = ParakeetModelService()
     private let whisperService = WhisperModelService()
@@ -29,12 +135,18 @@ final class TranscriptionEngine {
     private var vadManager: VadManager?
     private var streamProcessors: [AudioSource: CallStreamProcessor] = [:]
     private var fallbackPreparationTask: Task<Void, Never>?
+    private var modelLoadTask: Task<Void, Never>?
     private var whisperIsReady = false
 
-    private var audioBuffers: [AudioSource: [Float]] = [.me: [], .them: []]
-    private let bufferLock = OSAllocatedUnfairLock()
+    private nonisolated let intakeLock = OSAllocatedUnfairLock(
+        initialState: AudioIntakeState()
+    )
     private var transcriptionTask: Task<Void, Never>?
+    private var stopTask: Task<Void, Never>?
     private var sessionGeneration = 0
+    private var completedSessions: Set<Int> = []
+    private var drainWaiters: [Int: CheckedContinuation<Bool, Never>] = [:]
+    private var drainTimeoutTasks: [Int: Task<Void, Never>] = [:]
 
     private(set) var isReady = false
     private(set) var isTranscribing = false
@@ -45,7 +157,7 @@ final class TranscriptionEngine {
     private(set) var cloudNotice: String?
 
     /// Called when a finalized transcript segment is ready.
-    var onSegment: ((TranscriptionResult) -> Void)?
+    var onSegment: (@MainActor (TranscriptionResult) -> Void)?
 
     enum ModelState {
         case notLoaded
@@ -69,7 +181,22 @@ final class TranscriptionEngine {
     /// Silero VAD. The argument remains for source compatibility with the old
     /// settings UI; this personal build intentionally pins its tested models.
     func loadModel(_ ignoredModelName: String = WhisperModelService.fallbackModel) async {
-        guard !isTranscribing else { return }
+        if let modelLoadTask {
+            await modelLoadTask.value
+            return
+        }
+        guard !isTranscribing, transcriptionTask == nil, stopTask == nil else { return }
+
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.performModelLoad()
+        }
+        modelLoadTask = task
+        await task.value
+        modelLoadTask = nil
+    }
+
+    private func performModelLoad() async {
         modelState = .loading
         isReady = false
         cloudNotice = nil
@@ -147,25 +274,20 @@ final class TranscriptionEngine {
 
     private func prepareWhisperFallbackInBackground(vadNotice: String?) {
         guard fallbackPreparationTask == nil, !whisperIsReady else { return }
-        fallbackPreparationTask = Task { [weak self, whisperService] in
+        fallbackPreparationTask = Task { @MainActor [weak self] in
+            guard let self else { return }
             do {
-                try await whisperService.prepare()
-                await MainActor.run {
-                    guard let self else { return }
-                    self.whisperIsReady = true
-                    self.cloudNotice = vadNotice
-                    self.fallbackPreparationTask = nil
-                }
+                try await self.whisperService.prepare()
+                self.whisperIsReady = true
+                self.cloudNotice = vadNotice
+                self.fallbackPreparationTask = nil
             } catch {
                 NSLog("Parrot: local Whisper fallback unavailable — \(error.localizedDescription)")
-                await MainActor.run {
-                    guard let self else { return }
-                    self.cloudNotice = Self.combinedNotice(
-                        "Local Whisper fallback unavailable — Parakeet remains active",
-                        vadNotice
-                    )
-                    self.fallbackPreparationTask = nil
-                }
+                self.cloudNotice = Self.combinedNotice(
+                    "Local Whisper fallback unavailable — Parakeet remains active",
+                    vadNotice
+                )
+                self.fallbackPreparationTask = nil
             }
         }
     }
@@ -177,31 +299,36 @@ final class TranscriptionEngine {
     // MARK: - Audio Input
 
     /// Feed 16 kHz mono audio from AudioCaptureManager, tagged by capture stream.
-    func appendAudio(_ buffer: AVAudioPCMBuffer, source: AudioSource) {
-        guard isTranscribing,
+    nonisolated func appendAudio(_ buffer: AVAudioPCMBuffer, source: AudioSource) {
+        guard let generation = intakeLock.withLock({ $0.acceptedGeneration }),
               let channelData = buffer.floatChannelData?[0] else { return }
         let frameCount = Int(buffer.frameLength)
         let samples = Array(
             UnsafeBufferPointer(start: channelData, count: frameCount)
         )
 
-        bufferLock.withLock {
-            audioBuffers[source, default: []].append(contentsOf: samples)
+        intakeLock.withLock {
+            $0.append(samples, source: source, generation: generation)
         }
     }
 
     // MARK: - Transcription Loop
 
-    func startTranscribing(meetingStartTime: Date) {
-        guard isReady, let recognitionRouter else { return }
+    @discardableResult
+    func startTranscribing(meetingStartTime: Date) -> Bool {
+        guard isReady,
+              !isTranscribing,
+              transcriptionTask == nil,
+              stopTask == nil,
+              let recognitionRouter else { return false }
 
-        transcriptionTask?.cancel()
-        transcriptionTask = nil
-        bufferLock.withLock { audioBuffers = [.me: [], .them: []] }
+        _ = meetingStartTime
         currentText = ""
-        isTranscribing = true
         sessionGeneration += 1
         let session = sessionGeneration
+        completedSessions.removeAll()
+        intakeLock.withLock { $0.begin(generation: session) }
+        isTranscribing = true
 
         let setting = UserDefaults.standard.string(forKey: "transcriptionLanguage")
         let language = (setting == nil || setting == "auto") ? nil : setting
@@ -215,48 +342,40 @@ final class TranscriptionEngine {
                 router: recognitionRouter,
                 language: language,
                 onPreview: { [weak self] text, _ in
-                    await MainActor.run {
-                        guard let self,
-                              self.sessionGeneration == session,
-                              self.isTranscribing else { return }
-                        self.currentText = text
-                    }
+                    await self?.acceptPreview(text, session: session)
                 },
                 onFinal: { [weak self] result, startSample, endSample in
-                    await MainActor.run {
-                        guard let self,
-                              self.sessionGeneration == session else { return }
-                        self.currentText = result.text
-                        self.onSegment?(TranscriptionResult(
-                            text: result.text,
-                            source: source,
-                            startTime: Double(startSample) / 16_000.0,
-                            endTime: Double(endSample) / 16_000.0,
-                            confidence: result.confidence
-                        ))
-                    }
+                    await self?.acceptFinal(
+                        result,
+                        source: source,
+                        startSample: startSample,
+                        endSample: endSample,
+                        session: session
+                    )
                 }
             )
         }
         streamProcessors = processors
 
-        transcriptionTask = Task { [weak self, processors] in
+        transcriptionTask = Task { @MainActor [weak self, processors] in
             guard let self else { return }
 
             while !Task.isCancelled {
-                let draining = !self.isTranscribing
+                let intakeStatus = self.intakeLock.withLock {
+                    $0.status(for: session)
+                }
+                if case .stale = intakeStatus { break }
+                let draining = intakeStatus == .draining
                 var didWork = false
 
                 for source in AudioSource.allCases {
-                    let chunk: [Float] = self.bufferLock.withLock {
-                        guard let buffered = self.audioBuffers[source],
-                              !buffered.isEmpty else { return [] }
-                        if !draining, buffered.count < VadManager.chunkSize {
-                            return []
-                        }
-                        let count = min(buffered.count, VadManager.chunkSize)
-                        self.audioBuffers[source] = Array(buffered.dropFirst(count))
-                        return Array(buffered.prefix(count))
+                    let chunk = self.intakeLock.withLock {
+                        $0.dequeue(
+                            source: source,
+                            generation: session,
+                            maximumCount: VadManager.chunkSize,
+                            allowPartial: draining
+                        )
                     }
                     guard !chunk.isEmpty, let processor = processors[source] else { continue }
                     didWork = true
@@ -273,29 +392,122 @@ final class TranscriptionEngine {
                     try? await Task.sleep(for: .milliseconds(50))
                 }
             }
+
+            self.transcriptionLoopDidFinish(session: session)
         }
+        return true
+    }
+
+    private func acceptPreview(_ text: String, session: Int) {
+        guard sessionGeneration == session, isTranscribing else { return }
+        currentText = text
+    }
+
+    private func acceptFinal(
+        _ result: LocalRecognitionResult,
+        source: AudioSource,
+        startSample: Int,
+        endSample: Int,
+        session: Int
+    ) {
+        guard sessionGeneration == session else { return }
+        currentText = result.text
+        onSegment?(TranscriptionResult(
+            text: result.text,
+            source: source,
+            startTime: Double(startSample) / 16_000.0,
+            endTime: Double(endSample) / 16_000.0,
+            confidence: result.confidence
+        ))
     }
 
     /// Drain both streams and finalize any short tail that remained below one
     /// VAD frame. Capture must already be stopped before calling this method.
     func stopTranscribing() async {
+        if let stopTask {
+            await stopTask.value
+            return
+        }
+
+        guard transcriptionTask != nil || isTranscribing else {
+            currentText = ""
+            return
+        }
+
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.performStopTranscribing()
+        }
+        stopTask = task
+        await task.value
+        stopTask = nil
+    }
+
+    private func performStopTranscribing() async {
+        let session = sessionGeneration
         isTranscribing = false
-        await transcriptionTask?.value
+        intakeLock.withLock { $0.close(generation: session) }
+
+        let drained = await waitForDrain(session: session, timeout: .seconds(4))
+        if !drained {
+            // Inference libraries are not guaranteed to cooperate with task
+            // cancellation. Invalidate immediately so late callbacks cannot
+            // mutate the finished meeting, then return without awaiting them.
+            sessionGeneration += 1
+            transcriptionTask?.cancel()
+            intakeLock.withLock { $0.invalidate(generation: session) }
+            cloudNotice = Self.combinedNotice(
+                "Final transcript drain timed out — saved audio remains available for recovery",
+                cloudNotice
+            )
+        } else {
+            intakeLock.withLock { $0.invalidate(generation: session) }
+        }
+
         transcriptionTask = nil
         streamProcessors = [:]
-        bufferLock.withLock { audioBuffers = [.me: [], .them: []] }
         currentText = ""
+    }
+
+    private func waitForDrain(session: Int, timeout: Duration) async -> Bool {
+        if completedSessions.remove(session) != nil { return true }
+
+        return await withCheckedContinuation { continuation in
+            drainWaiters[session] = continuation
+            drainTimeoutTasks[session] = Task { @MainActor [weak self] in
+                do {
+                    try await Task.sleep(for: timeout)
+                } catch {
+                    return
+                }
+                self?.resolveDrainWaiter(session: session, drained: false)
+            }
+        }
+    }
+
+    private func transcriptionLoopDidFinish(session: Int) {
+        guard drainWaiters[session] != nil else {
+            completedSessions.insert(session)
+            return
+        }
+        resolveDrainWaiter(session: session, drained: true)
+    }
+
+    private func resolveDrainWaiter(session: Int, drained: Bool) {
+        guard let continuation = drainWaiters.removeValue(forKey: session) else { return }
+        drainTimeoutTasks.removeValue(forKey: session)?.cancel()
+        continuation.resume(returning: drained)
     }
 
     /// The classic Whisper silence hallucinations — phrases the model invents
     /// verbatim on near-silent chunks. Applied to both local recognizers.
-    static let hallucinationPhrases: Set<String> = [
+    nonisolated static let hallucinationPhrases: Set<String> = [
         "you", "okay", "ok", "thank you", "thanks", "bye", "bye-bye",
         "thank you for watching", "thanks for watching", "hmm", "mm-hmm",
         "uh", "um", "the end", "subtitles by", "1", "2",
     ]
 
-    static func isLikelyHallucination(_ text: String, energy: Float) -> Bool {
+    nonisolated static func isLikelyHallucination(_ text: String, energy: Float) -> Bool {
         let normalized = text.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?…-—"))
@@ -305,7 +517,7 @@ final class TranscriptionEngine {
         return hallucinationPhrases.contains(normalized)
     }
 
-    static func cleaned(_ text: String) -> String {
+    nonisolated static func cleaned(_ text: String) -> String {
         text
             .replacingOccurrences(
                 of: #"<\|[^|>]*\|>"#,

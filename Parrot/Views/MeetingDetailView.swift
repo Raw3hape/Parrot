@@ -45,7 +45,7 @@ struct MeetingDetailView: View {
 
             // Audio player bar — persists above the tabs (drives transcript +
             // insight seeking).
-            if meeting.status == .done || meeting.status == .processing {
+            if meeting.status == .done || meeting.status == .processing || meeting.status == .failed {
                 audioPlayerBar
                 Divider()
             }
@@ -305,9 +305,7 @@ struct MeetingDetailView: View {
         ScrollView {
             Group {
                 if meeting.summary == nil && meeting.coaching == nil {
-                    emptyTabState(meeting.status == .processing
-                        ? "The report is being generated…"
-                        : "No report was generated for this meeting.")
+                    emptyTabState(reportEmptyMessage)
                 } else {
                     ReportContentView(
                         summary: meeting.summary,
@@ -320,6 +318,16 @@ struct MeetingDetailView: View {
             .frame(maxWidth: Theme.Metrics.contentMaxWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private var reportEmptyMessage: String {
+        if meeting.status == .processing {
+            return "Finalizing local speaker labels…"
+        }
+        if meeting.status == .failed, let message = meeting.errorMessage?.nilIfEmpty {
+            return message
+        }
+        return "Your local transcript is ready. Cloud reports are disabled in this private build."
     }
 
     /// Me's share of the words, for the talk-balance bar.

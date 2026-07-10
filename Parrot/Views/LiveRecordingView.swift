@@ -161,6 +161,13 @@ struct LiveRecordingView: View {
                     .foregroundStyle(.orange)
             }
 
+            if let storageError = recordingManager.storageError {
+                Label("Storage warning: \(storageError)", systemImage: "externaldrive.badge.exclamationmark")
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+                    .lineLimit(1)
+            }
+
             Spacer()
 
             Image(systemName: "speaker.wave.2.fill")
@@ -397,7 +404,7 @@ struct LiveRecordingView: View {
 /// Distance (pt) between the transcript's live edge and the bottom of the
 /// visible viewport. 0-ish = pinned to live.
 private struct BottomDistancePreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+    nonisolated(unsafe) static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }

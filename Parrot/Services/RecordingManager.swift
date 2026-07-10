@@ -25,15 +25,18 @@ final class RecordingManager {
     /// Guards against a second startRecording slipping in during the `await`s
     /// before isRecording is set — which would start a duplicate transcription
     /// loop and double every segment.
-    private var isStarting = false
+    private(set) var isStarting = false
     /// Mirror of isStarting for the stop path: stop now drains the transcription
     /// backlog (seconds, not instant), so without this a double-stop would persist
     /// insights twice and run postProcess twice, and a start-during-stop would
     /// cancel the draining loop and share buffers with the old session. Readable
     /// so the live view can show a "Finalizing…" state.
     private(set) var isStopping = false
+    private var stopTask: Task<Void, Never>?
+    private var postProcessingTasks: [UUID: Task<Void, Never>] = [:]
     private var timer: Timer?
     private var modelContext: ModelContext?
+    private(set) var storageError: String?
 
     init() {
         callAnalysisEngine.knowledgeBase = knowledgeBase
@@ -42,26 +45,30 @@ final class RecordingManager {
     /// Initialize the tested all-local recognition stack.
     func prepare(modelContext: ModelContext) async {
         self.modelContext = modelContext
-        Self.reconcileOrphanedRecordings(in: modelContext)
+        let resumable = Self.reconcileOrphanedRecordings(in: modelContext)
         profileStore.seedAndMigrateIfNeeded(context: modelContext, knowledgeBase: knowledgeBase)
         await transcriptionEngine.loadModel()
+        for meeting in resumable {
+            enqueuePostProcessing(for: meeting)
+        }
     }
 
     /// A meeting left in `.recording` or `.processing` means a previous session was
     /// killed (crash or force-quit) before it could finish. Those can never resume
     /// and their audio file was never finalized, so mark them failed instead of
     /// letting them linger as if active.
-    private static func reconcileOrphanedRecordings(in context: ModelContext) {
-        guard let meetings = try? context.fetch(FetchDescriptor<Meeting>()) else { return }
+    private static func reconcileOrphanedRecordings(in context: ModelContext) -> [Meeting] {
+        guard let meetings = try? context.fetch(FetchDescriptor<Meeting>()) else { return [] }
         var changed = false
-        for meeting in meetings where meeting.status == .recording || meeting.status == .processing {
+        for meeting in meetings where meeting.status == .recording {
             meeting.status = .failed
             if meeting.errorMessage == nil {
-                meeting.errorMessage = "Recording was interrupted before it finished."
+                meeting.errorMessage = "Recording was interrupted. Any saved audio and transcript were preserved."
             }
             changed = true
         }
         if changed { try? context.save() }
+        return meetings.filter { $0.status == .processing }
     }
 
     // MARK: - Recording Control
@@ -109,6 +116,7 @@ final class RecordingManager {
         }
         isStarting = true
         defer { isStarting = false }
+        storageError = nil
 
         // Create meeting
         let meeting = Meeting()
@@ -120,12 +128,50 @@ final class RecordingManager {
         meeting.brief = nextCallBrief.nilIfEmpty
         meeting.profileSnapshotData = profile.flatMap { try? JSONEncoder().encode($0.kinds) }
 
-        // Set up audio capture. On failure, remove the just-inserted meeting —
-        // otherwise it lingers as a ghost .recording row until the next launch's
-        // orphan reconciliation flags it "interrupted".
+        // Establish a durable draft before touching capture hardware. If the
+        // store is unavailable (for example a full disk), fail without leaving
+        // an untracked recording running in memory.
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.delete(meeting)
+            throw error
+        }
+
+        // Arm the sink and transcription intake before hardware starts so the
+        // first system/mic buffers cannot fall through a setup gap.
+        audioCaptureManager.onAudioBuffer = { [weak self] buffer, source in
+            self?.transcriptionEngine.appendAudio(buffer, source: source)
+        }
+
+        // Wire transcription output to storage and the live copilot
+        transcriptionEngine.onSegment = { [weak self] result in
+            self?.addSegment(result)
+            self?.callAnalysisEngine.ingest(
+                text: result.text,
+                at: result.endTime,
+                source: result.source
+            )
+        }
+
+        // Reserve a live transcription session before startCapture suspends.
+        // This also makes model reload a safe no-op throughout hardware setup.
+        guard transcriptionEngine.startTranscribing(meetingStartTime: .now) else {
+            audioCaptureManager.onAudioBuffer = nil
+            transcriptionEngine.onSegment = nil
+            modelContext.delete(meeting)
+            try? modelContext.save()
+            throw RecordingError.modelNotReady
+        }
+
+        // Set up audio capture. On failure, unwind the already-armed intake and
+        // remove the durable draft instead of leaving an orphaned live session.
         do {
             try await audioCaptureManager.startCapture()
         } catch {
+            audioCaptureManager.onAudioBuffer = nil
+            await transcriptionEngine.stopTranscribing()
+            transcriptionEngine.onSegment = nil
             modelContext.delete(meeting)
             try? modelContext.save()
             throw error
@@ -133,25 +179,19 @@ final class RecordingManager {
         meeting.systemAudioPath = audioCaptureManager.systemAudioURL?.path ?? ""
         meeting.micAudioPath = audioCaptureManager.micAudioURL?.path
 
-        // Wire audio to transcription, tagged by stream (mic = Me, system = Them)
-        audioCaptureManager.onAudioBuffer = { [weak self] buffer, source in
-            self?.transcriptionEngine.appendAudio(buffer, source: source)
+        do {
+            try modelContext.save()
+        } catch {
+            await audioCaptureManager.stopCapture()
+            audioCaptureManager.onAudioBuffer = nil
+            await transcriptionEngine.stopTranscribing()
+            transcriptionEngine.onSegment = nil
+            modelContext.delete(meeting)
+            try? modelContext.save()
+            throw error
         }
 
-        // Wire transcription output to storage and the live copilot
-        transcriptionEngine.onSegment = { [weak self] result in
-            Task { @MainActor in
-                self?.addSegment(result)
-                self?.callAnalysisEngine.ingest(
-                    text: result.text,
-                    at: result.endTime,
-                    source: result.source
-                )
-            }
-        }
-
-        // Start transcription and the copilot loop
-        transcriptionEngine.startTranscribing(meetingStartTime: .now)
+        // Start the optional copilot loop only after capture is confirmed.
         callAnalysisEngine.provider.resetUsage()  // this call's token meter starts at zero
         callAnalysisEngine.start(profile: profile, brief: nextCallBrief)
 
@@ -166,11 +206,24 @@ final class RecordingManager {
                 self.elapsedTime = Date.now.timeIntervalSince(start)
             }
         }
-
-        try modelContext.save()
     }
 
     func stopRecording() async {
+        if let stopTask {
+            await stopTask.value
+            return
+        }
+        guard isRecording else { return }
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.performStopRecording()
+        }
+        stopTask = task
+        await task.value
+        stopTask = nil
+    }
+
+    private func performStopRecording() async {
         guard isRecording, !isStopping else { return }
         isStopping = true
         defer { isStopping = false }
@@ -184,13 +237,12 @@ final class RecordingManager {
         // diarization task can read them.
         callAnalysisEngine.stop()
         await audioCaptureManager.stopCapture()
+        audioCaptureManager.onAudioBuffer = nil
 
         // Drain the transcription backlog so the call's final words land before
         // the transcript is assembled for the summary/coaching reports.
         await transcriptionEngine.stopTranscribing()
-        // onSegment persists segments via Task { @MainActor } hops; yield once so
-        // the last enqueued addSegment jobs run before we read segments back.
-        await Task.yield()
+        transcriptionEngine.onSegment = nil
 
         // Update meeting
         if let meeting = currentMeeting {
@@ -204,22 +256,18 @@ final class RecordingManager {
                 modelContext?.insert(stored)
                 stored.meeting = meeting
             }
-            try? modelContext?.save()
+            do {
+                try modelContext?.save()
+            } catch {
+                storageError = error.localizedDescription
+                meeting.errorMessage = "The transcript is saved in memory, but Parrot could not persist the latest changes: \(error.localizedDescription)"
+            }
 
             // Post-processing chain, strictly sequential: polish rebuilds the
             // transcript (optional, best-effort), diarization refines labels on
             // whatever transcript survived, and the report is generated from
             // the FINAL text — never from a transcript that's about to change.
-            let meetingRef = meeting
-            Task {
-                let polishSeconds = 0.0
-                await self.postProcess(meeting: meetingRef)
-                if self.callAnalysisEngine.isEnabled, self.callAnalysisEngine.provider.isConfigured {
-                    await self.generateSummary(meeting: meetingRef)
-                }
-                // Last in the chain so the meter has seen the summary/coaching calls too.
-                self.writeAIUsage(meeting: meetingRef, polishSeconds: polishSeconds)
-            }
+            enqueuePostProcessing(for: meeting)
         }
 
         isRecording = false
@@ -227,12 +275,43 @@ final class RecordingManager {
         recordingStartTime = nil
     }
 
+    /// Normal Cmd-Q / menu quit waits for an in-flight start to settle and then
+    /// performs the same deterministic Stop & Save path as the UI.
+    func prepareForTermination() async {
+        let deadline = ContinuousClock.now + .seconds(30)
+        while isStarting, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(50))
+        }
+        if isRecording || isStopping {
+            await stopRecording()
+        }
+    }
+
     // MARK: - Deletion
+
+    private func enqueuePostProcessing(for meeting: Meeting) {
+        guard postProcessingTasks[meeting.id] == nil else { return }
+        let id = meeting.id
+        postProcessingTasks[id] = Task { @MainActor [weak self, weak meeting] in
+            guard let self, let meeting, !Task.isCancelled else { return }
+            defer { self.postProcessingTasks[id] = nil }
+            let polishSeconds = 0.0
+            await self.postProcess(meeting: meeting)
+            guard !Task.isCancelled else { return }
+            if self.callAnalysisEngine.isEnabled,
+               self.callAnalysisEngine.provider.isConfigured {
+                await self.generateSummary(meeting: meeting)
+            }
+            guard !Task.isCancelled else { return }
+            self.writeAIUsage(meeting: meeting, polishSeconds: polishSeconds)
+        }
+    }
 
     /// Deletes a meeting and its audio files. The only removal path in the app —
     /// without it storage grows forever. Refuses the active recording.
     func delete(_ meeting: Meeting) {
         guard !(isRecording && meeting.id == currentMeeting?.id) else { return }
+        postProcessingTasks.removeValue(forKey: meeting.id)?.cancel()
         for path in [meeting.systemAudioPath.nilIfEmpty, meeting.micAudioPath?.nilIfEmpty].compactMap({ $0 }) {
             try? FileManager.default.removeItem(atPath: path)
         }
@@ -392,6 +471,7 @@ final class RecordingManager {
         do {
             let audioURL = URL(fileURLWithPath: audioPath)
             let speakerSegments = try await diarizationEngine.diarize(audioURL: audioURL)
+            try Task.checkCancellation()
 
             // Assign speaker labels to transcript segments by time overlap.
             // "Me" segments come from the mic stream and are already attributed;
@@ -407,6 +487,8 @@ final class RecordingManager {
             }
             meeting.status = .done
             try? modelContext?.save()
+        } catch is CancellationError {
+            return
         } catch {
             // Diarization is a refinement pass; the audio and transcript are
             // already saved. Keep the generic "Them" labels rather than showing
@@ -443,7 +525,7 @@ enum RecordingError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .modelNotReady: "WhisperKit model is not loaded yet. Please wait."
+        case .modelNotReady: "Local speech models are not ready yet. Please wait or retry them in Settings."
         }
     }
 }

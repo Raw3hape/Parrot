@@ -54,6 +54,10 @@ struct OnboardingView: View {
                         isPresented = false
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(!recordingManager.transcriptionEngine.isReady)
+                    .help(recordingManager.transcriptionEngine.isReady
+                          ? "Open Parrot"
+                          : "Wait until a local speech model is ready")
                 }
             }
             .padding()
@@ -216,9 +220,15 @@ struct OnboardingView: View {
                 .foregroundStyle(.green)
                 .font(.callout)
         case .error(let msg):
-            Label(msg, systemImage: "xmark.circle")
-                .foregroundStyle(.red)
-                .font(.caption)
+            VStack(spacing: 8) {
+                Label(msg, systemImage: "xmark.circle")
+                    .foregroundStyle(.red)
+                    .font(.caption)
+                Button("Retry Local Models") {
+                    downloadModels()
+                }
+                .buttonStyle(.bordered)
+            }
         default:
             Button("Download Local Models") {
                 downloadModels()

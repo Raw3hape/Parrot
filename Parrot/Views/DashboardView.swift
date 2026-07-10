@@ -145,7 +145,7 @@ struct DashboardView: View {
             HStack(spacing: 8) {
                 ProgressView()
                     .controlSize(.small)
-                Text("Loading WhisperKit model...")
+                Text("Loading local speech models...")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

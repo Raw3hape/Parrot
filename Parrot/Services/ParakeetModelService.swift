@@ -13,25 +13,56 @@ actor ParakeetModelService: LocalSpeechRecognizing {
     }
 
     private var manager: AsrManager?
+    private var preparationTask: Task<AsrManager, Error>?
+    private var preparationGeneration = UUID()
     private(set) var isReady = false
+    private(set) var preparationLaunchCount = 0
 
     func prepare(
         progressHandler: ProgressHandler? = nil
     ) async throws {
         guard !isReady else { return }
-        let models = try await AsrModels.downloadAndLoad(
-            version: .v3,
-            encoderPrecision: .int8,
-            progressHandler: progressHandler
-        )
-        manager = AsrManager(config: .default, models: models)
-        isReady = true
+
+        let task: Task<AsrManager, Error>
+        let generation: UUID
+        if let existing = preparationTask {
+            task = existing
+            generation = preparationGeneration
+        } else {
+            generation = UUID()
+            preparationGeneration = generation
+            preparationLaunchCount += 1
+            task = Task {
+                let models = try await AsrModels.downloadAndLoad(
+                    version: .v3,
+                    encoderPrecision: .int8,
+                    progressHandler: progressHandler
+                )
+                return AsrManager(config: .default, models: models)
+            }
+            preparationTask = task
+        }
+
+        do {
+            let prepared = try await task.value
+            manager = prepared
+            isReady = true
+            if preparationGeneration == generation {
+                preparationTask = nil
+            }
+        } catch {
+            if preparationGeneration == generation {
+                preparationTask = nil
+            }
+            throw error
+        }
     }
 
     func transcribe(
         samples: [Float],
         language: String?
     ) async throws -> LocalRecognitionResult {
+        try Task.checkCancellation()
         guard let manager else { throw ServiceError.notLoaded }
 
         // FluidAudio requires at least 300 ms. Silence padding preserves short
@@ -44,6 +75,7 @@ actor ParakeetModelService: LocalSpeechRecognizing {
         var decoderState = TdtDecoderState.make(
             decoderLayers: await manager.decoderLayerCount
         )
+        try Task.checkCancellation()
         let result = try await manager.transcribe(
             input,
             decoderState: &decoderState,

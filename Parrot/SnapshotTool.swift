@@ -15,7 +15,7 @@ enum ParakeetIntegrationTest {
                 if !hasText { exit(2) }
             } catch {
                 FileHandle.standardError.write(
-                    Data("parakeet-integration-test error: \(error)\n".utf8)
+                    Data("diagnostic=parakeet status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
                 )
                 exit(1)
             }
@@ -31,24 +31,28 @@ enum ParakeetIntegrationTest {
         let service = ParakeetModelService()
 
         let loadStart = Date()
-        try await service.prepare()
+        async let firstPreparation: Void = service.prepare()
+        async let secondPreparation: Void = service.prepare()
+        _ = try await (firstPreparation, secondPreparation)
         let loadSeconds = Date.now.timeIntervalSince(loadStart)
+        let preparationLaunches = await service.preparationLaunchCount
 
         let decodeStart = Date()
         let result = try await service.transcribe(samples: samples, language: nil)
         let decodeSeconds = Date.now.timeIntervalSince(decodeStart)
         let audioSeconds = Double(samples.count) / 16_000.0
         let realTimeFactor = decodeSeconds / max(audioSeconds, 0.001)
-        let confidence = result.confidence.map { String($0) } ?? "n/a"
+        let confidenceIsValid = result.confidence?.isFinite ?? true
 
-        print("=== parakeet-integration-test ===")
+        print("diagnostic: parakeet")
         print(String(format: "audio_seconds: %.3f", audioSeconds))
         print(String(format: "load_seconds: %.3f", loadSeconds))
+        print("preparation_launches: \(preparationLaunches)")
         print(String(format: "decode_seconds: %.3f", decodeSeconds))
         print(String(format: "real_time_factor: %.4f", realTimeFactor))
-        print("confidence: \(confidence)")
-        print("text: \(result.text)")
-        return !result.text.isEmpty
+        print("transcript_characters: \(result.text.count)")
+        print("confidence_is_finite: \(confidenceIsValid ? 1 : 0)")
+        return !result.text.isEmpty && confidenceIsValid && preparationLaunches == 1
     }
 }
 
@@ -63,7 +67,7 @@ enum WhisperFallbackIntegrationTest {
                 if !hasText { exit(2) }
             } catch {
                 FileHandle.standardError.write(
-                    Data("whisper-fallback-test error: \(error)\n".utf8)
+                    Data("diagnostic=whisper status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
                 )
                 exit(1)
             }
@@ -78,21 +82,27 @@ enum WhisperFallbackIntegrationTest {
         let service = WhisperModelService()
 
         let loadStart = Date()
-        try await service.prepare()
+        async let firstPreparation: Void = service.prepare()
+        async let secondPreparation: Void = service.prepare()
+        _ = try await (firstPreparation, secondPreparation)
         let loadSeconds = Date.now.timeIntervalSince(loadStart)
+        let preparationLaunches = await service.preparationLaunchCount
 
         let decodeStart = Date()
         let result = try await service.transcribe(samples: samples, language: nil)
         let decodeSeconds = Date.now.timeIntervalSince(decodeStart)
         let audioSeconds = Double(samples.count) / 16_000.0
 
-        print("=== whisper-fallback-test ===")
+        let confidenceIsValid = result.confidence?.isFinite ?? true
+        print("diagnostic: whisper")
         print("model: \(WhisperModelService.fallbackModel)")
         print(String(format: "audio_seconds: %.3f", audioSeconds))
         print(String(format: "load_seconds: %.3f", loadSeconds))
+        print("preparation_launches: \(preparationLaunches)")
         print(String(format: "decode_seconds: %.3f", decodeSeconds))
-        print("text: \(result.text)")
-        return !result.text.isEmpty
+        print("transcript_characters: \(result.text.count)")
+        print("confidence_is_finite: \(confidenceIsValid ? 1 : 0)")
+        return !result.text.isEmpty && confidenceIsValid && preparationLaunches == 1
     }
 }
 
@@ -101,7 +111,7 @@ enum WhisperFallbackIntegrationTest {
 enum CallPipelineIntegrationTest {
     private actor Sink {
         struct Final: Sendable {
-            let text: String
+            let textCharacters: Int
             let startSample: Int
             let endSample: Int
         }
@@ -111,7 +121,7 @@ enum CallPipelineIntegrationTest {
 
         func addPreview() { previewCount += 1 }
         func addFinal(_ text: String, _ start: Int, _ end: Int) {
-            finals.append(Final(text: text, startSample: start, endSample: end))
+            finals.append(Final(textCharacters: text.count, startSample: start, endSample: end))
         }
         func snapshot() -> (Int, [Final]) { (previewCount, finals) }
     }
@@ -124,7 +134,7 @@ enum CallPipelineIntegrationTest {
                 if !hasSegments { exit(2) }
             } catch {
                 FileHandle.standardError.write(
-                    Data("call-pipeline-test error: \(error)\n".utf8)
+                    Data("diagnostic=call_pipeline status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
                 )
                 exit(1)
             }
@@ -135,6 +145,8 @@ enum CallPipelineIntegrationTest {
     }
 
     private static func execute(audioPath: String) async throws -> Bool {
+        let edgeChecks = energyFallbackEdgeChecks()
+        let backlogCheck = finalBacklogEdgeCheck()
         let samples = try AudioConverter().resampleAudioFile(path: audioPath)
         let service = ParakeetModelService()
         try await service.prepare()
@@ -159,15 +171,92 @@ enum CallPipelineIntegrationTest {
         await processor.finish()
 
         let (previews, finals) = await sink.snapshot()
-        print("=== call-pipeline-test ===")
+        print("diagnostic: call_pipeline")
         print("previews: \(previews)")
         print("final_segments: \(finals.count)")
-        for (index, segment) in finals.enumerated() {
-            let start = Double(segment.startSample) / 16_000.0
-            let end = Double(segment.endSample) / 16_000.0
-            print(String(format: "[%02d] %.2f-%.2f %@", index + 1, start, end, segment.text))
-        }
+        print("final_audio_samples: \(finals.reduce(0) { $0 + max(0, $1.endSample - $1.startSample) })")
+        print("transcript_characters: \(finals.reduce(0) { $0 + $1.textCharacters })")
+        print("energy_noise_rejection: \(edgeChecks.noiseRejected ? 1 : 0)")
+        print("energy_short_speech_start: \(edgeChecks.shortSpeechStarted ? 1 : 0)")
+        print("vad_handoff_closure: \(edgeChecks.seededStateClosed ? 1 : 0)")
+        print("final_backlog_order_and_bound: \(backlogCheck ? 1 : 0)")
         return !finals.isEmpty
+            && finals.allSatisfy { $0.textCharacters > 0 }
+            && edgeChecks.noiseRejected
+            && edgeChecks.shortSpeechStarted
+            && edgeChecks.seededStateClosed
+            && backlogCheck
+    }
+
+    private static func finalBacklogEdgeCheck() -> Bool {
+        func audio(samples: Int, generation: Int) -> UtteranceAudio {
+            UtteranceAudio(
+                samples: Array(repeating: 0.1, count: samples),
+                startSample: generation * 100,
+                endSample: generation * 100 + samples,
+                generation: generation,
+                forcedSplit: false
+            )
+        }
+
+        var backlog = FinalRecognitionBacklog(maximumRetainedSamples: 10)
+        guard backlog.enqueue(audio(samples: 6, generation: 1)),
+              !backlog.enqueue(audio(samples: 5, generation: 2)),
+              backlog.retainedSampleCount == 6,
+              backlog.dequeue()?.generation == 1,
+              backlog.retainedSampleCount == 6 else { return false }
+        backlog.complete(sampleCount: 6)
+        guard backlog.retainedSampleCount == 0,
+              backlog.enqueue(audio(samples: 4, generation: 3)),
+              backlog.enqueue(audio(samples: 6, generation: 4)),
+              backlog.dequeue()?.generation == 3,
+              backlog.dequeue()?.generation == 4 else { return false }
+        backlog.complete(sampleCount: 4)
+        backlog.complete(sampleCount: 6)
+        return backlog.retainedSampleCount == 0 && backlog.isEmpty
+    }
+
+    private static func energyFallbackEdgeChecks() -> (
+        noiseRejected: Bool,
+        shortSpeechStarted: Bool,
+        seededStateClosed: Bool
+    ) {
+        var noiseDetector = EnergyBoundaryDetector()
+        let alternatingNoise: [Float] = (0..<VadManager.chunkSize).map {
+            $0.isMultiple(of: 2) ? 0.2 : -0.2
+        }
+        let noiseBoundary = noiseDetector.process(
+            alternatingNoise,
+            absoluteStartSample: 0
+        )
+        let noiseRejected = noiseBoundary == nil
+            && noiseDetector.consumeNoiseRejection()
+
+        var speechDetector = EnergyBoundaryDetector()
+        let shortBoundary = speechDetector.process(
+            Array(repeating: 0.2, count: 2_400),
+            absoluteStartSample: 0
+        )
+        let shortSpeechStarted: Bool
+        if case .started = shortBoundary {
+            shortSpeechStarted = true
+        } else {
+            shortSpeechStarted = false
+        }
+
+        var seededDetector = EnergyBoundaryDetector()
+        seededDetector.seedActive()
+        var seededStateClosed = false
+        for start in stride(from: 0, through: 8_192, by: 4_096) {
+            let boundary = seededDetector.process(
+                Array(repeating: 0, count: 4_096),
+                absoluteStartSample: start
+            )
+            if case .ended = boundary {
+                seededStateClosed = true
+            }
+        }
+        return (noiseRejected, shortSpeechStarted, seededStateClosed)
     }
 }
 
@@ -177,41 +266,56 @@ enum CallPipelineIntegrationTest {
 ///   Parrot --transcribe-test <audio.caf> <modelFolder>
 enum TranscribeTest {
     static func run(audioPath: String, modelFolder: String) {
-        let sem = DispatchSemaphore(value: 0)
+        let semaphore = DispatchSemaphore(value: 0)
         Task {
             do {
-                let config = WhisperKitConfig(
-                    modelFolder: modelFolder.isEmpty ? nil : modelFolder,
-                    verbose: false,
-                    logLevel: .none,
-                    load: true,
-                    download: modelFolder.isEmpty
-                )
-                let whisperKit = try await WhisperKit(config)
-
-                var opts = DecodingOptions(task: .transcribe, language: "en")
-                opts.skipSpecialTokens = true
-                opts.withoutTimestamps = true
-                opts.compressionRatioThreshold = 2.4
-                opts.logProbThreshold = -1.0
-                opts.noSpeechThreshold = 0.6
-                opts.temperatureFallbackCount = 3
-
-                let results = try await whisperKit.transcribe(audioPath: audioPath, decodeOptions: opts)
-                let text = results.map(\.text).joined(separator: " ")
-                let hasTokens = text.contains("<|")
-                print("=== transcribe-test ===")
-                print("chars: \(text.count) | contains '<|' tokens: \(hasTokens)")
-                print("---")
-                print(String(text.prefix(1800)))
-                print("---")
+                let passed = try await execute(audioPath: audioPath, modelFolder: modelFolder)
+                if !passed { exit(2) }
             } catch {
-                print("transcribe-test error: \(error)")
+                FileHandle.standardError.write(
+                    Data("diagnostic=transcribe status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
+                )
+                exit(1)
             }
-            sem.signal()
+            semaphore.signal()
         }
-        sem.wait()
+        semaphore.wait()
         exit(0)
+    }
+
+    private static func execute(audioPath: String, modelFolder: String) async throws -> Bool {
+        let config = WhisperKitConfig(
+            modelFolder: modelFolder.isEmpty ? nil : modelFolder,
+            verbose: false,
+            logLevel: .none,
+            load: true,
+            download: modelFolder.isEmpty
+        )
+        let whisperKit = try await WhisperKit(config)
+
+        var options = DecodingOptions(task: .transcribe, language: "en")
+        options.skipSpecialTokens = true
+        options.withoutTimestamps = true
+        options.compressionRatioThreshold = 2.4
+        options.logProbThreshold = -1.0
+        options.noSpeechThreshold = 0.6
+        options.temperatureFallbackCount = 3
+
+        let decodeStart = Date()
+        let results = try await whisperKit.transcribe(
+            audioPath: audioPath,
+            decodeOptions: options
+        )
+        let decodeSeconds = Date.now.timeIntervalSince(decodeStart)
+        let text = results.map(\.text).joined(separator: " ")
+        let containsSpecialTokens = text.contains("<|")
+
+        print("diagnostic: transcribe")
+        print(String(format: "decode_seconds: %.3f", decodeSeconds))
+        print("transcript_characters: \(text.count)")
+        print("contains_special_tokens: \(containsSpecialTokens ? 1 : 0)")
+        return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !containsSpecialTokens
     }
 }
 

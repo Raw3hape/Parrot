@@ -428,6 +428,9 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
     // MARK: - HTTP
 
     private func performRequest(body: [String: Any], apiKey: String) async throws -> Data {
+        guard PersonalBuildPolicy.cloudFeaturesAllowed else {
+            throw AnalysisError.badResponse("Cloud analysis is disabled in this local-only build.")
+        }
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.timeoutInterval = 60

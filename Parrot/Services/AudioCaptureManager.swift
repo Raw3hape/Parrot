@@ -1,33 +1,96 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import ScreenCaptureKit
 import CoreAudio
 import Combine
+import os
+
+/// Monotonic, value-only admission gate for capture callbacks. A token belongs
+/// to exactly one capture session; ending or replacing that session makes every
+/// delayed callback carrying the old token harmless.
+struct CaptureSessionGate: Sendable {
+    struct Token: Equatable, Sendable {
+        fileprivate let generation: UInt64
+    }
+
+    private var generation: UInt64 = 0
+    private var activeGeneration: UInt64?
+
+    mutating func begin() -> Token {
+        generation &+= 1
+        // Wrapped zero is still safe: it can only collide after 2^64 sessions,
+        // and keeping zero out makes debugger output less ambiguous.
+        if generation == 0 { generation = 1 }
+        activeGeneration = generation
+        return Token(generation: generation)
+    }
+
+    func accepts(_ token: Token) -> Bool {
+        activeGeneration == token.generation
+    }
+
+    mutating func end(_ token: Token) {
+        if accepts(token) {
+            activeGeneration = nil
+        }
+    }
+}
 
 /// Captures system audio via ScreenCaptureKit and microphone via AVAudioEngine.
 /// Provides mixed PCM audio for transcription and saves separate tracks to disk.
 @Observable
 final class AudioCaptureManager: NSObject {
-    private var stream: SCStream?
-    private var audioEngine: AVAudioEngine?
     // Write uncompressed PCM (.caf) via AVAudioFile rather than AAC/.m4a via
     // AVAssetWriter: on recent macOS the AAC encoder fails to initialize
     // (AudioCodecInitialize failed / -12651), producing silent 0-byte files.
     // PCM has no codec to fail. Each file is written only from its own serial
     // queue, off the audio render thread.
-    private var systemAudioFile: AVAudioFile?
-    private var micAudioFile: AVAudioFile?
-    /// Set true before stopCapture's sync barriers. A straggler write block that
-    /// was enqueued after the barriers must not lazily recreate an AVAudioFile on
-    /// the finished URL — AVAudioFile(forWriting:) truncates, destroying the
-    /// recording, and the stale file object would hijack the NEXT recording's
-    /// audio. Plain Bool across threads, same accepted pattern as `isCapturing`.
-    private var filesClosed = true
     private let systemWriteQueue = DispatchQueue(label: "com.uygar.parrot.audio.system")
     private let micWriteQueue = DispatchQueue(label: "com.uygar.parrot.audio.mic")
-    /// Acoustic echo canceller, created per recording when enabled. Removes the
-    /// speaker bleed from the mic using the system audio as the reference. nil =
-    /// disabled (mic passes through untouched).
-    private var echoCanceller: EchoCanceller?
+
+    /// All objects that may outlive a capture callback are owned by one immutable
+    /// session identity. File handles are queue-confined; the remaining mutable
+    /// handles are touched only by the async start/stop lifecycle for this session.
+    private final class CaptureSession: @unchecked Sendable {
+        let token: CaptureSessionGate.Token
+        let systemAudioURL: URL
+        let micAudioURL: URL
+        let echoCanceller: EchoCanceller?
+        var systemStream: SCStream?
+        var systemStreamID: ObjectIdentifier?
+        var audioEngine: AVAudioEngine?
+        var starvationReported = false
+        var stopping = false
+        var systemAudioFile: AVAudioFile?
+        var micAudioFile: AVAudioFile?
+
+        init(
+            token: CaptureSessionGate.Token,
+            systemAudioURL: URL,
+            micAudioURL: URL,
+            echoCanceller: EchoCanceller?
+        ) {
+            self.token = token
+            self.systemAudioURL = systemAudioURL
+            self.micAudioURL = micAudioURL
+            self.echoCanceller = echoCanceller
+        }
+    }
+
+    /// Function values are immutable reference-counted objects. The wrapper's
+    /// unchecked conformance only permits moving that immutable handle through
+    /// the lock; reading/writing the handle itself remains lock-protected.
+    private struct LockedAudioHandler: @unchecked Sendable {
+        let body: (AVAudioPCMBuffer, AudioSource) -> Void
+    }
+
+    private struct LockedCaptureState: Sendable {
+        var gate = CaptureSessionGate()
+        var session: CaptureSession?
+        var audioHandler: LockedAudioHandler?
+    }
+
+    @ObservationIgnored
+    private let captureState = OSAllocatedUnfairLock(initialState: LockedCaptureState())
 
     /// Throttle timestamps for pushing audio levels to the UI — the waveform needs
     /// only ~10 updates/sec, not one per ~20 ms audio buffer per stream.
@@ -71,7 +134,15 @@ final class AudioCaptureManager: NSObject {
 
     /// Called with PCM audio buffers suitable for WhisperKit, tagged with which
     /// stream they came from (mic = the user, system = everyone else).
-    var onAudioBuffer: ((AVAudioPCMBuffer, AudioSource) -> Void)?
+    @ObservationIgnored
+    var onAudioBuffer: ((AVAudioPCMBuffer, AudioSource) -> Void)? {
+        get { captureState.withLock { $0.audioHandler?.body } }
+        set {
+            captureState.withLock {
+                $0.audioHandler = newValue.map(LockedAudioHandler.init(body:))
+            }
+        }
+    }
 
     private let sampleRate: Double = 16000
     private let channels: UInt32 = 1
@@ -82,9 +153,10 @@ final class AudioCaptureManager: NSObject {
         let storageDir = Self.storageDirectory()
         let timestamp = ISO8601DateFormatter().string(from: .now)
             .replacingOccurrences(of: ":", with: "-")
+        let uniqueSuffix = UUID().uuidString.prefix(8)
 
-        systemAudioURL = storageDir.appendingPathComponent("system_\(timestamp).caf")
-        micAudioURL = storageDir.appendingPathComponent("mic_\(timestamp).caf")
+        let nextSystemAudioURL = storageDir.appendingPathComponent("system_\(timestamp)-\(uniqueSuffix).caf")
+        let nextMicAudioURL = storageDir.appendingPathComponent("mic_\(timestamp)-\(uniqueSuffix).caf")
 
         inputDeviceName = Self.defaultDeviceName(input: true)
         outputDeviceName = Self.defaultDeviceName(input: false)
@@ -92,23 +164,52 @@ final class AudioCaptureManager: NSObject {
 
         // Echo cancellation on by default (defeats speaker bleed without headphones).
         let aecEnabled = UserDefaults.standard.object(forKey: "echoCancellationEnabled") as? Bool ?? true
-        echoCanceller = aecEnabled ? EchoCanceller() : nil
+        let nextEchoCanceller = aecEnabled ? EchoCanceller() : nil
 
-        filesClosed = false  // fresh URLs above; queues are idle, so no race
+        // Claim the lifecycle before the first await. A second start arriving
+        // while ScreenCaptureKit is still preparing cannot create parallel
+        // hardware streams or replace the first session's file destinations.
+        let session: CaptureSession? = captureState.withLock { state in
+            guard state.session == nil else { return nil }
+            let token = state.gate.begin()
+            let session = CaptureSession(
+                token: token,
+                systemAudioURL: nextSystemAudioURL,
+                micAudioURL: nextMicAudioURL,
+                echoCanceller: nextEchoCanceller
+            )
+            state.session = session
+            return session
+        }
+        guard let session else { throw CaptureError.captureAlreadyInProgress }
 
-        try await startSystemAudioCapture()
+        systemAudioURL = nextSystemAudioURL
+        micAudioURL = nextMicAudioURL
+
+        do {
+            try await startSystemAudioCapture(for: session)
+        } catch {
+            closeGate(for: session)
+            systemWriteQueue.sync { session.systemAudioFile = nil }
+            micWriteQueue.sync { session.micAudioFile = nil }
+            systemAudioURL = nil
+            micAudioURL = nil
+            throw error
+        }
 
         // The microphone is optional. System audio ("Them") is the core capture;
         // a missing or denied mic must NOT abort the whole recording. If mic setup
         // fails we just don't get the user's own voice ("Me") and carry on.
         do {
-            try startMicCapture()
+            try startMicCapture(for: session)
             micActive = true
         } catch {
             micActive = false
             micAudioURL = nil
             NSLog("Parrot: microphone unavailable, recording system audio only — \(error.localizedDescription)")
         }
+
+        guard accepts(session) else { throw CaptureError.captureSuperseded }
 
         lastMicSignalAt = Date()  // capture start; the "dead mic" warning waits on this
         micEverHadSignal = false
@@ -119,43 +220,57 @@ final class AudioCaptureManager: NSObject {
     // MARK: - Stop Capture
 
     func stopCapture() async {
+        // Snapshot one session. All cleanup below is scoped to this identity, so
+        // even a delayed stop can never nil or close a later session's resources.
+        guard let session = captureState.withLock({ state -> CaptureSession? in
+            guard let session = state.session, !session.stopping else { return nil }
+            session.stopping = true
+            return session
+        }) else {
+            isCapturing = false
+            micActive = false
+            audioLevel = 0
+            micLevel = 0
+            return
+        }
+
         isCapturing = false
         micActive = false
         micEverHadSignal = false
         audioLevel = 0
         micLevel = 0
-        echoCanceller = nil
 
-        // Stop system audio stream
-        if let stream {
+        // Stop hardware first. In-flight callbacks may still finish while the
+        // gate is open, which lets their writes land before the barriers below.
+        let resources = captureState.withLock { _ in
+            (session.systemStream, session.audioEngine)
+        }
+        if let stream = resources.0 {
             try? await stream.stopCapture()
-            self.stream = nil
         }
 
-        // Stop mic engine
-        audioEngine?.stop()
-        audioEngine?.inputNode.removeTap(onBus: 0)
-        audioEngine = nil
-
-        // Flush queued writes, then close the files. AVAudioFile finalizes the
-        // .caf header when it deallocates; the sync barrier guarantees every
-        // pending write has landed first. filesClosed goes up BEFORE the
-        // barriers so any write block enqueued after them no-ops instead of
-        // recreating (= truncating) the finished file.
-        filesClosed = true
-        systemWriteQueue.sync { systemAudioFile = nil }
-        micWriteQueue.sync { micAudioFile = nil }
-
-        if let url = systemAudioURL {
-            let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
-            let size = (attrs?[.size] as? Int) ?? 0
-            NSLog("Parrot: system audio file finalized — \(size) bytes")
+        resources.1?.stop()
+        resources.1?.inputNode.removeTap(onBus: 0)
+        captureState.withLock { _ in
+            session.audioEngine = nil
+            session.systemStream = nil
+            session.systemStreamID = nil
         }
+
+        // Close callback admission only after hardware is stopped, then flush
+        // every already-queued write and finalize this session's CAF headers.
+        closeGate(for: session)
+        systemWriteQueue.sync { session.systemAudioFile = nil }
+        micWriteQueue.sync { session.micAudioFile = nil }
+
+        let attrs = try? FileManager.default.attributesOfItem(atPath: session.systemAudioURL.path)
+        let size = (attrs?[.size] as? Int) ?? 0
+        NSLog("Parrot: system audio file finalized — \(size) bytes")
     }
 
     // MARK: - System Audio (ScreenCaptureKit)
 
-    private func startSystemAudioCapture() async throws {
+    private func startSystemAudioCapture(for session: CaptureSession) async throws {
         // Pre-check screen capture permission
         let content: SCShareableContent
         do {
@@ -187,13 +302,34 @@ final class AudioCaptureManager: NSObject {
 
         let stream = SCStream(filter: filter, configuration: config, delegate: nil)
         try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: .global(qos: .userInteractive))
-        try await stream.startCapture()
-        self.stream = stream
+        let registered = captureState.withLock { state -> Bool in
+            guard state.session === session, state.gate.accepts(session.token) else { return false }
+            session.systemStream = stream
+            session.systemStreamID = ObjectIdentifier(stream)
+            return true
+        }
+        guard registered else { throw CaptureError.captureSuperseded }
+
+        do {
+            try await stream.startCapture()
+        } catch {
+            try? await stream.stopCapture()
+            captureState.withLock { _ in
+                session.systemStream = nil
+                session.systemStreamID = nil
+            }
+            throw error
+        }
+
+        guard accepts(session) else {
+            try? await stream.stopCapture()
+            throw CaptureError.captureSuperseded
+        }
     }
 
     // MARK: - Microphone (AVAudioEngine)
 
-    private func startMicCapture() throws {
+    private func startMicCapture(for session: CaptureSession) throws {
         let engine = AVAudioEngine()
         let inputNode = engine.inputNode
 
@@ -224,8 +360,8 @@ final class AudioCaptureManager: NSObject {
 
         let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self] buffer, _ in
-            guard let self, self.isCapturing else { return }
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self, session] buffer, _ in
+            guard let self, self.accepts(session) else { return }
 
             // Convert to target format
             guard let converter else { return }
@@ -257,24 +393,29 @@ final class AudioCaptureManager: NSObject {
                 // off, this returns the mic unchanged. With it on, it returns cleaned
                 // 10 ms frames (possibly empty until a frame fills) — fail-safe.
                 let micFloats = Self.floats(from: convertedBuffer)
-                let cleaned = self.echoCanceller?.process(mic: micFloats) ?? micFloats
+                let cleaned = session.echoCanceller?.process(mic: micFloats) ?? micFloats
                 guard !cleaned.isEmpty,
                       let cleanedBuffer = Self.makeBuffer(cleaned, format: targetFormat) else { return }
 
                 // Persist the user's voice ("Me") as 16 kHz mono PCM.
-                self.appendAudio(cleanedBuffer, to: .mic)
+                self.appendAudio(cleanedBuffer, to: .mic, session: session)
 
                 // Update the mic level so the UI can show the user's voice landing.
-                self.updateAudioLevel(buffer: cleanedBuffer, isMic: true)
+                self.updateAudioLevel(buffer: cleanedBuffer, isMic: true, session: session)
 
                 // Send the user's speech to transcription as "Me"
-                self.onAudioBuffer?(cleanedBuffer, .me)
+                self.emitAudio(cleanedBuffer, source: .me, session: session)
             }
         }
 
         engine.prepare()
         try engine.start()
-        self.audioEngine = engine
+        guard accepts(session) else {
+            engine.stop()
+            inputNode.removeTap(onBus: 0)
+            throw CaptureError.captureSuperseded
+        }
+        captureState.withLock { _ in session.audioEngine = engine }
     }
 
     // MARK: - Audio File Writing
@@ -285,35 +426,48 @@ final class AudioCaptureManager: NSObject {
     /// The file is created lazily from the first buffer's own format, so writes can
     /// never fail on a format mismatch and there is no codec to initialize. The
     /// buffer is deep-copied because the audio system reuses it after we return.
-    private func appendAudio(_ buffer: AVAudioPCMBuffer, to stream: AudioStream) {
+    private func appendAudio(
+        _ buffer: AVAudioPCMBuffer,
+        to stream: AudioStream,
+        session: CaptureSession
+    ) {
         guard let copy = buffer.deepCopy() else { return }
         let queue = stream == .system ? systemWriteQueue : micWriteQueue
-        let url = stream == .system ? systemAudioURL : micAudioURL
-        guard let url else { return }
+        let url = stream == .system ? session.systemAudioURL : session.micAudioURL
 
-        queue.async { [weak self] in
-            guard let self, !self.filesClosed else { return }
-            do {
-                let file: AVAudioFile
-                if stream == .system {
-                    if self.systemAudioFile == nil {
-                        self.systemAudioFile = try AVAudioFile(forWriting: url, settings: copy.format.settings)
+        // Admission and enqueue are one atomic lifecycle operation. Once a
+        // block is admitted it must write even if stop closes the gate a moment
+        // later; stop's sync barrier will then finalize every admitted sample.
+        captureState.withLock { state in
+            guard state.session === session, state.gate.accepts(session.token) else { return }
+            queue.async { [session] in
+                do {
+                    let file: AVAudioFile
+                    if stream == .system {
+                        if session.systemAudioFile == nil {
+                            session.systemAudioFile = try AVAudioFile(forWriting: url, settings: copy.format.settings)
+                        }
+                        file = session.systemAudioFile!
+                    } else {
+                        if session.micAudioFile == nil {
+                            session.micAudioFile = try AVAudioFile(forWriting: url, settings: copy.format.settings)
+                        }
+                        file = session.micAudioFile!
                     }
-                    file = self.systemAudioFile!
-                } else {
-                    if self.micAudioFile == nil {
-                        self.micAudioFile = try AVAudioFile(forWriting: url, settings: copy.format.settings)
-                    }
-                    file = self.micAudioFile!
+                    try file.write(from: copy)
+                } catch {
+                    NSLog("Parrot: \(stream) audio write failed — \(error.localizedDescription)")
                 }
-                try file.write(from: copy)
-            } catch {
-                NSLog("Parrot: \(stream) audio write failed — \(error.localizedDescription)")
             }
         }
     }
 
-    private func updateAudioLevel(buffer: AVAudioPCMBuffer, isMic: Bool = false) {
+    private func updateAudioLevel(
+        buffer: AVAudioPCMBuffer,
+        isMic: Bool = false,
+        session: CaptureSession
+    ) {
+        guard accepts(session) else { return }
         guard let channelData = buffer.floatChannelData?[0] else { return }
         let frames = Int(buffer.frameLength)
         var sum: Float = 0
@@ -335,7 +489,8 @@ final class AudioCaptureManager: NSObject {
             lastSystemLevelAt = now
         }
 
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self, session] in
+            guard let self, self.accepts(session) else { return }
             if isMic {
                 self.micLevel = avg
                 // Speech sits well above room noise; treat this as "mic is alive".
@@ -345,6 +500,36 @@ final class AudioCaptureManager: NSObject {
                 }
             } else {
                 self.audioLevel = avg
+            }
+        }
+    }
+
+    /// Validate a callback and snapshot the handler under the same lock. The
+    /// handler runs outside the lock so transcription can never block lifecycle
+    /// transitions or recursively deadlock while unwiring itself.
+    private func emitAudio(
+        _ buffer: AVAudioPCMBuffer,
+        source: AudioSource,
+        session: CaptureSession
+    ) {
+        let handler = captureState.withLock { state -> ((AVAudioPCMBuffer, AudioSource) -> Void)? in
+            guard state.session === session, state.gate.accepts(session.token) else { return nil }
+            return state.audioHandler?.body
+        }
+        handler?(buffer, source)
+    }
+
+    private func accepts(_ session: CaptureSession) -> Bool {
+        captureState.withLock { state in
+            state.session === session && state.gate.accepts(session.token)
+        }
+    }
+
+    private func closeGate(for session: CaptureSession) {
+        captureState.withLock { state in
+            state.gate.end(session.token)
+            if state.session === session {
+                state.session = nil
             }
         }
     }
@@ -415,7 +600,14 @@ final class AudioCaptureManager: NSObject {
 
 extension AudioCaptureManager: SCStreamOutput {
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .audio, isCapturing else { return }
+        guard type == .audio else { return }
+        let session = captureState.withLock { state -> CaptureSession? in
+            guard let session = state.session,
+                  state.gate.accepts(session.token),
+                  session.systemStreamID == ObjectIdentifier(stream) else { return nil }
+            return session
+        }
+        guard let session else { return }
 
         // Convert CMSampleBuffer to AVAudioPCMBuffer for WhisperKit
         guard let pcmBuffer = sampleBuffer.toAVAudioPCMBuffer(sampleRate: sampleRate, channels: channels) else {
@@ -423,24 +615,36 @@ extension AudioCaptureManager: SCStreamOutput {
         }
 
         // Persist everyone else's voice ("Them") as PCM.
-        appendAudio(pcmBuffer, to: .system)
+        appendAudio(pcmBuffer, to: .system, session: session)
 
         // Feed the same audio to the echo canceller as the far-end reference, so it
         // can subtract this from the mic. Only when it's the expected 16 kHz mono.
         if pcmBuffer.format.sampleRate == sampleRate, pcmBuffer.format.channelCount == channels {
-            echoCanceller?.pushReference(Self.floats(from: pcmBuffer))
-        } else if echoCanceller != nil, !echoCancellerStarved {
-            // Without a reference the AEC is silently a no-op and speaker bleed
-            // transcribes as "Me" — surface it once instead of hiding it.
-            NSLog("Parrot: echo canceller starved — system audio is \(pcmBuffer.format.sampleRate) Hz ×\(pcmBuffer.format.channelCount)ch, expected \(sampleRate) Hz mono")
-            DispatchQueue.main.async { self.echoCancellerStarved = true }
+            session.echoCanceller?.pushReference(Self.floats(from: pcmBuffer))
+        } else if session.echoCanceller != nil {
+            let shouldReport = captureState.withLock { state -> Bool in
+                guard state.session === session,
+                      state.gate.accepts(session.token),
+                      !session.starvationReported else { return false }
+                session.starvationReported = true
+                return true
+            }
+            if shouldReport {
+                // Without a reference the AEC is silently a no-op and speaker bleed
+                // transcribes as "Me" — surface it once instead of hiding it.
+                NSLog("Parrot: echo canceller starved — system audio is \(pcmBuffer.format.sampleRate) Hz ×\(pcmBuffer.format.channelCount)ch, expected \(sampleRate) Hz mono")
+                DispatchQueue.main.async { [weak self, session] in
+                    guard let self, self.accepts(session) else { return }
+                    self.echoCancellerStarved = true
+                }
+            }
         }
 
         // Update audio level
-        updateAudioLevel(buffer: pcmBuffer)
+        updateAudioLevel(buffer: pcmBuffer, session: session)
 
         // Send everyone else's speech to transcription as "Them"
-        onAudioBuffer?(pcmBuffer, .them)
+        emitAudio(pcmBuffer, source: .them, session: session)
     }
 }
 
@@ -450,12 +654,16 @@ enum CaptureError: LocalizedError {
     case noDisplay
     case noMicrophone
     case screenRecordingDenied
+    case captureAlreadyInProgress
+    case captureSuperseded
 
     var errorDescription: String? {
         switch self {
         case .noDisplay: "No display found for audio capture"
         case .noMicrophone: "No microphone available"
         case .screenRecordingDenied: "Screen Recording permission is required. Please grant it in System Settings > Privacy & Security > Screen & System Audio Recording, then restart Parrot."
+        case .captureAlreadyInProgress: "Audio capture is already starting or running"
+        case .captureSuperseded: "Audio capture was stopped before startup completed"
         }
     }
 }
@@ -469,31 +677,66 @@ extension CMSampleBuffer {
             return nil
         }
 
-        guard let avFormat = AVAudioFormat(
+        guard let sourceFormat = AVAudioFormat(streamDescription: asbd) else { return nil }
+
+        let frameCount = CMSampleBufferGetNumSamples(self)
+        guard frameCount > 0,
+              let sourceBuffer = AVAudioPCMBuffer(
+                pcmFormat: sourceFormat,
+                frameCapacity: AVAudioFrameCount(frameCount)
+              ) else {
+            return nil
+        }
+        let copyStatus = CMSampleBufferCopyPCMDataIntoAudioBufferList(
+            self,
+            at: 0,
+            frameCount: Int32(frameCount),
+            into: sourceBuffer.mutableAudioBufferList
+        )
+        guard copyStatus == noErr else { return nil }
+        sourceBuffer.frameLength = AVAudioFrameCount(frameCount)
+
+        let targetChannels = AVAudioChannelCount(channels)
+        guard let targetFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
-            sampleRate: asbd.pointee.mSampleRate,
-            channels: AVAudioChannelCount(asbd.pointee.mChannelsPerFrame),
+            sampleRate: sampleRate,
+            channels: targetChannels,
             interleaved: false
         ) else { return nil }
 
-        let frameCount = CMSampleBufferGetNumSamples(self)
-        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: avFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
-            return nil
+        // ScreenCaptureKit normally honors the requested 16 kHz mono format.
+        // Preserve that zero-conversion fast path, but correctly downmix and
+        // resample when a device/OS returns 44.1/48 kHz or multiple channels.
+        if sourceFormat.commonFormat == .pcmFormatFloat32,
+           !sourceFormat.isInterleaved,
+           sourceFormat.sampleRate == sampleRate,
+           sourceFormat.channelCount == targetChannels {
+            return sourceBuffer
         }
-        pcmBuffer.frameLength = AVAudioFrameCount(frameCount)
 
-        guard let blockBuffer = CMSampleBufferGetDataBuffer(self) else { return nil }
-        var length = 0
-        var dataPointer: UnsafeMutablePointer<Int8>?
-        CMBlockBufferGetDataPointer(blockBuffer, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length, dataPointerOut: &dataPointer)
+        guard let converter = AVAudioConverter(from: sourceFormat, to: targetFormat) else { return nil }
+        let ratio = sampleRate / sourceFormat.sampleRate
+        let outputCapacity = AVAudioFrameCount(ceil(Double(frameCount) * ratio) + 32)
+        guard let output = AVAudioPCMBuffer(
+            pcmFormat: targetFormat,
+            frameCapacity: max(outputCapacity, 1)
+        ) else { return nil }
 
-        guard let data = dataPointer, let channelData = pcmBuffer.floatChannelData else { return nil }
-
-        // Copy audio data — handle float32 format
-        let byteCount = min(length, Int(pcmBuffer.frameCapacity) * MemoryLayout<Float>.size)
-        memcpy(channelData[0], data, byteCount)
-
-        return pcmBuffer
+        var conversionError: NSError?
+        var suppliedInput = false
+        let status = converter.convert(to: output, error: &conversionError) { _, inputStatus in
+            if suppliedInput {
+                inputStatus.pointee = .endOfStream
+                return nil
+            }
+            suppliedInput = true
+            inputStatus.pointee = .haveData
+            return sourceBuffer
+        }
+        guard conversionError == nil,
+              status != .error,
+              output.frameLength > 0 else { return nil }
+        return output
     }
 }
 

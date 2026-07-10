@@ -4,6 +4,13 @@
 
 Parrot sits quietly on your Mac and records your Google Meet, Zoom, or any other meeting — transcribing everything in real-time, completely locally by default. No cloud. No API costs. No data leaving your machine. And when you *do* opt into cloud features (faster transcription, the AI copilot), you bring your own keys and Parrot shows you exactly what every call cost, down to the cent.
 
+> **This branch is the local-only personal build.** It pins NVIDIA Parakeet TDT
+> 0.6B V3 as the fast multilingual recognizer, Whisper Large V3 Turbo as an
+> on-device fallback, and Silero VAD for call boundaries. Cloud transcription,
+> transcript polish, copilot, and cloud reports are disabled in code even if an
+> old API key or preference still exists. Internet access is used only to fetch
+> missing local model files; after they are cached, calls work offline.
+
 ---
 
 ## Hey! 👋
@@ -35,7 +42,7 @@ If you find this useful or just think the idea is cool, give it a star. It'll ma
 | What | How |
 |------|-----|
 | UI | SwiftUI, native macOS (no Electron!) |
-| Speech-to-Text (default) | [WhisperKit](https://github.com/argmaxinc/WhisperKit) — on-device, runs on Neural Engine |
+| Speech-to-Text (personal build) | FluidAudio Parakeet TDT 0.6B V3 + Silero VAD; WhisperKit Large V3 Turbo fallback — all on-device |
 | Speech-to-Text (optional, BYO key) | Groq `whisper-large-v3-turbo` (HTTP chunks) · Deepgram Nova-3 (websocket streaming) |
 | Copilot & reports (optional, BYO key) | Claude API (Haiku) with structured outputs |
 | Knowledge base | Apple NaturalLanguage embeddings — documents chunked & embedded on-device, never uploaded |

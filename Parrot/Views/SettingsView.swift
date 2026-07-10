@@ -69,6 +69,7 @@ struct SettingsView: View {
                         await recordingManager.transcriptionEngine.loadModel()
                     }
                 }
+                .disabled(modelActionDisabled)
 
                 Label("Free and on-device. Call audio and transcript text never go to a cloud service.",
                       systemImage: "lock.shield.fill")
@@ -99,6 +100,16 @@ struct SettingsView: View {
             }
         }
         .padding()
+    }
+
+    private var modelActionDisabled: Bool {
+        if recordingManager.isStarting || recordingManager.isRecording || recordingManager.isStopping {
+            return true
+        }
+        if case .loading = recordingManager.transcriptionEngine.modelState {
+            return true
+        }
+        return false
     }
 
     @ViewBuilder
