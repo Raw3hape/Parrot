@@ -27,6 +27,7 @@ enum ProfileTest {
         testStableHash()
         testNearDuplicate()
         testHallucinationFilter()
+        testUtteranceSegmentation()
         testWAVEncoder()
         testAIUsageCost()
         print(failures == 0 ? "ALL PASS" : "FAILURES: \(failures)")
@@ -197,6 +198,60 @@ enum ProfileTest {
         check("halluc: real sentence kept", !TranscriptionEngine.isLikelyHallucination("Can you hear me?", energy: 0.002))
         check("halluc: loud 'Okay.' kept", !TranscriptionEngine.isLikelyHallucination("Okay.", energy: 0.02))
         check("halluc: loud 'Thank you.' kept", !TranscriptionEngine.isLikelyHallucination("Thank you.", energy: 0.03))
+    }
+
+    static func testUtteranceSegmentation() {
+        func finals(_ emissions: [UtteranceEmission]) -> [UtteranceAudio] {
+            emissions.compactMap {
+                if case .final(let audio) = $0 { return audio }
+                return nil
+            }
+        }
+        func previews(_ emissions: [UtteranceEmission]) -> [UtteranceAudio] {
+            emissions.compactMap {
+                if case .preview(let audio) = $0 { return audio }
+                return nil
+            }
+        }
+
+        // VAD reports a padded start boundary after the first frame has already
+        // been retained. A 150 ms reply must survive as a real final segment.
+        var short = UtteranceAssembler(config: .callDefault)
+        _ = short.append(Array(repeating: 0.2, count: 2_400), absoluteStartSample: 0)
+        _ = short.apply(.started(atSample: 0))
+        let shortFinals = finals(short.apply(.ended(atSample: 2_400)))
+        check("utterance preserves 150ms reply", shortFinals.first?.samples.count == 2_400)
+        check("utterance keeps absolute short timestamps",
+              shortFinals.first?.startSample == 0 && shortFinals.first?.endSample == 2_400)
+
+        // A growing utterance publishes replaceable hypotheses, then forces a
+        // bounded final at 14 seconds while retaining one second of overlap.
+        var long = UtteranceAssembler(config: .callDefault)
+        _ = long.apply(.started(atSample: 0))
+        var longEmissions: [UtteranceEmission] = []
+        for offset in stride(from: 0, to: 240_000, by: 4_000) {
+            longEmissions += long.append(
+                Array(repeating: 0.2, count: 4_000),
+                absoluteStartSample: offset
+            )
+        }
+        check("utterance emits rolling previews", previews(longEmissions).count >= 8)
+        check("utterance caps long speech", finals(longEmissions).contains { $0.forcedSplit })
+        check("utterance active buffer stays bounded", long.retainedSampleCount <= 240_000)
+
+        // Stop must commit the tail exactly once, and a second flush must be empty.
+        var tail = UtteranceAssembler(config: .callDefault)
+        _ = tail.apply(.started(atSample: 0))
+        _ = tail.append(Array(repeating: 0.2, count: 8_000), absoluteStartSample: 0)
+        let flushed = finals(tail.flush(atSample: 8_000))
+        check("utterance flushes final tail", flushed.first?.endSample == 8_000)
+        check("utterance flush is idempotent", tail.flush(atSample: 8_000).isEmpty)
+
+        // While idle, only the configured pre-roll is retained.
+        var idle = UtteranceAssembler(config: .callDefault)
+        _ = idle.append(Array(repeating: 0.0, count: 32_000), absoluteStartSample: 0)
+        check("utterance idle buffer is preroll only",
+              idle.retainedSampleCount == CallSegmentationConfig.callDefault.retainedPrerollSamples)
     }
 
     static func testWAVEncoder() {
