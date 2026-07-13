@@ -35,6 +35,18 @@ struct CaptureSessionGate: Sendable {
     }
 }
 
+/// Stable identity carried by the session-owned ScreenCaptureKit output object.
+/// ScreenCaptureKit may hand callbacks a different Swift wrapper for the same
+/// underlying `SCStream`, so routing must use our capture generation instead of
+/// `ObjectIdentifier(stream)`.
+struct SystemAudioCallbackRoute: Sendable {
+    let token: CaptureSessionGate.Token
+
+    func isAccepted(by gate: CaptureSessionGate) -> Bool {
+        gate.accepts(token)
+    }
+}
+
 /// Captures system audio via ScreenCaptureKit and microphone via AVAudioEngine.
 /// Provides mixed PCM audio for transcription and saves separate tracks to disk.
 @Observable
@@ -60,8 +72,10 @@ final class AudioCaptureManager: NSObject {
         let micAudioURL: URL
         let echoCanceller: EchoCanceller?
         var systemStream: SCStream?
-        var systemStreamID: ObjectIdentifier?
+        var systemOutput: SystemAudioOutput?
         var audioEngine: AVAudioEngine?
+        var systemCallbackCount = 0
+        var systemConversionFailureCount = 0
         var starvationReported = false
         var stopping = false
         var callbackAdmissionOpen = true
@@ -129,6 +143,17 @@ final class AudioCaptureManager: NSObject {
     /// arrives in the expected format — the AEC is then a silent no-op and the
     /// far end's voice can transcribe as "Me". Shown in the live device bar.
     private(set) var echoCancellerStarved = false
+
+    /// The main waveform represents whichever side is currently audible. Keeping
+    /// mic and system levels separate is still useful in the device bar, but a
+    /// mic-only speaker must never see a flat primary waveform.
+    var liveAudioLevel: Float {
+        Self.combinedLiveLevel(system: audioLevel, mic: micLevel)
+    }
+
+    static func combinedLiveLevel(system: Float, mic: Float) -> Float {
+        max(system, mic)
+    }
 
     /// True only when the mic has been on for a while but has never produced any
     /// signal — a genuinely dead, muted, or misrouted mic. We key off "never heard"
@@ -265,7 +290,7 @@ final class AudioCaptureManager: NSObject {
         captureState.withLock { _ in
             session.audioEngine = nil
             session.systemStream = nil
-            session.systemStreamID = nil
+            session.systemOutput = nil
         }
 
         // A mic/SCK callback may already be converting a buffer. Close admission
@@ -281,7 +306,7 @@ final class AudioCaptureManager: NSObject {
 
         let attrs = try? FileManager.default.attributesOfItem(atPath: session.systemAudioURL.path)
         let size = (attrs?[.size] as? Int) ?? 0
-        NSLog("Parrot: system audio file finalized — \(size) bytes")
+        NSLog("Parrot: system audio file finalized — \(size) bytes, \(session.systemCallbackCount) callbacks, \(session.systemConversionFailureCount) conversion failures")
     }
 
     // MARK: - System Audio (ScreenCaptureKit)
@@ -316,12 +341,16 @@ final class AudioCaptureManager: NSObject {
         // The system audio file is created lazily from the first buffer's format
         // (see the SCStreamOutput handler), so it always matches what we write.
 
-        let stream = SCStream(filter: filter, configuration: config, delegate: nil)
-        try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: systemCaptureQueue)
+        let output = SystemAudioOutput(
+            owner: self,
+            route: SystemAudioCallbackRoute(token: session.token)
+        )
+        let stream = SCStream(filter: filter, configuration: config, delegate: output)
+        try stream.addStreamOutput(output, type: .audio, sampleHandlerQueue: systemCaptureQueue)
         let registered = captureState.withLock { state -> Bool in
             guard state.session === session, state.gate.accepts(session.token) else { return false }
             session.systemStream = stream
-            session.systemStreamID = ObjectIdentifier(stream)
+            session.systemOutput = output
             return true
         }
         guard registered else { throw CaptureError.captureSuperseded }
@@ -332,7 +361,7 @@ final class AudioCaptureManager: NSObject {
             try? await stream.stopCapture()
             captureState.withLock { _ in
                 session.systemStream = nil
-                session.systemStreamID = nil
+                session.systemOutput = nil
             }
             throw error
         }
@@ -542,18 +571,11 @@ final class AudioCaptureManager: NSObject {
         }
     }
 
-    private func beginCallback(
-        for session: CaptureSession,
-        matchingSystemStream stream: SCStream? = nil
-    ) -> Bool {
+    private func beginCallback(for session: CaptureSession) -> Bool {
         captureState.withLock { state in
             guard state.session === session,
                   state.gate.accepts(session.token),
                   session.callbackAdmissionOpen else { return false }
-            if let stream,
-               session.systemStreamID != ObjectIdentifier(stream) {
-                return false
-            }
             session.inFlightCallbacks += 1
             return true
         }
@@ -657,22 +679,59 @@ final class AudioCaptureManager: NSObject {
 
 // MARK: - SCStreamOutput
 
-extension AudioCaptureManager: SCStreamOutput {
-    func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
+private final class SystemAudioOutput: NSObject, SCStreamOutput, SCStreamDelegate {
+    weak var owner: AudioCaptureManager?
+    let route: SystemAudioCallbackRoute
+
+    init(owner: AudioCaptureManager, route: SystemAudioCallbackRoute) {
+        self.owner = owner
+        self.route = route
+    }
+
+    func stream(
+        _ stream: SCStream,
+        didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
+        of type: SCStreamOutputType
+    ) {
+        owner?.handleSystemAudio(sampleBuffer, type: type, route: route)
+    }
+
+    func stream(_ stream: SCStream, didStopWithError error: any Error) {
+        NSLog("Parrot: ScreenCaptureKit stream stopped — \(error.localizedDescription)")
+    }
+}
+
+extension AudioCaptureManager {
+    fileprivate func handleSystemAudio(
+        _ sampleBuffer: CMSampleBuffer,
+        type: SCStreamOutputType,
+        route: SystemAudioCallbackRoute
+    ) {
         guard type == .audio else { return }
         let session = captureState.withLock { state -> CaptureSession? in
             guard let session = state.session,
-                  state.gate.accepts(session.token),
-                  session.callbackAdmissionOpen,
-                  session.systemStreamID == ObjectIdentifier(stream) else { return nil }
-            session.inFlightCallbacks += 1
+                  session.token == route.token,
+                  route.isAccepted(by: state.gate) else { return nil }
+            session.systemCallbackCount += 1
             return session
         }
-        guard let session else { return }
+        guard let session, beginCallback(for: session) else { return }
         defer { endCallback(for: session) }
 
         // Convert CMSampleBuffer to AVAudioPCMBuffer for WhisperKit
         guard let pcmBuffer = sampleBuffer.toAVAudioPCMBuffer(sampleRate: sampleRate, channels: channels) else {
+            let failures = captureState.withLock { _ -> Int in
+                session.systemConversionFailureCount += 1
+                return session.systemConversionFailureCount
+            }
+            if failures <= 3 {
+                let frames = CMSampleBufferGetNumSamples(sampleBuffer)
+                let format = CMSampleBufferGetFormatDescription(sampleBuffer)
+                    .flatMap(CMAudioFormatDescriptionGetStreamBasicDescription)
+                    .map { "\($0.pointee.mSampleRate) Hz ×\($0.pointee.mChannelsPerFrame)ch, flags=\($0.pointee.mFormatFlags)" }
+                    ?? "unknown format"
+                NSLog("Parrot: system audio conversion failed — \(frames) frames, \(format)")
+            }
             return
         }
 
@@ -749,15 +808,40 @@ extension CMSampleBuffer {
               ) else {
             return nil
         }
+        // AVAudioPCMBuffer exposes zero writable bytes while frameLength is zero.
+        // Set the intended length before asking CoreMedia to copy into its ABL.
+        sourceBuffer.frameLength = AVAudioFrameCount(frameCount)
         let copyStatus = CMSampleBufferCopyPCMDataIntoAudioBufferList(
             self,
             at: 0,
             frameCount: Int32(frameCount),
             into: sourceBuffer.mutableAudioBufferList
         )
-        guard copyStatus == noErr else { return nil }
-        sourceBuffer.frameLength = AVAudioFrameCount(frameCount)
-
+        if copyStatus != noErr {
+            // ScreenCaptureKit's 16 kHz mono buffers on recent macOS are valid
+            // contiguous PCM, but `CMSampleBufferCopyPCMDataIntoAudioBufferList`
+            // can reject them because their sample-size table is omitted. Copy
+            // the underlying block directly for a single-plane destination.
+            // Interleaved audio is also one plane; non-interleaved multichannel
+            // still uses the stricter AudioBufferList path above.
+            guard sourceFormat.channelCount == 1 || sourceFormat.isInterleaved,
+                  let block = CMSampleBufferGetDataBuffer(self),
+                  let destination = sourceBuffer.mutableAudioBufferList.pointee.mBuffers.mData else {
+                return nil
+            }
+            let availableBytes = CMBlockBufferGetDataLength(block)
+            let destinationBytes = Int(sourceBuffer.mutableAudioBufferList.pointee.mBuffers.mDataByteSize)
+            let bytesToCopy = min(availableBytes, destinationBytes)
+            guard bytesToCopy > 0,
+                  CMBlockBufferCopyDataBytes(
+                    block,
+                    atOffset: 0,
+                    dataLength: bytesToCopy,
+                    destination: destination
+                  ) == noErr else {
+                return nil
+            }
+        }
         let targetChannels = AVAudioChannelCount(channels)
         guard let targetFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,

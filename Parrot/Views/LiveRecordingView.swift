@@ -34,7 +34,7 @@ struct LiveRecordingView: View {
             Divider()
 
             // Audio waveform
-            AudioWaveformView(level: recordingManager.audioCaptureManager.audioLevel)
+            AudioWaveformView(level: recordingManager.audioCaptureManager.liveAudioLevel)
                 .frame(height: 40)
                 .padding(.horizontal)
 

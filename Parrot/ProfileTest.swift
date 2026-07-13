@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import SwiftUI
 import SwiftData
 
@@ -31,6 +32,9 @@ enum ProfileTest {
         testRecognitionFallbackPolicy()
         testAudioSampleQueue()
         testCaptureSessionGate()
+        testSystemAudioCallbackRouting()
+        testCombinedLiveAudioLevel()
+        testSystemAudioPCMConversion()
         testEnergyFallbackHandoff()
         testLiveTranscriptStability()
         testPersonalBuildPolicy()
@@ -366,6 +370,50 @@ enum ProfileTest {
         check("capture gate closes current generation", !gate.accepts(second))
     }
 
+    static func testSystemAudioCallbackRouting() {
+        var gate = CaptureSessionGate()
+        let first = gate.begin()
+        let staleRoute = SystemAudioCallbackRoute(token: first)
+        gate.end(first)
+
+        let second = gate.begin()
+        let activeRoute = SystemAudioCallbackRoute(token: second)
+
+        check("system callback rejects stale session route", !staleRoute.isAccepted(by: gate))
+        check("system callback accepts active route without SCStream wrapper identity",
+              activeRoute.isAccepted(by: gate))
+    }
+
+    static func testCombinedLiveAudioLevel() {
+        check("live waveform shows microphone-only activity",
+              AudioCaptureManager.combinedLiveLevel(system: 0.0, mic: 0.25) == 0.25)
+        check("live waveform keeps stronger system activity",
+              AudioCaptureManager.combinedLiveLevel(system: 0.4, mic: 0.1) == 0.4)
+    }
+
+    static func testSystemAudioPCMConversion() {
+        let format = AVAudioFormat(
+            commonFormat: .pcmFormatFloat32,
+            sampleRate: 16_000,
+            channels: 1,
+            interleaved: false
+        )!
+        let source = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 320)!
+        source.frameLength = 320
+        for index in 0..<320 {
+            source.floatChannelData![0][index] = Float(index) / 320
+        }
+
+        let sampleBuffer = source.toCMSampleBuffer(
+            presentationTime: AVAudioTime(sampleTime: 0, atRate: 16_000)
+        )
+        let converted = sampleBuffer?.toAVAudioPCMBuffer(sampleRate: 16_000, channels: 1)
+
+        check("system PCM sample buffer converts", converted?.frameLength == 320)
+        check("system PCM conversion preserves samples",
+              abs((converted?.floatChannelData?[0][160] ?? -1) - 0.5) < 0.0001)
+    }
+
     static func testEnergyFallbackHandoff() {
         var detector = EnergyBoundaryDetector()
         detector.seedActive()
@@ -383,7 +431,7 @@ enum ProfileTest {
               EnergyBoundaryDetector.isImplausibleStationaryNoise(alternating))
 
         let speechLike = (0..<2_400).map { sample in
-            Float(sin(Double(sample) * 2 * .pi * 220 / 16_000) * 0.08)
+            Float(sin(Double(sample) * 2 * Double.pi * 220 / 16_000) * 0.08)
         }
         check("energy fallback keeps plausible short speech",
               !EnergyBoundaryDetector.isImplausibleStationaryNoise(speechLike))
