@@ -300,8 +300,20 @@ enum ProfileTest {
         )
         check("fallback rejects Cyrillic in a fixed Polish call",
               policy.needsFallback(.success(wrongScript), language: "pl"))
+        check("fallback rejects Cyrillic in a fixed English call",
+              policy.needsFallback(.success(wrongScript), language: "en"))
+        check("fallback keeps Cyrillic in a fixed Russian call",
+              !policy.needsFallback(.success(wrongScript), language: "ru"))
         check("fallback keeps Cyrillic when language is auto-detected",
               !policy.needsFallback(.success(wrongScript), language: nil))
+
+        let englishProductTerms = LocalRecognitionResult(
+            text: "Откройте dashboard и Review Queue в sidebar.",
+            confidence: 0.95,
+            engine: .parakeet
+        )
+        check("fallback preserves English product terms in a Russian call",
+              !policy.needsFallback(.success(englishProductTerms), language: "ru"))
 
         let whisperPrimary = LocalRecognitionResult(
             text: "Добрый день",
