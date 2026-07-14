@@ -29,6 +29,7 @@ enum ProfileTest {
         testNearDuplicate()
         testHallucinationFilter()
         testUtteranceSegmentation()
+        testParakeetLanguageHint()
         testRecognitionFallbackPolicy()
         testAudioSampleQueue()
         testCaptureSessionGate()
@@ -292,6 +293,16 @@ enum ProfileTest {
         check("fallback catches non-finite confidence",
               policy.needsFallback(.success(invalidConfidence)))
 
+        let wrongScript = LocalRecognitionResult(
+            text: "Ну, ваше так. Або просто.",
+            confidence: 0.95,
+            engine: .parakeet
+        )
+        check("fallback rejects Cyrillic in a fixed Polish call",
+              policy.needsFallback(.success(wrongScript), language: "pl"))
+        check("fallback keeps Cyrillic when language is auto-detected",
+              !policy.needsFallback(.success(wrongScript), language: nil))
+
         let whisperPrimary = LocalRecognitionResult(
             text: "Добрый день",
             confidence: -0.2,
@@ -329,6 +340,19 @@ enum ProfileTest {
         )
         check("fallback reports failure when both engines fail",
               (try? bothFailed.get()) == nil)
+    }
+
+    static func testParakeetLanguageHint() {
+        check("Parakeet pins Polish decoder",
+              ParakeetModelService.decoderLanguage(for: "pl") == .polish)
+        check("Parakeet pins Russian decoder",
+              ParakeetModelService.decoderLanguage(for: "ru") == .russian)
+        check("Parakeet pins English decoder",
+              ParakeetModelService.decoderLanguage(for: "en") == .english)
+        check("Parakeet keeps auto-detect unrestricted",
+              ParakeetModelService.decoderLanguage(for: nil) == nil)
+        check("Parakeet ignores unsupported language hints",
+              ParakeetModelService.decoderLanguage(for: "auto") == nil)
     }
 
     static func testAudioSampleQueue() {

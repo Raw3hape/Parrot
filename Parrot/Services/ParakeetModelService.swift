@@ -18,6 +18,11 @@ actor ParakeetModelService: LocalSpeechRecognizing {
     private(set) var isReady = false
     private(set) var preparationLaunchCount = 0
 
+    nonisolated static func decoderLanguage(for language: String?) -> Language? {
+        guard let language else { return nil }
+        return Language(rawValue: language.lowercased())
+    }
+
     func prepare(
         progressHandler: ProgressHandler? = nil
     ) async throws {
@@ -79,7 +84,7 @@ actor ParakeetModelService: LocalSpeechRecognizing {
         let result = try await manager.transcribe(
             input,
             decoderState: &decoderState,
-            language: nil
+            language: Self.decoderLanguage(for: language)
         )
         return LocalRecognitionResult(
             text: result.text.trimmingCharacters(in: .whitespacesAndNewlines),

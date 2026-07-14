@@ -22,13 +22,17 @@ struct RecognitionFallbackPolicy: Sendable {
     let confidenceThreshold: Float
 
     func needsFallback(
-        _ primary: Result<LocalRecognitionResult, Error>
+        _ primary: Result<LocalRecognitionResult, Error>,
+        language: String? = nil
     ) -> Bool {
         switch primary {
         case .failure:
             return true
         case .success(let result):
             if result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return true
+            }
+            if Self.hasCyrillic(result.text), language == "pl" || language == "en" {
                 return true
             }
             // Whisper is already the recovery engine. Sending a valid Whisper
@@ -43,16 +47,18 @@ struct RecognitionFallbackPolicy: Sendable {
 
     func shouldAttemptFallback(
         _ primary: Result<LocalRecognitionResult, Error>,
-        fallbackAvailable: Bool
+        fallbackAvailable: Bool,
+        language: String? = nil
     ) -> Bool {
-        fallbackAvailable && needsFallback(primary)
+        fallbackAvailable && needsFallback(primary, language: language)
     }
 
     func resolve(
         primary: Result<LocalRecognitionResult, Error>,
-        fallback: Result<LocalRecognitionResult, Error>
+        fallback: Result<LocalRecognitionResult, Error>,
+        language: String? = nil
     ) -> Result<LocalRecognitionResult, Error> {
-        if !needsFallback(primary) { return primary }
+        if !needsFallback(primary, language: language) { return primary }
         if case .success(let fallbackResult) = fallback,
            !fallbackResult.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return .success(fallbackResult)
@@ -64,6 +70,12 @@ struct RecognitionFallbackPolicy: Sendable {
         }
 
         return fallback
+    }
+
+    private static func hasCyrillic(_ text: String) -> Bool {
+        text.unicodeScalars.contains { scalar in
+            (0x0400...0x04FF).contains(scalar.value)
+        }
     }
 }
 
@@ -108,7 +120,8 @@ actor LocalRecognitionRouter {
 
         guard policy.shouldAttemptFallback(
             primaryAttempt,
-            fallbackAvailable: fallback != nil
+            fallbackAvailable: fallback != nil,
+            language: language
         ) else {
             return try primaryAttempt.get()
         }
@@ -127,6 +140,10 @@ actor LocalRecognitionRouter {
         } catch {
             fallbackAttempt = .failure(error)
         }
-        return try policy.resolve(primary: primaryAttempt, fallback: fallbackAttempt).get()
+        return try policy.resolve(
+            primary: primaryAttempt,
+            fallback: fallbackAttempt,
+            language: language
+        ).get()
     }
 }
