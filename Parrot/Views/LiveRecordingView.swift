@@ -26,6 +26,24 @@ struct LiveRecordingView: View {
 
     private var sideTab: LiveSideTab { LiveSideTab(rawValue: sideTabRaw) ?? .transcript }
 
+    private var recordingSessionPhase: RecordingSessionPhase? {
+        RecordingNavigationPolicy.sessionPhase(
+            isStarting: recordingManager.isStarting,
+            isRecording: recordingManager.isRecording,
+            isStopping: recordingManager.isStopping
+        )
+    }
+
+    /// On a navigation return, SwiftUI creates this view before `onAppear` can
+    /// seed the optimized cache. Falling back to the persisted live meeting
+    /// removes the otherwise visible empty-frame flash.
+    private var transcriptSegments: [TranscriptSegment] {
+        if displayedSegments.isEmpty {
+            return recordingManager.currentMeeting?.sortedSegments ?? []
+        }
+        return displayedSegments
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Top bar
@@ -67,17 +85,7 @@ struct LiveRecordingView: View {
 
     private var recordingHeader: some View {
         HStack {
-            // Recording indicator
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(.red)
-                    .frame(width: 10, height: 10)
-                    .shadow(color: .red.opacity(0.5), radius: 4)
-
-                Text("Recording")
-                    .font(.headline)
-                    .foregroundStyle(.red)
-            }
+            recordingStatus
 
             Spacer()
 
@@ -107,20 +115,57 @@ struct LiveRecordingView: View {
 
             // Stop button. Stop drains the transcription backlog (can take a few
             // seconds on a long call), so show that instead of looking hung.
-            Button {
-                Task {
-                    await recordingManager.stopRecording()
+            if recordingManager.isStarting {
+                Text("Preparing local transcription…")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.secondary)
+            } else {
+                Button {
+                    Task {
+                        await recordingManager.stopRecording()
+                    }
+                } label: {
+                    Label(recordingManager.isStopping ? "Finalizing…" : "Stop",
+                          systemImage: "stop.circle.fill")
+                        .font(.headline)
+                        .foregroundStyle(recordingManager.isStopping ? Color.secondary : Color.red)
                 }
-            } label: {
-                Label(recordingManager.isStopping ? "Finalizing…" : "Stop",
-                      systemImage: "stop.circle.fill")
-                    .font(.headline)
-                    .foregroundStyle(recordingManager.isStopping ? Color.secondary : Color.red)
+                .buttonStyle(.plain)
+                .disabled(recordingManager.isStopping)
             }
-            .buttonStyle(.plain)
-            .disabled(recordingManager.isStopping)
         }
         .padding()
+    }
+
+    @ViewBuilder
+    private var recordingStatus: some View {
+        switch recordingSessionPhase {
+        case .starting:
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Starting recording")
+                    .font(.headline)
+                    .foregroundStyle(Theme.Colors.ink2)
+            }
+        case .stopping:
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Finalizing recording")
+                    .font(.headline)
+                    .foregroundStyle(Theme.Colors.ink2)
+            }
+        case .recording, .none:
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(.red)
+                    .frame(width: 10, height: 10)
+                    .shadow(color: .red.opacity(0.5), radius: 4)
+
+                Text("Recording")
+                    .font(.headline)
+                    .foregroundStyle(.red)
+            }
+        }
     }
 
     // MARK: - Device Bar
@@ -285,11 +330,12 @@ struct LiveRecordingView: View {
             ZStack(alignment: .bottom) {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 3) {
-                        ForEach(Array(displayedSegments.enumerated()), id: \.element.id) { index, segment in
+                        let segments = transcriptSegments
+                        ForEach(Array(segments.enumerated()), id: \.element.id) { index, segment in
                             ChatBubbleRow(
                                 segment: segment,
                                 isFirstOfGroup: index == 0
-                                    || displayedSegments[index - 1].speakerLabel != segment.speakerLabel
+                                    || segments[index - 1].speakerLabel != segment.speakerLabel
                             )
                             .id(segment.id)
                         }
@@ -302,14 +348,13 @@ struct LiveRecordingView: View {
                                 .padding(.top, 8)
                         }
 
-                        if recordingManager.currentMeeting?.segments.isEmpty == true
-                            && recordingManager.transcriptionEngine.currentText.isEmpty {
-                            Text("Parrot is listening...")
-                                .font(Theme.Typography.body)
-                                .foregroundStyle(.tertiary)
-                                .italic()
-                                .padding(.horizontal)
-                                .padding(.top, 20)
+                        if LiveTranscriptPresentationPolicy.shouldShowStatus(
+                            persistedSegmentCount: segments.count,
+                            hasInterimText: !recordingManager.transcriptionEngine.currentText.isEmpty
+                        ) {
+                            LiveTranscriptStatus(phase: recordingSessionPhase)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 32)
                         }
 
                         // Live-edge sentinel: a stable scroll anchor that also
@@ -374,9 +419,12 @@ struct LiveRecordingView: View {
                 // defaultScrollAnchor(.bottom); no programmatic scroll here.
                 displayedSegments = recordingManager.currentMeeting?.sortedSegments ?? []
             }
-            .task(id: recordingManager.currentMeeting?.id) {
-                // Seed on appear and reseed if the meeting changes (e.g. navigating
-                // back into a live recording).
+            .onAppear {
+                // The computed fallback above prevents a blank first frame; this
+                // synchronous seed keeps later streaming updates inexpensive.
+                displayedSegments = recordingManager.currentMeeting?.sortedSegments ?? []
+            }
+            .onChange(of: recordingManager.currentMeeting?.id) {
                 displayedSegments = recordingManager.currentMeeting?.sortedSegments ?? []
             }
             .onChange(of: copilotJumpTarget) { _, target in
@@ -397,6 +445,58 @@ struct LiveRecordingView: View {
                 copilotJumpTarget = nil
             }
         }
+        }
+    }
+}
+
+private struct LiveTranscriptStatus: View {
+    let phase: RecordingSessionPhase?
+
+    var body: some View {
+        VStack(spacing: 10) {
+            if phase == .starting || phase == .stopping {
+                ProgressView()
+                    .controlSize(.regular)
+            } else {
+                Image(systemName: "waveform.badge.mic")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(Theme.Colors.accent)
+            }
+
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(Theme.Colors.ink)
+
+            Text(detail)
+                .font(Theme.Typography.secondary)
+                .foregroundStyle(Theme.Colors.ink2)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 320)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var title: String {
+        switch phase {
+        case .starting: "Preparing live transcription"
+        case .recording: "Listening for speech"
+        case .stopping: "Finalizing transcript"
+        case .none: "Opening live recording"
+        }
+    }
+
+    private var detail: String {
+        switch phase {
+        case .starting:
+            "The local model and audio devices are starting. This view will update automatically."
+        case .recording:
+            "Recording is active. Live words will appear here as soon as speech is recognized."
+        case .stopping:
+            "Parrot is saving the final audio and remaining transcript segments."
+        case .none:
+            "The current recording state is loading."
         }
     }
 }

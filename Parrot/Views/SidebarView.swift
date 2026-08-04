@@ -41,11 +41,24 @@ struct SidebarView: View {
                     showSettings = false
                     prefersLiveRecording = false
                 }
-                NavRow(title: "New recording", icon: "mic.circle", selected: false) {
-                    showDashboard = true
-                    selectedMeeting = nil
-                    showSettings = false
-                    prefersLiveRecording = recordingManager.isRecording
+                if let recordingSessionPhase {
+                    ActiveRecordingNavRow(
+                        phase: recordingSessionPhase,
+                        elapsedTime: recordingManager.formattedElapsedTime,
+                        selected: prefersLiveRecording
+                    ) {
+                        showDashboard = true
+                        selectedMeeting = nil
+                        showSettings = false
+                        prefersLiveRecording = true
+                    }
+                } else {
+                    NavRow(title: "New recording", icon: "mic.circle", selected: false) {
+                        showDashboard = true
+                        selectedMeeting = nil
+                        showSettings = false
+                        prefersLiveRecording = false
+                    }
                 }
             }
             .padding(.horizontal, 8)
@@ -181,6 +194,14 @@ struct SidebarView: View {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    private var recordingSessionPhase: RecordingSessionPhase? {
+        RecordingNavigationPolicy.sessionPhase(
+            isStarting: recordingManager.isStarting,
+            isRecording: recordingManager.isRecording,
+            isStopping: recordingManager.isStopping
+        )
+    }
+
     private func accessibilityStatus(for status: MeetingStatus) -> String {
         switch status {
         case .recording: "Recording"
@@ -204,6 +225,72 @@ struct SidebarView: View {
 }
 
 // MARK: - Nav row
+
+private struct ActiveRecordingNavRow: View {
+    let phase: RecordingSessionPhase
+    let elapsedTime: String
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 9) {
+                statusIndicator
+                    .frame(width: 16, height: 16)
+
+                Text("Active recording")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.Colors.ink)
+
+                Spacer(minLength: 6)
+
+                Text(trailingLabel)
+                    .font(.system(size: 11, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(phase == .recording ? Color.red : Theme.Colors.ink2)
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 6)
+            .background(
+                selected ? Theme.Colors.selection : Color.red.opacity(0.055),
+                in: RoundedRectangle(cornerRadius: 8)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+        .help("Return to the live recording and transcript")
+    }
+
+    @ViewBuilder
+    private var statusIndicator: some View {
+        if phase == .starting || phase == .stopping {
+            ProgressView()
+                .controlSize(.mini)
+        } else {
+            Circle()
+                .fill(Color.red)
+                .frame(width: 8, height: 8)
+                .overlay(Circle().stroke(Color.red.opacity(0.2), lineWidth: 5))
+        }
+    }
+
+    private var trailingLabel: String {
+        switch phase {
+        case .starting: "Starting"
+        case .recording: elapsedTime
+        case .stopping: "Saving"
+        }
+    }
+
+    private var accessibilityLabel: String {
+        switch phase {
+        case .starting: "Recording is starting. Open live recording."
+        case .recording: "Active recording, \(elapsedTime). Open live recording."
+        case .stopping: "Recording is finalizing. Open live recording."
+        }
+    }
+}
 
 private struct NavRow: View {
     let title: String

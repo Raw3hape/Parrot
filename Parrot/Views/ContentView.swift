@@ -14,7 +14,7 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             if RecordingNavigationPolicy.presentation(
-                isRecording: recordingManager.isRecording,
+                sessionPhase: recordingSessionPhase,
                 prefersLiveRecording: prefersLiveRecording
             ) == .selectedDestinationWithRecordingBanner {
                 ActiveRecordingBanner(
@@ -33,7 +33,7 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 215, ideal: 236, max: 320)
             } detail: {
                 if RecordingNavigationPolicy.presentation(
-                    isRecording: recordingManager.isRecording,
+                    sessionPhase: recordingSessionPhase,
                     prefersLiveRecording: prefersLiveRecording
                 ) == .liveRecording {
                     LiveRecordingView()
@@ -47,9 +47,24 @@ struct ContentView: View {
             hasPreparedApplication = true
             await recordingManager.prepareApplication(modelContext: modelContext)
         }
-        .onChange(of: recordingManager.isRecording) { _, isRecording in
-            if isRecording { prefersLiveRecording = true }
+        .onAppear {
+            // A window opened while a menu-bar recording is already active
+            // should land on the live session, not make the user hunt for it.
+            if recordingSessionPhase != nil {
+                prefersLiveRecording = true
+            }
         }
+        .onChange(of: recordingSessionPhase) { _, phase in
+            if phase != nil { prefersLiveRecording = true }
+        }
+    }
+
+    private var recordingSessionPhase: RecordingSessionPhase? {
+        RecordingNavigationPolicy.sessionPhase(
+            isStarting: recordingManager.isStarting,
+            isRecording: recordingManager.isRecording,
+            isStopping: recordingManager.isStopping
+        )
     }
 
     @ViewBuilder
