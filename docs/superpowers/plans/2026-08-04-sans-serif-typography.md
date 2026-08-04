@@ -26,7 +26,7 @@
 - Produces: `Theme.Typography.titleDesign: Font.Design`
 - Produces: `Theme.Typography.title(_:) -> Font` using `titleDesign`
 
-- [ ] **Step 1: Write the failing regression test**
+- [x] **Step 1: Write the failing regression test**
 
 ```swift
 import SwiftUI
@@ -40,12 +40,12 @@ final class TypographyTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: Verify the test fails**
+- [x] **Step 2: Verify the test fails**
 
 Run: `swift test --filter TypographyTests`
 Expected: compilation fails because `titleDesign` does not exist.
 
-- [ ] **Step 3: Implement the shared sans-serif token**
+- [x] **Step 3: Implement the shared sans-serif token**
 
 ```swift
 static let titleDesign: Font.Design = .default
@@ -55,7 +55,7 @@ static func title(_ size: CGFloat = 27) -> Font {
 }
 ```
 
-- [ ] **Step 4: Verify the focused test passes**
+- [x] **Step 4: Verify the focused test passes**
 
 Run: `swift test --filter TypographyTests`
 Expected: one test passes with zero failures.
@@ -71,10 +71,10 @@ Expected: one test passes with zero failures.
 - Consumes: SwiftUI `.fontDesign(.default)` environment modifier.
 - Produces: consistent default design for main window, settings, menu-bar popover, fallback window, and snapshots.
 
-- [ ] **Step 1: Apply `.fontDesign(.default)` to the main and settings scene roots**
-- [ ] **Step 2: Apply `.fontDesign(.default)` to the AppKit-hosted menu popover and fallback window roots**
-- [ ] **Step 3: Remove stale serif wording from snapshot documentation**
-- [ ] **Step 4: Audit active Swift source**
+- [x] **Step 1: Apply `.fontDesign(.default)` to the main and settings scene roots**
+- [x] **Step 2: Apply `.fontDesign(.default)` to the AppKit-hosted menu popover and fallback window roots**
+- [x] **Step 3: Remove stale serif wording from snapshot documentation**
+- [x] **Step 4: Audit active Swift source**
 
 Run: `rg -n '\.serif|NewYork|Georgia|Times|serif title|serif headings' Parrot --glob '*.swift'`
 Expected: no matches.
@@ -89,10 +89,9 @@ Expected: no matches.
 **Interfaces:**
 - Produces: signed `/Applications/Parrot.app` and a GitHub-backed change history.
 
-- [ ] **Step 1: Add `Local_Transcripts/` to the privacy ignore rules**
-- [ ] **Step 2: Run `swift test` and confirm zero failures**
-- [ ] **Step 3: build a signed Release app and verify its signature**
-- [ ] **Step 4: install the Release app without deleting user data**
-- [ ] **Step 5: inspect dashboard, meeting detail, settings, and menu-bar UI**
-- [ ] **Step 6: stage only reviewed project files, commit, and push to an accessible GitHub branch**
-
+- [x] **Step 1: Add `Local_Transcripts/` to the privacy ignore rules**
+- [x] **Step 2: Run `swift test` and confirm zero failures**
+- [x] **Step 3: build a signed Release app and verify its signature**
+- [x] **Step 4: install the Release app without deleting user data**
+- [x] **Step 5: inspect dashboard, meeting detail, settings, and menu-bar UI**
+- [x] **Step 6: stage only reviewed project files, commit, and push to an accessible GitHub branch**
