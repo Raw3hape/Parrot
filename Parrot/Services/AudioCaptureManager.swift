@@ -50,7 +50,7 @@ struct SystemAudioCallbackRoute: Sendable {
 /// Captures system audio via ScreenCaptureKit and microphone via AVAudioEngine.
 /// Provides mixed PCM audio for transcription and saves separate tracks to disk.
 @Observable
-final class AudioCaptureManager: NSObject {
+final class AudioCaptureManager: NSObject, @unchecked Sendable {
     // Write uncompressed PCM (.caf) via AVAudioFile rather than AAC/.m4a via
     // AVAssetWriter: on recent macOS the AAC encoder fails to initialize
     // (AudioCodecInitialize failed / -12651), producing silent 0-byte files.
@@ -71,9 +71,19 @@ final class AudioCaptureManager: NSObject {
         let systemAudioURL: URL
         let micAudioURL: URL
         let echoCanceller: EchoCanceller?
+        let startedUptime: TimeInterval
+        var timeline: AudioTimelineAccumulator
         var systemStream: SCStream?
         var systemOutput: SystemAudioOutput?
         var audioEngine: AVAudioEngine?
+        var audioEngineConfigurationObserver: NSObjectProtocol?
+        var microphoneGate = MicrophoneCaptureGenerationGate()
+        var microphoneToken: MicrophoneCaptureGenerationGate.Token?
+        var audioRoute = DefaultAudioDeviceMonitor.currentSnapshot()
+        var microphoneRestartWorkItem: DispatchWorkItem?
+        var isRestartingMicrophone = false
+        var lastMicrophoneBufferUptime: TimeInterval?
+        var microphoneGapPending = false
         var systemCallbackCount = 0
         var systemConversionFailureCount = 0
         var starvationReported = false
@@ -94,6 +104,8 @@ final class AudioCaptureManager: NSObject {
             self.systemAudioURL = systemAudioURL
             self.micAudioURL = micAudioURL
             self.echoCanceller = echoCanceller
+            startedUptime = ProcessInfo.processInfo.systemUptime
+            timeline = AudioTimelineAccumulator(capturedAt: .now)
         }
     }
 
@@ -112,6 +124,8 @@ final class AudioCaptureManager: NSObject {
 
     @ObservationIgnored
     private let captureState = OSAllocatedUnfairLock(initialState: LockedCaptureState())
+    @ObservationIgnored
+    private let audioDeviceMonitor = DefaultAudioDeviceMonitor()
 
     /// Throttle timestamps for pushing audio levels to the UI — the waveform needs
     /// only ~10 updates/sec, not one per ~20 ms audio buffer per stream.
@@ -129,6 +143,7 @@ final class AudioCaptureManager: NSObject {
     private(set) var micActive = false
     private(set) var inputDeviceName = ""
     private(set) var outputDeviceName = ""
+    private(set) var lastTimelineManifest: AudioTimelineManifest?
     /// Capture-start time, or the last moment the mic carried real signal. While the
     /// mic has never been heard it stays at capture start, so it doubles as "how long
     /// the mic has been silent since recording began".
@@ -182,6 +197,7 @@ final class AudioCaptureManager: NSObject {
     // MARK: - Start Capture
 
     func startCapture() async throws {
+        lastTimelineManifest = nil
         let storageDir = Self.storageDirectory()
         let timestamp = ISO8601DateFormatter().string(from: .now)
             .replacingOccurrences(of: ":", with: "-")
@@ -237,7 +253,6 @@ final class AudioCaptureManager: NSObject {
             micActive = true
         } catch {
             micActive = false
-            micAudioURL = nil
             NSLog("Parrot: microphone unavailable, recording system audio only — \(error.localizedDescription)")
         }
 
@@ -247,6 +262,13 @@ final class AudioCaptureManager: NSObject {
         micEverHadSignal = false
         echoCancellerStarved = false
         isCapturing = true
+
+        audioDeviceMonitor.start { [weak self, weak session] route in
+            DispatchQueue.main.async {
+                guard let self, let session else { return }
+                self.handleAudioRouteChange(route, for: session)
+            }
+        }
     }
 
     // MARK: - Stop Capture
@@ -271,6 +293,7 @@ final class AudioCaptureManager: NSObject {
         micEverHadSignal = false
         audioLevel = 0
         micLevel = 0
+        audioDeviceMonitor.stop()
 
         // Stop hardware first. In-flight callbacks may still finish while the
         // gate is open, which lets their writes land before the barriers below.
@@ -285,10 +308,8 @@ final class AudioCaptureManager: NSObject {
         // callback admission below.
         systemCaptureQueue.sync {}
 
-        resources.1?.stop()
-        resources.1?.inputNode.removeTap(onBus: 0)
+        stopMicrophone(for: session, expectsResume: false)
         captureState.withLock { _ in
-            session.audioEngine = nil
             session.systemStream = nil
             session.systemOutput = nil
         }
@@ -298,11 +319,13 @@ final class AudioCaptureManager: NSObject {
         // write and transcription emit before closing the generation.
         await closeCallbackAdmissionAndWait(for: session)
 
-        // Close callback admission only after hardware is stopped, then flush
-        // every already-queued write and finalize this session's CAF headers.
-        closeGate(for: session)
+        // Callback admission is already closed. Flush every queued write while
+        // the session identity is still visible so successful frame counts land
+        // in the timeline, then close the generation and CAF handles.
         systemWriteQueue.sync { session.systemAudioFile = nil }
         micWriteQueue.sync { session.micAudioFile = nil }
+        lastTimelineManifest = session.timeline.manifest(sampleRate: sampleRate)
+        closeGate(for: session)
 
         let attrs = try? FileManager.default.attributesOfItem(atPath: session.systemAudioURL.path)
         let size = (attrs?[.size] as? Int) ?? 0
@@ -377,6 +400,11 @@ final class AudioCaptureManager: NSObject {
     private func startMicCapture(for session: CaptureSession) throws {
         let engine = AVAudioEngine()
         let inputNode = engine.inputNode
+        let microphoneToken = captureState.withLock { _ -> MicrophoneCaptureGenerationGate.Token in
+            let token = session.microphoneGate.begin()
+            session.microphoneToken = token
+            return token
+        }
 
         // NOTE: we previously enabled setVoiceProcessingEnabled(true) for acoustic
         // echo cancellation, but on this hardware it cancelled ALL mic input (the
@@ -406,7 +434,9 @@ final class AudioCaptureManager: NSObject {
         let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self, session] buffer, _ in
-            guard let self, self.beginCallback(for: session) else { return }
+            guard let self,
+                  self.acceptsMicrophone(microphoneToken, for: session),
+                  self.beginCallback(for: session) else { return }
             defer { self.endCallback(for: session) }
 
             // Convert to target format
@@ -443,7 +473,44 @@ final class AudioCaptureManager: NSObject {
                 guard !cleaned.isEmpty,
                       let cleanedBuffer = Self.makeBuffer(cleaned, format: targetFormat) else { return }
 
+                let bufferUptime = ProcessInfo.processInfo.systemUptime
+                let missingFrames = self.captureState.withLock { state -> Int64 in
+                    guard state.session === session,
+                          state.gate.accepts(session.token),
+                          session.microphoneGate.accepts(microphoneToken) else { return 0 }
+                    defer {
+                        session.lastMicrophoneBufferUptime = bufferUptime
+                        session.microphoneGapPending = false
+                    }
+                    guard session.microphoneGapPending,
+                          let previous = session.lastMicrophoneBufferUptime else { return 0 }
+                    return MicrophoneGapCompensation.missingFrames(
+                        previousBufferUptime: previous,
+                        currentBufferUptime: bufferUptime,
+                        currentBufferFrames: Int(cleanedBuffer.frameLength),
+                        sampleRate: self.sampleRate
+                    )
+                }
+
+                self.captureState.withLock { state in
+                    guard state.session === session,
+                          state.gate.accepts(session.token),
+                          session.microphoneGate.accepts(microphoneToken) else { return }
+                    session.timeline.noteFirstBuffer(
+                        for: .me,
+                        offset: ProcessInfo.processInfo.systemUptime
+                            - session.startedUptime
+                    )
+                }
+
                 // Persist the user's voice ("Me") as 16 kHz mono PCM.
+                if missingFrames > 0 {
+                    self.appendSilence(
+                        frameCount: missingFrames,
+                        format: targetFormat,
+                        session: session
+                    )
+                }
                 self.appendAudio(cleanedBuffer, to: .mic, session: session)
 
                 // Update the mic level so the UI can show the user's voice landing.
@@ -455,18 +522,223 @@ final class AudioCaptureManager: NSObject {
         }
 
         engine.prepare()
-        try engine.start()
+        do {
+            try engine.start()
+        } catch {
+            inputNode.removeTap(onBus: 0)
+            captureState.withLock { _ in
+                session.microphoneGate.end(microphoneToken)
+                if session.microphoneToken == microphoneToken {
+                    session.microphoneToken = nil
+                }
+            }
+            throw error
+        }
         guard accepts(session) else {
             engine.stop()
             inputNode.removeTap(onBus: 0)
+            captureState.withLock { _ in
+                session.microphoneGate.end(microphoneToken)
+                session.microphoneToken = nil
+            }
             throw CaptureError.captureSuperseded
         }
-        captureState.withLock { _ in session.audioEngine = engine }
+        let observer = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange,
+            object: engine,
+            queue: .main
+        ) { [weak self, weak session] _ in
+            guard let self, let session else { return }
+            self.handleAudioEngineConfigurationChange(
+                for: session,
+                microphoneToken: microphoneToken
+            )
+        }
+        captureState.withLock { _ in
+            session.audioEngine = engine
+            session.audioEngineConfigurationObserver = observer
+        }
+    }
+
+    private func acceptsMicrophone(
+        _ microphoneToken: MicrophoneCaptureGenerationGate.Token,
+        for session: CaptureSession
+    ) -> Bool {
+        captureState.withLock { state in
+            state.session === session
+                && state.gate.accepts(session.token)
+                && session.microphoneGate.accepts(microphoneToken)
+        }
+    }
+
+    private func handleAudioRouteChange(
+        _ route: AudioRouteSnapshot,
+        for session: CaptureSession
+    ) {
+        guard accepts(session), !session.stopping else { return }
+        let previous = captureState.withLock { _ -> AudioRouteSnapshot in
+            let previous = session.audioRoute
+            session.audioRoute = route
+            return previous
+        }
+        applyAudioRouteActions(
+            AudioRouteChangePolicy.actions(previous: previous, current: route),
+            for: session
+        )
+    }
+
+    private func handleAudioEngineConfigurationChange(
+        for session: CaptureSession,
+        microphoneToken: MicrophoneCaptureGenerationGate.Token
+    ) {
+        guard acceptsMicrophone(microphoneToken, for: session),
+              !session.isRestartingMicrophone else { return }
+        let route = DefaultAudioDeviceMonitor.currentSnapshot()
+        let previous = captureState.withLock { _ -> AudioRouteSnapshot in
+            let previous = session.audioRoute
+            session.audioRoute = route
+            return previous
+        }
+        applyAudioRouteActions(
+            AudioRouteChangePolicy.actions(
+                previous: previous,
+                current: route,
+                engineConfigurationChanged: true
+            ),
+            for: session
+        )
+    }
+
+    private func applyAudioRouteActions(
+        _ actions: [AudioRouteChangeAction],
+        for session: CaptureSession
+    ) {
+        guard !actions.isEmpty, accepts(session), !session.stopping else { return }
+
+        if actions.contains(.refreshDeviceNames) {
+            inputDeviceName = Self.defaultDeviceName(input: true)
+            outputDeviceName = Self.defaultDeviceName(input: false)
+        }
+        guard actions.contains(.restartMicrophone) else { return }
+
+        let work = DispatchWorkItem { [weak self, weak session] in
+            guard let self, let session else { return }
+            self.restartMicrophone(for: session)
+        }
+        let previous = captureState.withLock { _ -> DispatchWorkItem? in
+            let previous = session.microphoneRestartWorkItem
+            session.microphoneRestartWorkItem = work
+            return previous
+        }
+        previous?.cancel()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
+    }
+
+    private func restartMicrophone(for session: CaptureSession) {
+        guard accepts(session), !session.stopping, !session.isRestartingMicrophone else {
+            return
+        }
+        session.isRestartingMicrophone = true
+        session.microphoneRestartWorkItem = nil
+        stopMicrophone(for: session, expectsResume: true)
+
+        do {
+            try startMicCapture(for: session)
+            micActive = true
+            inputDeviceName = Self.defaultDeviceName(input: true)
+            NSLog("Parrot: microphone followed the new default input — \(inputDeviceName)")
+        } catch {
+            // Keep system audio and the meeting alive. A later CoreAudio route
+            // notification will retry when a usable microphone appears.
+            micActive = false
+            micLevel = 0
+            NSLog("Parrot: microphone route unavailable; system recording continues — \(error.localizedDescription)")
+        }
+        session.isRestartingMicrophone = false
+    }
+
+    private func stopMicrophone(
+        for session: CaptureSession,
+        expectsResume: Bool
+    ) {
+        let resources = captureState.withLock { _ -> (AVAudioEngine?, NSObjectProtocol?) in
+            session.microphoneRestartWorkItem?.cancel()
+            session.microphoneRestartWorkItem = nil
+            if let token = session.microphoneToken {
+                session.microphoneGate.end(token)
+                session.microphoneToken = nil
+            }
+            let result = (session.audioEngine, session.audioEngineConfigurationObserver)
+            session.audioEngine = nil
+            session.audioEngineConfigurationObserver = nil
+            session.microphoneGapPending = expectsResume
+                && session.lastMicrophoneBufferUptime != nil
+            return result
+        }
+        if let observer = resources.1 {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        resources.0?.stop()
+        resources.0?.inputNode.removeTap(onBus: 0)
     }
 
     // MARK: - Audio File Writing
 
     private enum AudioStream { case system, mic }
+
+    /// Keep the saved microphone timeline aligned with system audio when a
+    /// device transition briefly interrupts AVAudioEngine. Silence is written
+    /// in bounded one-second chunks, so even a long unplugged interval cannot
+    /// create a large temporary allocation.
+    private func appendSilence(
+        frameCount: Int64,
+        format: AVAudioFormat,
+        session: CaptureSession
+    ) {
+        guard frameCount > 0 else { return }
+        let stateLock = captureState
+        let framesPerChunk = AVAudioFrameCount(sampleRate)
+        captureState.withLock { state in
+            guard state.session === session,
+                  state.gate.accepts(session.token) else { return }
+            micWriteQueue.async { [session, stateLock] in
+                var remaining = frameCount
+                do {
+                    if session.micAudioFile == nil {
+                        session.micAudioFile = try AVAudioFile(
+                            forWriting: session.micAudioURL,
+                            settings: format.settings
+                        )
+                    }
+                    guard let file = session.micAudioFile else { return }
+                    while remaining > 0 {
+                        let count = AVAudioFrameCount(
+                            min(Int64(framesPerChunk), remaining)
+                        )
+                        guard let buffer = AVAudioPCMBuffer(
+                            pcmFormat: format,
+                            frameCapacity: count
+                        ), let channels = buffer.floatChannelData else { return }
+                        buffer.frameLength = count
+                        for channel in 0..<Int(format.channelCount) {
+                            channels[channel].initialize(
+                                repeating: 0,
+                                count: Int(count)
+                            )
+                        }
+                        try file.write(from: buffer)
+                        stateLock.withLock { state in
+                            guard state.session === session else { return }
+                            session.timeline.addFrames(Int(count), for: .me)
+                        }
+                        remaining -= Int64(count)
+                    }
+                } catch {
+                    NSLog("Parrot: microphone gap compensation failed — \(error.localizedDescription)")
+                }
+            }
+        }
+    }
 
     /// Appends a PCM buffer to a stream's .caf file off the capture/render thread.
     /// The file is created lazily from the first buffer's own format, so writes can
@@ -480,13 +752,14 @@ final class AudioCaptureManager: NSObject {
         guard let copy = buffer.deepCopy() else { return }
         let queue = stream == .system ? systemWriteQueue : micWriteQueue
         let url = stream == .system ? session.systemAudioURL : session.micAudioURL
+        let stateLock = captureState
 
         // Admission and enqueue are one atomic lifecycle operation. Once a
         // block is admitted it must write even if stop closes the gate a moment
         // later; stop's sync barrier will then finalize every admitted sample.
         captureState.withLock { state in
             guard state.session === session, state.gate.accepts(session.token) else { return }
-            queue.async { [session] in
+            queue.async { [session, stateLock] in
                 do {
                     let file: AVAudioFile
                     if stream == .system {
@@ -501,6 +774,13 @@ final class AudioCaptureManager: NSObject {
                         file = session.micAudioFile!
                     }
                     try file.write(from: copy)
+                    stateLock.withLock { state in
+                        guard state.session === session else { return }
+                        session.timeline.addFrames(
+                            Int(copy.frameLength),
+                            for: stream == .system ? .them : .me
+                        )
+                    }
                 } catch {
                     NSLog("Parrot: \(stream) audio write failed — \(error.localizedDescription)")
                 }
@@ -713,6 +993,10 @@ extension AudioCaptureManager {
                   session.token == route.token,
                   route.isAccepted(by: state.gate) else { return nil }
             session.systemCallbackCount += 1
+            session.timeline.noteFirstBuffer(
+                for: .them,
+                offset: ProcessInfo.processInfo.systemUptime - session.startedUptime
+            )
             return session
         }
         guard let session, beginCallback(for: session) else { return }

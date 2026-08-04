@@ -8,7 +8,10 @@ import AVFoundation
 @Observable
 final class RecordingManager {
     let audioCaptureManager = AudioCaptureManager()
-    let transcriptionEngine = TranscriptionEngine()
+    let transcriptionEngine: TranscriptionEngine
+    let bestTranscriptionCoordinator: BestTranscriptionCoordinator
+    let meetingTitleCoordinator: MeetingTitleCoordinator
+    let callDetection: CallDetectionCoordinator
     let diarizationEngine = DiarizationEngine()
     let callAnalysisEngine = CallAnalysisEngine()
     let knowledgeBase = KnowledgeBaseService()
@@ -37,20 +40,42 @@ final class RecordingManager {
     private var timer: Timer?
     private var modelContext: ModelContext?
     private(set) var storageError: String?
+    private(set) var isApplicationPrepared = false
 
     init() {
+        let whisperGate = WhisperInferenceGate()
+        let whisperService = WhisperModelService(inferenceGate: whisperGate)
+        transcriptionEngine = TranscriptionEngine(whisperService: whisperService)
+        bestTranscriptionCoordinator = BestTranscriptionCoordinator(
+            recognizer: whisperService
+        )
+        meetingTitleCoordinator = MeetingTitleCoordinator()
+        callDetection = CallDetectionCoordinator(
+            isEnabled: CallDetectionPreference.isEnabled()
+        )
         callAnalysisEngine.knowledgeBase = knowledgeBase
     }
 
-    /// Initialize the tested all-local recognition stack.
-    func prepare(modelContext: ModelContext) async {
+    /// Restores lightweight application state without loading either speech
+    /// model. This keeps an always-on menu-bar launch cheap; models are prepared
+    /// on the first explicit recording request (or from Settings).
+    func prepareApplication(modelContext: ModelContext) async {
         self.modelContext = modelContext
+        meetingTitleCoordinator.configure(modelContext: modelContext)
+        guard !isApplicationPrepared else { return }
+        isApplicationPrepared = true
         let resumable = Self.reconcileOrphanedRecordings(in: modelContext)
         profileStore.seedAndMigrateIfNeeded(context: modelContext, knowledgeBase: knowledgeBase)
-        await transcriptionEngine.loadModel()
         for meeting in resumable {
             enqueuePostProcessing(for: meeting)
         }
+    }
+
+    /// Compatibility entry point for tools that intentionally want the models
+    /// ready immediately. Normal app startup uses `prepareApplication`.
+    func prepare(modelContext: ModelContext) async {
+        await prepareApplication(modelContext: modelContext)
+        await transcriptionEngine.loadModel()
     }
 
     /// A meeting left in `.recording` or `.processing` means a previous session was
@@ -77,6 +102,10 @@ final class RecordingManager {
     /// permissions, then starts. Returns without starting (and without throwing)
     /// when a permission flow was triggered instead.
     func preflightPermissionsAndStart(modelContext: ModelContext) async throws {
+        guard !isRecording, !isStarting, !isStopping else { return }
+        isStarting = true
+        defer { isStarting = false }
+
         // Check Screen Recording permission BEFORE touching any ScreenCaptureKit
         // API. Calling SCShareableContent while unauthorized makes macOS pop its
         // own prompt AND throws — the app then showed a second custom alert,
@@ -103,19 +132,36 @@ final class RecordingManager {
             break
         }
 
-        try await startRecording(modelContext: modelContext)
+        try await prepareModelsAndStart(modelContext: modelContext)
     }
 
     func startRecording(modelContext: ModelContext) async throws {
-        self.modelContext = modelContext
         // Reject re-entry up front (before any await) so a double-trigger can't
         // start two recordings / two transcription loops.
         guard !isRecording, !isStarting, !isStopping else { return }
+        isStarting = true
+        defer { isStarting = false }
+        try await prepareModelsAndStart(modelContext: modelContext)
+    }
+
+    private func prepareModelsAndStart(modelContext: ModelContext) async throws {
+        self.modelContext = modelContext
+        await prepareApplication(modelContext: modelContext)
+        await meetingTitleCoordinator.pauseForRecording()
+        await bestTranscriptionCoordinator.pauseForRecording()
+        var recordingDidStart = false
+        defer {
+            if !recordingDidStart {
+                meetingTitleCoordinator.resumeAfterRecording()
+                bestTranscriptionCoordinator.resumeAfterRecording()
+            }
+        }
+        if !transcriptionEngine.isReady {
+            await transcriptionEngine.loadModel()
+        }
         guard transcriptionEngine.isReady else {
             throw RecordingError.modelNotReady
         }
-        isStarting = true
-        defer { isStarting = false }
         storageError = nil
 
         // Create meeting
@@ -202,6 +248,7 @@ final class RecordingManager {
 
         recordingStartTime = .now
         isRecording = true
+        recordingDidStart = true
 
         // Start elapsed time timer
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -256,6 +303,17 @@ final class RecordingManager {
             if transcriptTimedOut {
                 meeting.errorMessage = "Local transcription stopped responding before the final phrases completed. All recorded audio is preserved and can still be played or opened from local storage."
             }
+            if let timeline = audioCaptureManager.lastTimelineManifest {
+                do {
+                    try AudioTimelineStore.save(timeline, meetingID: meeting.id)
+                } catch {
+                    NSLog(
+                        "ParrotMetric event=timeline_save_failed meeting=%@ error=%@",
+                        meeting.id.uuidString,
+                        error.localizedDescription
+                    )
+                }
+            }
 
             // Persist the copilot's insights so they survive into the meeting report.
             // Same SwiftData rule as addSegment: insert before setting the relationship.
@@ -283,6 +341,8 @@ final class RecordingManager {
         isRecording = false
         elapsedTime = 0
         recordingStartTime = nil
+        bestTranscriptionCoordinator.resumeAfterRecording()
+        meetingTitleCoordinator.resumeAfterRecording()
     }
 
     /// Normal Cmd-Q / menu quit waits for an in-flight start to settle and then
@@ -295,6 +355,8 @@ final class RecordingManager {
         if isRecording || isStopping {
             await stopRecording()
         }
+        await meetingTitleCoordinator.prepareForTermination()
+        await bestTranscriptionCoordinator.prepareForTermination()
     }
 
     // MARK: - Deletion
@@ -308,6 +370,7 @@ final class RecordingManager {
             let polishSeconds = 0.0
             await self.postProcess(meeting: meeting)
             guard !Task.isCancelled else { return }
+            self.meetingTitleCoordinator.enqueue(meeting)
             if self.callAnalysisEngine.isEnabled,
                self.callAnalysisEngine.provider.isConfigured {
                 await self.generateSummary(meeting: meeting)
@@ -319,16 +382,25 @@ final class RecordingManager {
 
     /// Deletes a meeting and its audio files. The only removal path in the app —
     /// without it storage grows forever. Refuses the active recording.
-    func delete(_ meeting: Meeting) {
+    func delete(_ meeting: Meeting) async {
         guard !((isStarting || isRecording || isStopping)
                 && meeting.id == currentMeeting?.id) else { return }
         postProcessingTasks.removeValue(forKey: meeting.id)?.cancel()
+        meetingTitleCoordinator.removeMeeting(meeting.id)
+        await bestTranscriptionCoordinator.removeMeeting(meeting.id)
         for path in [meeting.systemAudioPath.nilIfEmpty, meeting.micAudioPath?.nilIfEmpty].compactMap({ $0 }) {
             try? FileManager.default.removeItem(atPath: path)
         }
+        try? AudioTimelineStore.remove(meetingID: meeting.id)
         if currentMeeting?.id == meeting.id { currentMeeting = nil }
         modelContext?.delete(meeting)
         try? modelContext?.save()
+    }
+
+    /// The single rename path protects a user title from any in-flight local
+    /// background generation and persists it immediately.
+    func rename(_ meeting: Meeting, to draft: String) {
+        meetingTitleCoordinator.rename(meeting, draft: draft)
     }
 
     // MARK: - Segment Storage
@@ -380,6 +452,10 @@ final class RecordingManager {
                 counterpart: counterpart
             )
             meeting.summary = summary
+            meeting.summaryOriginRaw = "cloud"
+            meeting.summaryTranscriptFingerprint = nil
+            meeting.summaryGeneratorVersion = nil
+            meeting.summaryGeneratedAt = .now
             try? modelContext?.save()
         } catch {
             // Best-effort: the transcript and insights are already saved.

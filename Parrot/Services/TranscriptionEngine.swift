@@ -152,7 +152,7 @@ enum AudioSource: CaseIterable, Sendable {
 @MainActor
 final class TranscriptionEngine {
     private let parakeetService = ParakeetModelService()
-    private let whisperService = WhisperModelService()
+    private let whisperService: WhisperModelService
     private var recognitionRouter: LocalRecognitionRouter?
     private var vadManager: VadManager?
     private var streamProcessors: [AudioSource: CallStreamProcessor] = [:]
@@ -182,6 +182,10 @@ final class TranscriptionEngine {
 
     /// Called when a finalized transcript segment is ready.
     var onSegment: (@MainActor (TranscriptionResult) -> Void)?
+
+    init(whisperService: WhisperModelService = WhisperModelService()) {
+        self.whisperService = whisperService
+    }
 
     enum ModelState {
         case notLoaded

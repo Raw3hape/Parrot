@@ -73,7 +73,11 @@ struct DashboardView: View {
                     .symbolEffect(.pulse, options: .repeating, isActive: recordingManager.isRecording)
             }
             .buttonStyle(.plain)
-            .disabled(!recordingManager.transcriptionEngine.isReady)
+            .disabled(
+                recordingManager.isStarting
+                    || recordingManager.isRecording
+                    || recordingManager.isStopping
+            )
 
             Text("Start recording")
                 .font(.system(size: 16, weight: .semibold))
@@ -138,8 +142,8 @@ struct DashboardView: View {
     private var modelStatus: some View {
         switch recordingManager.transcriptionEngine.modelState {
         case .notLoaded:
-            Label("Model not loaded", systemImage: "exclamationmark.triangle")
-                .foregroundStyle(.orange)
+            Label("Local model loads when recording starts", systemImage: "bolt")
+                .foregroundStyle(.secondary)
                 .font(.caption)
         case .loading:
             HStack(spacing: 8) {

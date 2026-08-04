@@ -54,10 +54,7 @@ struct OnboardingView: View {
                         isPresented = false
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(!recordingManager.transcriptionEngine.isReady)
-                    .help(recordingManager.transcriptionEngine.isReady
-                          ? "Open Parrot"
-                          : "Wait until a local speech model is ready")
+                    .help("Open Parrot. Local models can load now or when recording starts.")
                 }
             }
             .padding()
@@ -166,7 +163,7 @@ struct OnboardingView: View {
                 .font(.title)
                 .fontWeight(.semibold)
 
-            Text("Parrot automatically uses the fastest accurate stack for Polish, Russian, and English calls.")
+            Text("Parrot uses the fastest accurate stack for Polish, Russian, and English calls. You can load it now or automatically on your first recording.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

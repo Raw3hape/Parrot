@@ -9,7 +9,7 @@ options:
 packages:
   WhisperKit:
     url: https://github.com/argmaxinc/WhisperKit.git
-    from: "0.9.0"
+    exactVersion: "0.18.0"
   FluidAudio:
     url: https://github.com/FluidInference/FluidAudio.git
     exactVersion: "0.15.5"
@@ -53,6 +53,30 @@ targets:
         product: FluidAudio
       - package: CSpeexDSP
         product: CSpeexDSP
+    postBuildScripts:
+      - name: Embed and sign local Qwen runtime
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+          source_runtime="${LLAMA_SERVER_SOURCE:-${SRCROOT}/Vendor/QwenRuntime/llama-server}"
+          if [ ! -x "$source_runtime" ]; then
+            echo "error: llama-server is required at $source_runtime (or set LLAMA_SERVER_SOURCE)"
+            exit 1
+          fi
+          expected_sha256="3210cf12144596addf1e39c5b2bc1bb70cd436d619d15d9deb7622660e329896"
+          actual_sha256="$(/usr/bin/shasum -a 256 "$source_runtime" | /usr/bin/awk '{print $1}')"
+          if [ "$actual_sha256" != "$expected_sha256" ]; then
+            echo "error: llama-server checksum mismatch; refusing to embed an unknown executable"
+            exit 1
+          fi
+          destination_dir="${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Helpers/bin"
+          destination="$destination_dir/llama-server"
+          /bin/mkdir -p "$destination_dir"
+          /usr/bin/ditto "$source_runtime" "$destination"
+          /bin/chmod 755 "$destination"
+          signing_identity="${EXPANDED_CODE_SIGN_IDENTITY:--}"
+          /usr/bin/codesign --force --sign "$signing_identity" --options runtime --timestamp=none \
+            --entitlements "${SRCROOT}/Parrot/QwenHelper.entitlements" "$destination"
     entitlements:
       path: Parrot/Parrot.entitlements
       properties:
@@ -67,6 +91,9 @@ targets:
         # Outbound HTTPS is retained only for first-time local model downloads.
         # PersonalBuildPolicy prevents call audio/text from using cloud providers.
         com.apple.security.network.client: true
+        # The on-demand local Qwen worker binds only to 127.0.0.1 and is
+        # terminated as soon as title generation finishes.
+        com.apple.security.network.server: true
         # User-picked files (knowledge base imports, audio import) + Downloads.
         com.apple.security.files.user-selected.read-write: true
         com.apple.security.files.downloads.read-write: true
@@ -83,3 +110,23 @@ targets:
         # Points Finder/Dock at the asset-catalog icon (asset compiler doesn't
         # inject this when the Info.plist is static).
         CFBundleIconName: AppIcon
+        # Start as a menu-bar app even when macOS launches Parrot without opening
+        # a SwiftUI window. The in-app preference can still switch to `.regular`
+        # at runtime to restore the Dock icon.
+        LSUIElement: true
+
+  ParrotTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests/ParrotTests
+    dependencies:
+      - target: Parrot
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.uygar.parrot.tests
+        GENERATE_INFOPLIST_FILE: true
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "5C2PL8729F"
+        SWIFT_VERSION: "5.10"

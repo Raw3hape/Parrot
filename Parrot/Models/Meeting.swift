@@ -12,6 +12,13 @@ enum MeetingStatus: String, Codable {
 final class Meeting {
     var id: UUID
     var title: String
+    /// Provenance protects a user-edited title from asynchronous local title
+    /// generation. String-backed/defaulted fields keep existing SwiftData rows
+    /// eligible for lightweight migration.
+    var titleOriginRaw: String = "default"
+    var titleTranscriptFingerprint: String?
+    var titleGeneratorVersion: String?
+    var titleGeneratedAt: Date?
     var date: Date
     var duration: TimeInterval
     var systemAudioPath: String
@@ -20,6 +27,13 @@ final class Meeting {
     var errorMessage: String?
     /// AI-generated post-call report; set shortly after recording stops.
     var summary: String?
+    /// Local summaries are fingerprinted separately from titles. Defaulted
+    /// fields allow existing SwiftData stores to migrate without rewriting the
+    /// transcript or any legacy/cloud report.
+    var summaryOriginRaw: String = "none"
+    var summaryTranscriptFingerprint: String?
+    var summaryGeneratorVersion: String?
+    var summaryGeneratedAt: Date?
     /// AI coaching + follow-ups report (talk ratio, what to improve, commitments).
     var coaching: String?
     /// User-assigned name for the other party ("Them"), e.g. "Sam". When set, it
@@ -54,6 +68,7 @@ final class Meeting {
     ) {
         self.id = UUID()
         self.title = title ?? Self.defaultTitle(for: date)
+        self.titleOriginRaw = title == nil ? "default" : "manual"
         self.date = date
         self.duration = 0
         self.systemAudioPath = systemAudioPath
@@ -61,6 +76,7 @@ final class Meeting {
         self.status = .recording
         self.errorMessage = nil
         self.summary = nil
+        self.summaryOriginRaw = "none"
         self.segments = []
         self.insights = []
     }
@@ -71,12 +87,53 @@ final class Meeting {
 
     static func defaultTitle(for date: Date) -> String {
         let formatter = DateFormatter()
+        // Persist one predictable fallback format regardless of the current
+        // macOS language, region, or calendar. This avoids mixed strings such
+        // as "Meeting июля ..." after a locale change.
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
         formatter.dateFormat = "MMM d, yyyy 'at' h:mm a"
         return "Meeting \(formatter.string(from: date))"
     }
 
+    /// Strict matching is intentional: a legacy custom name such as
+    /// "Meeting with Lena" must never be mistaken for an automatic placeholder.
+    var hasPlaceholderTitle: Bool {
+        title == Self.defaultTitle(for: date)
+    }
+
+    /// Old placeholder strings were rendered in the locale/time zone active at
+    /// recording time. Recognize only the full historical date-time shape so a
+    /// later travel/locale change does not make them look like custom names.
+    var hasLegacyPlaceholderTitle: Bool {
+        if hasPlaceholderTitle { return true }
+        let pattern = #"^Meeting\s+.+\s+\d{1,2},\s+\d{4}\s+at\s+\d{1,2}[:.-]\d{2}\s*(?:AM|PM)?$"#
+        return title.range(
+            of: pattern,
+            options: [.regularExpression, .caseInsensitive]
+        ) != nil
+    }
+
+    /// Applies a user-authored title without modifying anything other than the
+    /// draft's surrounding whitespace/newlines. Returns false for a blank draft.
+    @discardableResult
+    func applyManualTitle(_ draft: String) -> Bool {
+        let value = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else { return false }
+        title = value
+        titleOriginRaw = "manual"
+        titleTranscriptFingerprint = nil
+        titleGeneratorVersion = nil
+        titleGeneratedAt = nil
+        return true
+    }
+
     var sortedSegments: [TranscriptSegment] {
-        segments.sorted { $0.startTime < $1.startTime }
+        segments.sorted {
+            if $0.startTime != $1.startTime { return $0.startTime < $1.startTime }
+            if $0.endTime != $1.endTime { return $0.endTime < $1.endTime }
+            return $0.id.uuidString < $1.id.uuidString
+        }
     }
 
     var snapshotKinds: [ProfileKind] {

@@ -29,6 +29,7 @@ Packages/
 .context/
 
 # Recordings / local data — never commit call audio or databases
+Local_Transcripts/
 *.caf
 *.wav
 *.m4a

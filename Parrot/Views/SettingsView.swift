@@ -11,7 +11,12 @@ struct SettingsView: View {
     @AppStorage("appearance") private var appearance = Appearance.system
     @AppStorage("transcriptionLanguage") private var transcriptionLanguage = "auto"
     @AppStorage("customVocabulary") private var customVocabulary = ""
+    @AppStorage(MeetingTitleCoordinator.automaticTitlesKey) private var automaticMeetingTitles = true
     @AppStorage("echoCancellationEnabled") private var echoCancellation = true
+    @AppStorage(DockVisibilityPreference.key) private var showInDock = DockVisibilityPreference.defaultValue
+    @AppStorage(CallDetectionPreference.key) private var suggestRecording = CallDetectionPreference.defaultValue
+    @AppStorage(LaunchAtLoginPreference.key) private var launchAtLogin = LaunchAtLoginPreference.defaultValue
+    @State private var launchAtLoginController = LaunchAtLoginController.shared
     @State private var showFileImporter = false
 
     var body: some View {
@@ -50,6 +55,27 @@ struct SettingsView: View {
 
     private var generalTab: some View {
         Form {
+            Section("Background & Calls") {
+                Toggle("Launch Parrot when I log in", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, isEnabled in
+                        launchAtLoginController.setEnabled(isEnabled)
+                    }
+
+                launchAtLoginStatus
+
+                Toggle("Suggest recording when a call starts", isOn: $suggestRecording)
+                    .onChange(of: suggestRecording) { _, isEnabled in
+                        recordingManager.callDetection.setEnabled(isEnabled)
+                    }
+
+                Label(
+                    "Parrot observes only macOS audio activity and known calling apps. It does not listen to, record, or transcribe anything until you press Start Recording.",
+                    systemImage: "ear.badge.waveform"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
             Section("Local Transcription") {
                 LabeledContent("Primary model") {
                     Text("NVIDIA Parakeet TDT 0.6B V3")
@@ -89,6 +115,31 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Meeting Titles & Summaries") {
+                Toggle("Create titles and short summaries automatically", isOn: $automaticMeetingTitles)
+                    .onChange(of: automaticMeetingTitles) { _, isEnabled in
+                        recordingManager.meetingTitleCoordinator.setAutomaticEnabled(isEnabled)
+                    }
+
+                LabeledContent("Method") {
+                    Text("On-device language analysis")
+                }
+
+                meetingTitleStatus
+
+                Button("Process Existing Meetings") {
+                    recordingManager.meetingTitleCoordinator.generateMissingTitles()
+                }
+                .disabled(!automaticMeetingTitles || modelActionDisabled)
+
+                Label(
+                    "Every saved transcript fragment participates in the title and summary. Processing is local, uses no cloud service, and unloads the language model while idle.",
+                    systemImage: "lock.shield.fill"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
             Section("Custom Vocabulary") {
                 TextEditor(text: $customVocabulary)
                     .frame(height: 64)
@@ -100,6 +151,82 @@ struct SettingsView: View {
             }
         }
         .padding()
+        .onAppear {
+            launchAtLoginController.refreshStatus()
+            recordingManager.callDetection.setEnabled(suggestRecording)
+        }
+    }
+
+    @ViewBuilder
+    private var meetingTitleStatus: some View {
+        if recordingManager.meetingTitleCoordinator.state == .pausedForRecording {
+            Label("Paused while recording", systemImage: "pause.circle")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else if let error = recordingManager.meetingTitleCoordinator.lastError {
+            Label(error, systemImage: "exclamationmark.triangle")
+                .font(.caption)
+                .foregroundStyle(.orange)
+        } else {
+            switch recordingManager.meetingTitleCoordinator.state {
+        case .idle:
+            if recordingManager.meetingTitleCoordinator.queuedCount > 0 {
+                Label(
+                    "\(recordingManager.meetingTitleCoordinator.queuedCount) meetings queued",
+                    systemImage: "list.bullet"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            } else {
+                Label("Ready", systemImage: "checkmark.circle")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+            }
+        case .pausedForRecording:
+            EmptyView()
+        case .generating:
+            HStack {
+                ProgressView().controlSize(.small)
+                Text("Creating local meeting details…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var launchAtLoginStatus: some View {
+        switch launchAtLoginController.status {
+        case .enabled:
+            Label("Starts quietly in the menu bar", systemImage: "checkmark.circle")
+                .font(.caption)
+                .foregroundStyle(.green)
+        case .requiresApproval:
+            HStack {
+                Label("Allow Parrot in System Settings → Login Items", systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                Spacer()
+                Button("Open Settings") {
+                    launchAtLoginController.openLoginItemsSettings()
+                }
+            }
+        case .failed(let message):
+            Label(message, systemImage: "xmark.circle")
+                .font(.caption)
+                .foregroundStyle(.red)
+        case .unavailable:
+            Text("Automatic launch is activated by the installed copy in Applications.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        case .notRegistered, .notFound:
+            if launchAtLogin {
+                Text("Parrot will register on the next launch from Applications.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var modelActionDisabled: Bool {
@@ -144,7 +271,7 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text("Microphone uses your default input device.")
+                Text("Microphone follows your default input device automatically, including changes while a recording is running.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -239,6 +366,24 @@ struct SettingsView: View {
                     Text("Dark").tag(Appearance.dark)
                 }
                 .pickerStyle(.radioGroup)
+            }
+
+            Section("App Visibility") {
+                Toggle("Show Parrot in Dock", isOn: $showInDock)
+                    .onChange(of: showInDock) { _, newValue in
+                        ApplicationPresentationController.applyDockVisibility(
+                            showInDock: newValue
+                        )
+                    }
+
+                Label(
+                    showInDock
+                        ? "Parrot appears in both the Dock and the menu bar."
+                        : "Parrot stays available from the menu bar without taking space in the Dock.",
+                    systemImage: "menubar.rectangle"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
         .padding()

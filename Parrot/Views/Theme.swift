@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Parrot's design system — a calm, editorial "Granola-style" language: near-white
-/// canvas, serif headings, generous whitespace, hairline dividers, and a single calm
+/// canvas, system sans-serif type, generous whitespace, hairline dividers, and a calm
 /// blue-teal accent. See docs/IMPROVEMENT-ROADMAP.md (Phase B) and the mockup at
 /// .context/mockups/parrot-redesign.html.
 ///
@@ -45,9 +45,12 @@ enum Theme {
     // MARK: - Typography
 
     enum Typography {
-        /// Big editorial title (meeting name, report heading) — system serif.
+        /// One native sans-serif design for every Parrot interface surface.
+        static let titleDesign: Font.Design = .default
+
+        /// Big editorial title (meeting name, report heading) — system sans-serif.
         static func title(_ size: CGFloat = 27) -> Font {
-            .system(size: size, weight: .semibold, design: .serif)
+            .system(size: size, weight: .semibold, design: titleDesign)
         }
         // Scale matched to the card-guide legend (user-approved look, 2026-07-02):
         // bold ~15pt titles over relaxed ~14pt gray body.

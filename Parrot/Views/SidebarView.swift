@@ -8,10 +8,12 @@ struct SidebarView: View {
     /// 520pt popup that made the Profiles editor unusable).
     @Binding var showSettings: Bool
     @Binding var searchText: String
+    @Binding var prefersLiveRecording: Bool
 
     @Environment(RecordingManager.self) private var recordingManager
     @Query(sort: \Meeting.date, order: .reverse) private var meetings: [Meeting]
     @State private var deleteTarget: Meeting?
+    @State private var pendingDeletionIDs: Set<UUID> = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,11 +39,13 @@ struct SidebarView: View {
                     showDashboard = true
                     selectedMeeting = nil
                     showSettings = false
+                    prefersLiveRecording = false
                 }
                 NavRow(title: "New recording", icon: "mic.circle", selected: false) {
                     showDashboard = true
                     selectedMeeting = nil
                     showSettings = false
+                    prefersLiveRecording = recordingManager.isRecording
                 }
             }
             .padding(.horizontal, 8)
@@ -56,22 +60,43 @@ struct SidebarView: View {
                         .padding(.top, 14)
                         .padding(.bottom, 2)
 
-                    ForEach(orderedGroups, id: \.0) { key, group in
-                        let rows = filtered(group)
-                        if !rows.isEmpty {
+                    if visibleMeetings.isEmpty {
+                        Text(hasSearchQuery ? "No matching meetings" : "No meetings yet")
+                            .font(Theme.Typography.secondary)
+                            .foregroundStyle(Theme.Colors.ink3)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 24)
+                    } else {
+                        ForEach(orderedGroups, id: \.0) { key, group in
                             Text(key)
                                 .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(Theme.Colors.ink3)
                                 .padding(.horizontal, 10)
                                 .padding(.top, 9)
                                 .padding(.bottom, 2)
-                            ForEach(rows) { meeting in
-                                MeetingRow(meeting: meeting, selected: selectedMeeting?.id == meeting.id)
-                                    .onTapGesture {
+                            ForEach(group) { meeting in
+                                // `isDeleted` is SwiftData lifecycle metadata and
+                                // remains safe to read after invalidation. Never
+                                // fault persisted fields for an outgoing row.
+                                if !meeting.isDeleted {
+                                    let row = MeetingRowSnapshot(meeting: meeting)
+                                    Button {
                                         selectedMeeting = meeting
                                         showDashboard = false
                                         showSettings = false
+                                        prefersLiveRecording = false
+                                    } label: {
+                                        MeetingRow(
+                                            row: row,
+                                            selected: selectedMeeting?.id == row.id
+                                        )
                                     }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(
+                                        "\(row.title), \(row.formattedDuration)"
+                                    )
+                                    .accessibilityValue(accessibilityStatus(for: row.status))
                                     .contextMenu {
                                         Button("Delete Meeting", role: .destructive) {
                                             deleteTarget = meeting
@@ -79,6 +104,7 @@ struct SidebarView: View {
                                         .disabled(recordingManager.isRecording
                                             && recordingManager.currentMeeting?.id == meeting.id)
                                     }
+                                }
                             }
                         }
                     }
@@ -93,6 +119,7 @@ struct SidebarView: View {
                     showSettings = true
                     showDashboard = false
                     selectedMeeting = nil
+                    prefersLiveRecording = false
                 }
                 AccountChip()
             }
@@ -109,12 +136,20 @@ struct SidebarView: View {
         ) {
             Button("Delete", role: .destructive) {
                 guard let meeting = deleteTarget else { return }
-                if selectedMeeting?.id == meeting.id {
+                let meetingID = meeting.id
+                if selectedMeeting?.id == meetingID {
                     selectedMeeting = nil
                     showDashboard = true
                 }
-                recordingManager.delete(meeting)
+                // Remove every live SwiftUI reference first. The actual
+                // SwiftData deletion runs on the next main-actor turn so a
+                // cached row/detail cannot fault properties after invalidation.
+                pendingDeletionIDs.insert(meetingID)
                 deleteTarget = nil
+                Task {
+                    await Task.yield()
+                    await recordingManager.delete(meeting)
+                }
             }
         } message: {
             Text("The recording, transcript, and insights will be permanently removed.")
@@ -123,17 +158,35 @@ struct SidebarView: View {
 
     // Group by day label, ordered most-recent-first (meetings already sorted desc).
     private var orderedGroups: [(String, [Meeting])] {
-        let groups = Dictionary(grouping: meetings) { dateGroupLabel(for: $0.date) }
+        let groups = Dictionary(grouping: visibleMeetings) { dateGroupLabel(for: $0.date) }
         return groups.sorted {
             ($0.value.first?.date ?? .distantPast) > ($1.value.first?.date ?? .distantPast)
         }
     }
 
-    private func filtered(_ list: [Meeting]) -> [Meeting] {
-        guard !searchText.isEmpty else { return list }
-        return list.filter { meeting in
-            meeting.title.localizedCaseInsensitiveContains(searchText) ||
-            meeting.segments.contains { $0.text.localizedCaseInsensitiveContains(searchText) }
+    private var visibleMeetings: [Meeting] {
+        meetings.filter { meeting in
+            !meeting.isDeleted && MeetingPresentationPolicy.shouldPresentMeeting(
+                id: meeting.id,
+                pendingDeletionIDs: pendingDeletionIDs
+            ) && MeetingPresentationPolicy.matchesSearch(
+                query: searchText,
+                title: meeting.title,
+                transcript: meeting.segments.lazy.map(\.text)
+            )
+        }
+    }
+
+    private var hasSearchQuery: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func accessibilityStatus(for status: MeetingStatus) -> String {
+        switch status {
+        case .recording: "Recording"
+        case .processing: "Processing"
+        case .done: "Transcript ready"
+        case .failed: "Transcription failed; saved content is preserved"
         }
     }
 
@@ -182,8 +235,30 @@ private struct NavRow: View {
 
 // MARK: - Meeting row
 
+/// Immutable display data keeps a cached SwiftUI row independent from the
+/// lifetime of its SwiftData model. This matters during deletion: SwiftUI may
+/// render the outgoing row once after the model context invalidates it.
+struct MeetingRowSnapshot: Identifiable, Equatable {
+    let id: UUID
+    let title: String
+    let date: Date
+    let formattedDuration: String
+    let speakerLabel: String
+    let status: MeetingStatus
+
+    init(meeting: Meeting) {
+        id = meeting.id
+        title = meeting.title
+        date = meeting.date
+        formattedDuration = meeting.formattedDuration
+        speakerLabel = meeting.themName?.nilIfEmpty
+            ?? (meeting.speakerCount > 1 ? "\(meeting.speakerCount) people" : "Them")
+        status = meeting.status
+    }
+}
+
 private struct MeetingRow: View {
-    let meeting: Meeting
+    let row: MeetingRowSnapshot
     let selected: Bool
 
     private static let dots: [Color] = [
@@ -198,7 +273,7 @@ private struct MeetingRow: View {
         HStack(spacing: 9) {
             statusDot
             VStack(alignment: .leading, spacing: 1) {
-                Text(meeting.title)
+                Text(row.title)
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.Colors.ink)
                     .lineLimit(1)
@@ -208,7 +283,7 @@ private struct MeetingRow: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 4)
-            Text(meeting.date, style: .time)
+            Text(row.date, style: .time)
                 .font(.system(size: 11))
                 .monospacedDigit()
                 .foregroundStyle(Theme.Colors.ink3)
@@ -221,20 +296,23 @@ private struct MeetingRow: View {
     }
 
     private var subtitle: String {
-        let who = meeting.themName?.nilIfEmpty
-            ?? (meeting.speakerCount > 1 ? "\(meeting.speakerCount) people" : "Them")
-        return "\(who) · \(meeting.formattedDuration)"
+        "\(row.speakerLabel) · \(row.formattedDuration)"
     }
 
     @ViewBuilder private var statusDot: some View {
-        switch meeting.status {
+        switch row.status {
         case .recording:
             Circle().fill(.red).frame(width: 7, height: 7)
         case .processing:
             ProgressView().controlSize(.mini).frame(width: 10, height: 10)
+        case .failed:
+            Image(systemName: "exclamationmark.circle.fill")
+                .font(.system(size: 9))
+                .foregroundStyle(.red)
+                .frame(width: 10, height: 10)
         default:
             Circle()
-                .fill(Self.dots[meeting.id.uuidString.stableHash % Self.dots.count])
+                .fill(Self.dots[row.id.uuidString.stableHash % Self.dots.count])
                 .frame(width: 7, height: 7)
         }
     }

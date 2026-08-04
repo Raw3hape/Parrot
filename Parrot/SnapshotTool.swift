@@ -553,7 +553,7 @@ enum SnapshotIO {
 @MainActor
 enum ReportSnapshot {
     static func write(to path: String) {
-        // A faithful slice of the report screen: serif title + meta + the styled
+        // A faithful slice of the report screen: sans-serif title + meta + the styled
         // report content (the part that was previously a raw-text dump).
         let view = VStack(alignment: .leading, spacing: 0) {
             Text("Parenting coaching session")

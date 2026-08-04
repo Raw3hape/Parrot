@@ -3,6 +3,35 @@ import Foundation
 /// Exports meeting transcripts to TXT and SRT formats.
 enum ExportService {
 
+    static func exportBestTranscriptTXT(
+        title: String,
+        date: Date,
+        duration: TimeInterval,
+        artifact: BestTranscriptArtifact
+    ) -> String {
+        var output = """
+        Meeting: \(title)
+        Date: \(formatDate(date))
+        Duration: \(formatDuration(duration))
+        Generated locally with Whisper Large V3 Turbo
+        Language detection: Polish / Russian / English auto-detection
+
+        """
+
+        if !artifact.warnings.isEmpty {
+            output += "\nWarnings:\n"
+            for warning in artifact.warnings {
+                output += "- \(warning)\n"
+            }
+            output += "\n"
+        }
+
+        for segment in BestTranscriptMerger.merge(artifact.segments) {
+            output += "[\(plainTimestamp(segment.startTime))] \(segment.speaker.rawValue): \(segment.text)\n"
+        }
+        return output
+    }
+
     // MARK: - Plain Text Export
 
     static func exportToTXT(meeting: Meeting) -> String {
@@ -123,5 +152,24 @@ enum ExportService {
         let s = Int(seconds) % 60
         let ms = Int((seconds.truncatingRemainder(dividingBy: 1)) * 1000)
         return String(format: "%02d:%02d:%02d,%03d", h, m, s, ms)
+    }
+
+    private static func plainTimestamp(_ seconds: TimeInterval) -> String {
+        let safe = max(0, seconds.isFinite ? seconds : 0)
+        let h = Int(safe) / 3600
+        let m = (Int(safe) % 3600) / 60
+        let s = Int(safe) % 60
+        return String(format: "%02d:%02d:%02d", h, m, s)
+    }
+
+    private static func formatDuration(_ duration: TimeInterval) -> String {
+        let safe = max(0, duration.isFinite ? duration : 0)
+        let h = Int(safe) / 3600
+        let m = (Int(safe) % 3600) / 60
+        let s = Int(safe) % 60
+        if h > 0 {
+            return String(format: "%d:%02d:%02d", h, m, s)
+        }
+        return String(format: "%d:%02d", m, s)
     }
 }

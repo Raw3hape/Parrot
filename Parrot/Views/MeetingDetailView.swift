@@ -1,28 +1,16 @@
 import SwiftUI
 import AVFoundation
-
-/// Which pane of the post-meeting report is showing.
-enum ReportTab: String, CaseIterable, Identifiable {
-    case report = "Report"
-    case transcript = "Transcript"
-    case insights = "Insights"
-    case notes = "Notes"
-    var id: String { rawValue }
-    var icon: String {
-        switch self {
-        case .report: "doc.text"
-        case .transcript: "text.bubble"
-        case .insights: "sparkles"
-        case .notes: "square.and.pencil"
-        }
-    }
-}
+import UniformTypeIdentifiers
 
 struct MeetingDetailView: View {
+    @Environment(RecordingManager.self) private var recordingManager
     let meeting: Meeting
     /// Parent clears the selection and performs the actual delete — this view
     /// must be gone before the model object is.
     var onDelete: (() -> Void)? = nil
+    /// Optional coordination seam for callers that need to cancel an in-flight
+    /// automatic title job before applying a manual name.
+    var onRename: ((String) -> Void)? = nil
     @State private var confirmingDelete = false
     @State private var editingTitle = false
     @State private var titleText = ""
@@ -33,9 +21,16 @@ struct MeetingDetailView: View {
     @State private var playbackSpeed: Float = 1.0
     @State private var playbackTimer: Timer?
     @State private var activeSegmentID: UUID?
-    @State private var tab: ReportTab = .report
     @State private var themNameText = ""
     @State private var showCostBreakdown = false
+    @State private var showBestTranscriptProgress = false
+    @State private var hasCachedBestTranscript = false
+    @State private var bestExportError: String?
+    @State private var partialAudioWarning: String?
+    @State private var pendingPartialExportRequest: BestTranscriptionRequest?
+    @State private var pendingPartialForceReprocess = false
+    @State private var notesExpanded = false
+    @FocusState private var titleFieldFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -43,44 +38,24 @@ struct MeetingDetailView: View {
 
             Divider()
 
-            // Audio player bar — persists above the tabs (drives transcript +
-            // insight seeking).
-            if meeting.status == .done || meeting.status == .processing || meeting.status == .failed {
+            if MeetingPresentationPolicy.shouldShowPlayer(
+                status: meeting.status,
+                hasPlayableAudio: hasPlayableAudio
+            ) {
                 audioPlayerBar
                 Divider()
             }
 
-            // Tabs — each gets the full pane with a single scroll, instead of the
-            // old stack of fixed-height mini-scrollers.
-            Picker("View", selection: $tab) {
-                ForEach(ReportTab.allCases) { t in
-                    Label(t.rawValue, systemImage: t.icon).tag(t)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(maxWidth: 380)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-
-            Divider()
-
-            Group {
-                switch tab {
-                case .report: reportTab
-                case .transcript: transcriptTab
-                case .insights: insightsTab
-                case .notes: notesTab
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            transcriptFirstContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Theme.Colors.canvas)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
-            titleText = meeting.title
-            themNameText = meeting.themName ?? ""
-            prepareAudioPlayer()
+            prepareMeetingView()
+        }
+        .onChange(of: meeting.id) { _, _ in
+            prepareMeetingView()
         }
         .onDisappear {
             stopPlayback()
@@ -90,9 +65,26 @@ struct MeetingDetailView: View {
                 Menu {
                     Button("Export as TXT") { exportTXT() }
                     Button("Export as SRT") { exportSRT() }
+                    Divider()
+                    Button("Export Best Transcript (Whisper)…") {
+                        startBestTranscriptExport(forceReprocess: false)
+                    }
+                    .disabled(!canExportBestTranscript || bestProgress.isRunning)
+                    if bestProgress.isRunning {
+                        Button("Show Best Transcript Progress…") {
+                            showBestTranscriptProgress = true
+                        }
+                    }
+                    if hasCachedBestTranscript || bestProgress.stage == .ready {
+                        Button("Reprocess with Whisper…") {
+                            startBestTranscriptExport(forceReprocess: true)
+                        }
+                        .disabled(bestProgress.isRunning)
+                    }
                 } label: {
                     Label("Export", systemImage: "square.and.arrow.up")
                 }
+                .accessibilityLabel("Export meeting")
 
                 Button(role: .destructive) {
                     confirmingDelete = true
@@ -106,6 +98,72 @@ struct MeetingDetailView: View {
         } message: {
             Text("The recording, transcript, and insights will be permanently removed.")
         }
+        .sheet(isPresented: $showBestTranscriptProgress) {
+            BestTranscriptionProgressView(
+                progress: bestProgress,
+                onCancel: {
+                    recordingManager.bestTranscriptionCoordinator.cancel(
+                        meetingID: meeting.id
+                    )
+                },
+                onHide: {
+                    showBestTranscriptProgress = false
+                }
+            )
+        }
+        .alert(
+            "Couldn’t save the best transcript",
+            isPresented: Binding(
+                get: { bestExportError != nil },
+                set: { if !$0 { bestExportError = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(bestExportError ?? "")
+        }
+        .alert(
+            "Part of the recording is unavailable",
+            isPresented: Binding(
+                get: { partialAudioWarning != nil },
+                set: {
+                    if !$0 {
+                        partialAudioWarning = nil
+                        pendingPartialExportRequest = nil
+                    }
+                }
+            )
+        ) {
+            Button("Try Again") {
+                guard let request = pendingPartialExportRequest else { return }
+                let forceReprocess = pendingPartialForceReprocess
+                partialAudioWarning = nil
+                pendingPartialExportRequest = nil
+                submitBestTranscript(
+                    request,
+                    forceReprocess: forceReprocess
+                )
+            }
+            Button("Export Available Track") {
+                guard var request = pendingPartialExportRequest else { return }
+                let forceReprocess = pendingPartialForceReprocess
+                request.allowPartialDamagedTracks = true
+                partialAudioWarning = nil
+                pendingPartialExportRequest = nil
+                submitBestTranscript(
+                    request,
+                    forceReprocess: forceReprocess
+                )
+            }
+            Button("Cancel", role: .cancel) {
+                partialAudioWarning = nil
+                pendingPartialExportRequest = nil
+            }
+        } message: {
+            Text(
+                "\(partialAudioWarning ?? "") You can retry, or knowingly export only the track that is still readable."
+            )
+        }
     }
 
     // MARK: - Header
@@ -113,19 +171,34 @@ struct MeetingDetailView: View {
     private var meetingHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
             if editingTitle {
-                TextField("Meeting title", text: $titleText, onCommit: {
-                    meeting.title = titleText
-                    editingTitle = false
-                })
-                .font(.title)
-                .textFieldStyle(.plain)
-            } else {
-                Text(meeting.title)
-                    .font(Theme.Typography.title(26))
-                    .foregroundStyle(Theme.Colors.ink)
-                    .onTapGesture(count: 2) {
-                        editingTitle = true
+                TextField("Meeting title", text: $titleText)
+                    .font(.title)
+                    .textFieldStyle(.plain)
+                    .focused($titleFieldFocused)
+                    .accessibilityLabel("Meeting title")
+                    .onSubmit(commitTitleEdit)
+                    .onKeyPress(.escape) {
+                        cancelTitleEdit()
+                        return .handled
                     }
+            } else {
+                HStack(spacing: 8) {
+                    Text(meeting.title)
+                        .font(Theme.Typography.title(26))
+                        .foregroundStyle(Theme.Colors.ink)
+                        .textSelection(.enabled)
+
+                    Button {
+                        beginTitleEdit()
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Theme.Colors.ink3)
+                    .help("Rename meeting")
+                    .accessibilityLabel("Rename meeting")
+                }
             }
 
             HStack(spacing: 12) {
@@ -223,6 +296,37 @@ struct MeetingDetailView: View {
         .frame(width: 320)
     }
 
+    private func beginTitleEdit() {
+        titleText = meeting.title
+        editingTitle = true
+        Task { @MainActor in
+            titleFieldFocused = true
+        }
+    }
+
+    private func commitTitleEdit() {
+        let committed = MeetingPresentationPolicy.committedTitle(
+            draft: titleText,
+            previousTitle: meeting.title
+        )
+        if committed != meeting.title {
+            if let onRename {
+                onRename(committed)
+            } else {
+                _ = meeting.applyManualTitle(committed)
+            }
+        }
+        titleText = meeting.title
+        editingTitle = false
+        titleFieldFocused = false
+    }
+
+    private func cancelTitleEdit() {
+        titleText = meeting.title
+        editingTitle = false
+        titleFieldFocused = false
+    }
+
     @ViewBuilder
     private var statusBadge: some View {
         switch meeting.status {
@@ -239,6 +343,14 @@ struct MeetingDetailView: View {
 
     // MARK: - Audio Player
 
+    private var hasPlayableAudio: Bool {
+        audioPlayer != nil || micPlayer != nil
+    }
+
+    private var playbackDuration: TimeInterval {
+        max(audioPlayer?.duration ?? 0, micPlayer?.duration ?? 0)
+    }
+
     private var audioPlayerBar: some View {
         HStack(spacing: 12) {
             Button {
@@ -248,34 +360,20 @@ struct MeetingDetailView: View {
                     .font(.title3)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isPlaying ? "Pause recording" : "Play recording")
 
-            // Progress bar
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.secondary.opacity(0.2))
-                        .frame(height: 4)
-
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.accentColor)
-                        .frame(
-                            width: meeting.duration > 0
-                                ? geo.size.width * (playbackTime / meeting.duration)
-                                : 0,
-                            height: 4
-                        )
-                }
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
-                .onTapGesture { location in
-                    let fraction = location.x / geo.size.width
-                    seekTo(fraction * meeting.duration)
-                }
-            }
-            .frame(height: 20)
+            Slider(
+                value: Binding(
+                    get: { min(playbackTime, playbackDuration) },
+                    set: { seekTo($0) }
+                ),
+                in: 0...max(playbackDuration, 0.01)
+            )
+            .accessibilityLabel("Recording position")
+            .accessibilityValue(formatTime(playbackTime))
 
             // Time display
-            Text("\(formatTime(playbackTime)) / \(formatTime(meeting.duration))")
+            Text("\(formatTime(playbackTime)) / \(formatTime(playbackDuration))")
                 .font(.caption)
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
@@ -299,151 +397,139 @@ struct MeetingDetailView: View {
         .padding(.vertical, 8)
     }
 
-    // MARK: - Report tab (Summary + Coaching)
+    // MARK: - Transcript-first content
 
-    private var reportTab: some View {
+    private var transcriptPresentation: MeetingTranscriptPresentation {
+        MeetingPresentationPolicy.transcriptPresentation(
+            status: meeting.status,
+            segmentCount: meeting.segments.count,
+            errorMessage: meeting.errorMessage
+        )
+    }
+
+    private var transcriptFirstContent: some View {
         ScrollView {
-            Group {
-                if meeting.summary == nil && meeting.coaching == nil {
-                    emptyTabState(reportEmptyMessage)
-                } else {
-                    ReportContentView(
-                        summary: meeting.summary,
-                        coaching: meeting.coaching,
-                        talkPercentMe: talkPercentMe
+            VStack(alignment: .leading, spacing: 18) {
+                if let summary = meeting.summary?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   !summary.isEmpty {
+                    VStack(alignment: .leading, spacing: 7) {
+                        Label("Summary", systemImage: "text.alignleft")
+                            .font(Theme.Typography.sectionLabel)
+                            .foregroundStyle(Theme.Colors.ink)
+                        Text(summary)
+                            .font(Theme.Typography.body)
+                            .foregroundStyle(Theme.Colors.ink2)
+                            .textSelection(.enabled)
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        Theme.Colors.panel,
+                        in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                     )
                 }
-            }
-            .padding(28)
-            .frame(maxWidth: Theme.Metrics.contentMaxWidth, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
 
-    private var reportEmptyMessage: String {
-        if meeting.status == .processing {
-            return "Finalizing local speaker labels…"
-        }
-        if meeting.status == .failed, let message = meeting.errorMessage?.nilIfEmpty {
-            return message
-        }
-        return "Your local transcript is ready. Cloud reports are disabled in this private build."
-    }
+                if MeetingPresentationPolicy.shouldShowNotes(meeting.notes) || notesExpanded {
+                    @Bindable var meeting = meeting
+                    DisclosureGroup(isExpanded: $notesExpanded) {
+                        TextEditor(text: $meeting.notes)
+                            .font(Theme.Typography.body)
+                            .scrollContentBackground(.hidden)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(minHeight: 84)
+                            .padding(.top, 6)
+                    } label: {
+                        Label("Notes", systemImage: "square.and.pencil")
+                            .font(Theme.Typography.sectionLabel)
+                    }
+                }
 
-    /// Me's share of the words, for the talk-balance bar.
-    private var talkPercentMe: Int? {
-        let me = meeting.segments
-            .filter { $0.speakerLabel == "Me" }
-            .reduce(0) { $0 + $1.text.split(separator: " ").count }
-        let total = meeting.segments.reduce(0) { $0 + $1.text.split(separator: " ").count }
-        return total > 0 ? Int(Double(me) / Double(total) * 100) : nil
-    }
+                Text("Transcript")
+                    .font(Theme.Typography.sectionLabel)
+                    .foregroundStyle(Theme.Colors.ink)
 
-    // MARK: - Transcript tab
+                if let message = transcriptPresentation.message {
+                    transcriptStatus(message, presentation: transcriptPresentation)
+                }
 
-    private var transcriptTab: some View {
-        VStack(spacing: 0) {
-            if meeting.status == .processing {
-                processingView
-                Divider()
-            }
-            transcriptList
-        }
-    }
-
-    // MARK: - Insights tab
-
-    private var insightsTab: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                if meeting.insights.isEmpty {
-                    emptyTabState("No copilot insights were captured on this call.")
-                } else {
-                    ForEach(meeting.sortedInsights) { insight in
-                        StoredInsightRow(
-                            insight: insight,
-                            kindStyle: KindResolver.style(
-                                forKey: insight.kindRaw,
-                                profile: meeting.profile,
-                                snapshot: meeting.snapshotKinds
-                            )
-                        ) {
-                            seekTo(insight.callTime)
+                if transcriptPresentation.showsTranscript {
+                    LazyVStack(alignment: .leading, spacing: 4) {
+                        ForEach(meeting.sortedSegments) { segment in
+                            transcriptSegmentControl(segment)
                         }
                     }
                 }
             }
-            .padding(28)
+            .padding(24)
             .frame(maxWidth: Theme.Metrics.contentMaxWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    // MARK: - Notes tab
-
-    private var notesTab: some View {
-        @Bindable var meeting = meeting
-        return ZStack(alignment: .topLeading) {
-            TextEditor(text: $meeting.notes)
-                .font(Theme.Typography.body)
-                .scrollContentBackground(.hidden)
-                .padding(20)
-
-            if meeting.notes.isEmpty {
-                Text("Notes for this call — type anything worth keeping.")
-                    .font(Theme.Typography.body)
-                    .foregroundStyle(Theme.Colors.ink3)
-                    .padding(.top, 28)
-                    .padding(.leading, 26)
-                    .allowsHitTesting(false)
+    private func transcriptStatus(
+        _ message: String,
+        presentation: MeetingTranscriptPresentation
+    ) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            if presentation.showsProgress {
+                ProgressView()
+                    .controlSize(.small)
+            } else {
+                Image(systemName: presentation.tone == .error
+                    ? "exclamationmark.circle"
+                    : "text.bubble")
             }
+            Text(message)
+                .font(Theme.Typography.secondary)
+                .textSelection(.enabled)
         }
-        .frame(maxWidth: Theme.Metrics.contentMaxWidth, alignment: .leading)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(presentation.tone == .error ? Color.red : Theme.Colors.ink2)
+        .accessibilityElement(children: .combine)
     }
 
-    private func emptyTabState(_ message: String) -> some View {
-        Text(message)
-            .font(Theme.Typography.body)
-            .foregroundStyle(Theme.Colors.ink2)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.top, 40)
-    }
-
-    // MARK: - Processing View
-
-    private var processingView: some View {
-        HStack(spacing: 8) {
-            ProgressView()
-                .controlSize(.small)
-            Text("Identifying speakers...")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 8)
-    }
-
-    // MARK: - Transcript List
-
-    private var transcriptList: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 4) {
-                ForEach(meeting.sortedSegments) { segment in
-                    TranscriptSegmentRow(
-                        segment: segment,
-                        isActive: segment.id == activeSegmentID,
-                        themName: meeting.themName
-                    )
-                    .onTapGesture {
-                        seekTo(segment.startTime)
-                    }
-                }
-            }
-            .padding()
+    @ViewBuilder
+    private func transcriptSegmentControl(_ segment: TranscriptSegment) -> some View {
+        if hasPlayableAudio {
+            TranscriptSegmentRow(
+                segment: segment,
+                isActive: segment.id == activeSegmentID,
+                themName: meeting.themName,
+                onSeek: { seekTo(segment.startTime) }
+            )
+        } else {
+            TranscriptSegmentRow(
+                segment: segment,
+                isActive: segment.id == activeSegmentID,
+                themName: meeting.themName
+            )
         }
     }
 
     // MARK: - Audio Playback
+
+    private func prepareMeetingView() {
+        stopPlayback()
+        audioPlayer = nil
+        micPlayer = nil
+        playbackTime = 0
+        activeSegmentID = nil
+        editingTitle = false
+        titleFieldFocused = false
+        titleText = meeting.title
+        themNameText = meeting.themName ?? ""
+        notesExpanded = false
+        hasCachedBestTranscript = false
+        prepareAudioPlayer()
+
+        let meetingID = meeting.id
+        Task {
+            let hasArtifact = await recordingManager
+                .bestTranscriptionCoordinator
+                .latestCompletedArtifact(meetingID: meetingID) != nil
+            guard meeting.id == meetingID else { return }
+            hasCachedBestTranscript = hasArtifact
+        }
+    }
 
     private func prepareAudioPlayer() {
         // Two separate tracks were recorded: system audio ("Them") and the mic
@@ -530,6 +616,17 @@ struct MeetingDetailView: View {
 
     // MARK: - Export
 
+    private var bestProgress: BestTranscriptionProgress {
+        recordingManager.bestTranscriptionCoordinator.progress(for: meeting.id)
+    }
+
+    private var canExportBestTranscript: Bool {
+        guard meeting.status != .recording else { return false }
+        return hasCachedBestTranscript
+            || !meeting.systemAudioPath.isEmpty
+            || meeting.micAudioPath?.isEmpty == false
+    }
+
     private func exportTXT() {
         let content = ExportService.exportToTXT(meeting: meeting)
         let filename = meeting.title.replacingOccurrences(of: " ", with: "_")
@@ -545,6 +642,106 @@ struct MeetingDetailView: View {
             NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
         }
     }
+
+    private func startBestTranscriptExport(forceReprocess: Bool) {
+        let request = BestTranscriptionRequest(
+            meetingID: meeting.id,
+            title: meeting.title,
+            date: meeting.date,
+            duration: meeting.duration,
+            systemAudioURL: meeting.systemAudioPath.nilIfEmpty.map {
+                URL(fileURLWithPath: $0)
+            },
+            micAudioURL: meeting.micAudioPath?.nilIfEmpty.map {
+                URL(fileURLWithPath: $0)
+            },
+            vocabulary: UserDefaults.standard.string(
+                forKey: "customVocabulary"
+            ) ?? "",
+            timeline: AudioTimelineStore.load(meetingID: meeting.id)
+        )
+        submitBestTranscript(
+            request,
+            forceReprocess: forceReprocess
+        )
+    }
+
+    private func submitBestTranscript(
+        _ request: BestTranscriptionRequest,
+        forceReprocess: Bool
+    ) {
+        showBestTranscriptProgress = true
+        let completion: (Result<BestTranscriptArtifact, Error>) -> Void = {
+            result in
+            switch result {
+            case .success(let artifact):
+                hasCachedBestTranscript = true
+                saveBestTranscript(artifact)
+            case .failure(let error):
+                if case .damagedAudioAvailable(let warnings) =
+                    error as? BestTranscriptionError {
+                    showBestTranscriptProgress = false
+                    partialAudioWarning = warnings.joined(separator: " ")
+                    pendingPartialExportRequest = request
+                    pendingPartialForceReprocess = forceReprocess
+                } else if error as? BestTranscriptionError != .cancelled {
+                    bestExportError = error.localizedDescription
+                }
+            }
+        }
+        if forceReprocess {
+            recordingManager.bestTranscriptionCoordinator.reprocess(
+                request,
+                completion: completion
+            )
+        } else {
+            recordingManager.bestTranscriptionCoordinator.startOrResume(
+                request,
+                completion: completion
+            )
+        }
+    }
+
+    private func saveBestTranscript(_ artifact: BestTranscriptArtifact) {
+        let content = ExportService.exportBestTranscriptTXT(
+            title: meeting.title,
+            date: meeting.date,
+            duration: meeting.duration,
+            artifact: artifact
+        )
+        let filename = "\(meeting.title) — Best Whisper Transcript"
+        do {
+            let url = try ExportService.save(
+                content: content,
+                filename: filename,
+                extension: "txt"
+            )
+            showBestTranscriptProgress = false
+            NSWorkspace.shared.selectFile(
+                url.path,
+                inFileViewerRootedAtPath: url.deletingLastPathComponent().path
+            )
+        } catch {
+            let panel = NSSavePanel()
+            panel.allowedContentTypes = [.plainText]
+            panel.nameFieldStringValue = "\(filename).txt"
+            panel.canCreateDirectories = true
+            guard panel.runModal() == .OK, let url = panel.url else {
+                showBestTranscriptProgress = false
+                return
+            }
+            do {
+                try content.write(to: url, atomically: true, encoding: .utf8)
+                showBestTranscriptProgress = false
+                NSWorkspace.shared.selectFile(
+                    url.path,
+                    inFileViewerRootedAtPath: url.deletingLastPathComponent().path
+                )
+            } catch {
+                bestExportError = "The transcript is ready and cached, but the TXT file could not be written: \(error.localizedDescription)"
+            }
+        }
+    }
 }
 
 // MARK: - Transcript Segment Row
@@ -553,6 +750,7 @@ struct TranscriptSegmentRow: View {
     let segment: TranscriptSegment
     let isActive: Bool
     var themName: String? = nil
+    var onSeek: (() -> Void)? = nil
 
     private static let speakerColors: [Color] = [
         .blue, .green, .orange, .purple, .pink, .teal, .indigo, .mint
@@ -569,11 +767,17 @@ struct TranscriptSegmentRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             // Timestamp
-            Text(segment.formattedTimestamp)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-                .frame(width: 40, alignment: .trailing)
+            if let onSeek {
+                Button(action: onSeek) {
+                    timestampLabel
+                        .underline()
+                }
+                .buttonStyle(.plain)
+                .help("Play from this moment")
+                .accessibilityLabel("Play from \(segment.formattedTimestamp)")
+            } else {
+                timestampLabel
+            }
 
             // Speaker label
             if let speaker = displayLabel {
@@ -598,70 +802,16 @@ struct TranscriptSegmentRow: View {
         .animation(.easeInOut(duration: 0.15), value: isActive)
     }
 
+    private var timestampLabel: some View {
+        Text(segment.formattedTimestamp)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .frame(width: 40, alignment: .trailing)
+    }
+
     private func speakerColor(for label: String) -> Color {
         Self.speakerColors[label.stableHash % Self.speakerColors.count]
-    }
-}
-
-// MARK: - Stored Insight Row
-
-struct StoredInsightRow: View {
-    let insight: CallInsight
-    /// Resolved visual style — caller supplies via KindResolver so the row is profile-aware.
-    let kindStyle: KindStyle
-    let onSeek: () -> Void
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Button(action: onSeek) {
-                Text(insight.formattedCallTime)
-                    .font(.caption)
-                    .monospacedDigit()
-                    .underline()
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("Play from this moment")
-
-            Image(systemName: kindStyle.iconSystemName)
-                .font(.caption)
-                .foregroundStyle(kindStyle.color)
-                .frame(width: 16)
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(insight.title)
-                        .font(Theme.Typography.cardTitle)
-
-                    if kindStyle.isPinned {
-                        Label(
-                            insight.isHandled ? "Handled" : "Unresolved",
-                            systemImage: insight.isHandled ? "checkmark" : "exclamationmark.circle"
-                        )
-                        .font(.caption2)
-                        .foregroundStyle(insight.isHandled ? Color.green : .orange)
-                    }
-                }
-
-                Text(insight.detail)
-                    .font(Theme.Typography.secondary)
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
-
-                if let reply = insight.reply {
-                    (Text("Try: ").bold() + Text("“\(reply)”"))
-                        .font(Theme.Typography.secondary)
-                        .foregroundStyle(Theme.Colors.action)
-                        .textSelection(.enabled)
-                }
-
-                if let source = insight.source {
-                    Label(source, systemImage: source == "general knowledge" ? "globe" : "doc.text")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-        }
     }
 }
 

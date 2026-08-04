@@ -5,6 +5,9 @@ struct MenuBarView: View {
     @Environment(ProfileStore.self) private var profileStore
     @Environment(\.modelContext) private var modelContext
 
+    let openMainWindow: () -> Void
+    let closePopover: () -> Void
+
     var body: some View {
         VStack(spacing: 12) {
             if recordingManager.isRecording {
@@ -22,6 +25,7 @@ struct MenuBarView: View {
                 }
 
                 Button(recordingManager.isStopping ? "Finalizing…" : "Stop Recording") {
+                    closePopover()
                     Task { await recordingManager.stopRecording() }
                 }
                 .disabled(recordingManager.isStopping)
@@ -31,7 +35,7 @@ struct MenuBarView: View {
                 Text("Parrot")
                     .font(.headline)
 
-                Text(recordingManager.transcriptionEngine.isReady ? "Ready to record" : "Loading model...")
+                Text(recordingManager.transcriptionEngine.isReady ? "Ready to record" : "Model loads when recording starts")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -40,6 +44,7 @@ struct MenuBarView: View {
                     .foregroundStyle(.secondary)
 
                 Button("Start Recording") {
+                    closePopover()
                     Task {
                         do {
                             // Same preflight as the dashboard button — without it
@@ -55,20 +60,22 @@ struct MenuBarView: View {
                         }
                     }
                 }
-                .disabled(!recordingManager.transcriptionEngine.isReady)
+                .disabled(
+                    recordingManager.isStarting
+                        || recordingManager.isRecording
+                        || recordingManager.isStopping
+                )
                 .keyboardShortcut("r")
             }
 
             Divider()
 
             Button("Open Parrot") {
-                NSApp.activate(ignoringOtherApps: true)
-                if let window = NSApp.windows.first(where: { $0.title != "Item-0" }) {
-                    window.makeKeyAndOrderFront(nil)
-                }
+                openMainWindow()
             }
 
             Button("Quit") {
+                closePopover()
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")

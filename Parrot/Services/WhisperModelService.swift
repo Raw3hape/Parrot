@@ -1,15 +1,136 @@
 import Foundation
 @preconcurrency import WhisperKit
 
+struct WhisperLongFormPolicy: Equatable, Sendable {
+    var language: String?
+    var detectLanguage: Bool
+    var wordTimestamps: Bool
+    var withoutTimestamps: Bool
+    var concurrentWorkerCount: Int
+    var usesVADChunking: Bool
+
+    static let bestLocal = Self(
+        language: nil,
+        detectLanguage: true,
+        wordTimestamps: true,
+        withoutTimestamps: false,
+        concurrentWorkerCount: 1,
+        usesVADChunking: true
+    )
+}
+
+struct WhisperPreparationPolicy: Equatable, Sendable {
+    var allowDownload: Bool
+
+    static let liveFallback = Self(allowDownload: true)
+    static let bestExport = Self(allowDownload: false)
+}
+
+enum WhisperLocalModelLocator {
+    static func modelFolder(
+        modelName: String,
+        homeDirectories: [URL]? = nil
+    ) -> URL? {
+        let homes = homeDirectories ?? defaultHomeDirectories()
+        let folderName = "openai_whisper-\(modelName)"
+        for home in homes {
+            let folder = home
+                .appendingPathComponent(
+                    "Documents/huggingface/models/argmaxinc/whisperkit-coreml",
+                    isDirectory: true
+                )
+                .appendingPathComponent(folderName, isDirectory: true)
+                .standardizedFileURL
+            let required = [
+                folder.appendingPathComponent("config.json"),
+                folder.appendingPathComponent("AudioEncoder.mlmodelc", isDirectory: true),
+                folder.appendingPathComponent("TextDecoder.mlmodelc", isDirectory: true),
+            ]
+            if required.allSatisfy({
+                FileManager.default.fileExists(atPath: $0.path)
+            }) {
+                return folder
+            }
+        }
+        return nil
+    }
+
+    private static func defaultHomeDirectories() -> [URL] {
+        var homes: [URL] = []
+        if let environmentHome = ProcessInfo.processInfo.environment["HOME"] {
+            homes.append(URL(fileURLWithPath: environmentHome, isDirectory: true))
+        }
+        let systemHome = FileManager.default.homeDirectoryForCurrentUser
+        homes.append(systemHome)
+        homes.append(
+            systemHome
+                .appendingPathComponent(
+                    "Library/Containers/com.uygar.parrot/Data",
+                    isDirectory: true
+                )
+        )
+        var seen: Set<String> = []
+        return homes.filter { seen.insert($0.standardizedFileURL.path).inserted }
+    }
+}
+
+actor WhisperInferenceGate {
+    enum Priority: Sendable {
+        case live
+        case background
+    }
+
+    private var held = false
+    private var liveWaiters: [CheckedContinuation<Void, Never>] = []
+    private var backgroundWaiters: [CheckedContinuation<Void, Never>] = []
+
+    func acquire(priority: Priority) async {
+        if !held {
+            held = true
+            return
+        }
+        await withCheckedContinuation { continuation in
+            switch priority {
+            case .live:
+                liveWaiters.append(continuation)
+            case .background:
+                backgroundWaiters.append(continuation)
+            }
+        }
+    }
+
+    func release() {
+        if !liveWaiters.isEmpty {
+            liveWaiters.removeFirst().resume()
+        } else if !backgroundWaiters.isEmpty {
+            backgroundWaiters.removeFirst().resume()
+        } else {
+            held = false
+        }
+    }
+
+    /// Internal observability used by deterministic concurrency tests. It
+    /// exposes counts only—never continuations or mutable gate state.
+    func waitingCounts() -> (live: Int, background: Int) {
+        (liveWaiters.count, backgroundWaiters.count)
+    }
+}
+
 actor WhisperModelService: LocalSpeechRecognizing {
     static let fallbackModel = "large-v3-v20240930_turbo"
 
     enum ServiceError: LocalizedError {
         case notLoaded
+        case localModelMissing
+        case localModelCorrupt
 
         var errorDescription: String? {
             switch self {
             case .notLoaded: "Whisper fallback model is not loaded"
+            case .localModelMissing:
+                "Whisper Large V3 Turbo is not installed locally. Reload the model in Settings, then try again."
+            case .localModelCorrupt:
+                "The local Whisper Large V3 Turbo model could not be opened. Reload the model in Settings, then try again."
             }
         }
     }
@@ -17,8 +138,13 @@ actor WhisperModelService: LocalSpeechRecognizing {
     private var whisperKit: WhisperKit?
     private var preparationTask: Task<PreparedWhisper, Error>?
     private var preparationGeneration = UUID()
+    private let inferenceGate: WhisperInferenceGate
     private(set) var isReady = false
     private(set) var preparationLaunchCount = 0
+
+    init(inferenceGate: WhisperInferenceGate = WhisperInferenceGate()) {
+        self.inferenceGate = inferenceGate
+    }
 
     private final class PreparedWhisper: @unchecked Sendable {
         let value: WhisperKit
@@ -29,7 +155,35 @@ actor WhisperModelService: LocalSpeechRecognizing {
     }
 
     func prepare(modelName: String = fallbackModel) async throws {
+        try await prepare(
+            modelName: modelName,
+            policy: .liveFallback
+        )
+    }
+
+    func prepareLocalOnly(modelName: String = fallbackModel) async throws {
+        try await prepare(
+            modelName: modelName,
+            policy: .bestExport
+        )
+    }
+
+    private func prepare(
+        modelName: String,
+        policy: WhisperPreparationPolicy
+    ) async throws {
         guard !isReady else { return }
+        let localModelFolder: URL?
+        if policy.allowDownload {
+            localModelFolder = nil
+        } else {
+            guard let folder = WhisperLocalModelLocator.modelFolder(
+                modelName: modelName
+            ) else {
+                throw ServiceError.localModelMissing
+            }
+            localModelFolder = folder
+        }
 
         let task: Task<PreparedWhisper, Error>
         let generation: UUID
@@ -42,11 +196,13 @@ actor WhisperModelService: LocalSpeechRecognizing {
             preparationLaunchCount += 1
             task = Task {
                 let config = WhisperKitConfig(
-                    model: modelName,
+                    model: localModelFolder == nil ? modelName : nil,
+                    modelFolder: localModelFolder?.path,
                     verbose: false,
                     logLevel: .none,
                     prewarm: true,
-                    load: true
+                    load: true,
+                    download: policy.allowDownload
                 )
                 return PreparedWhisper(try await WhisperKit(config))
             }
@@ -63,6 +219,9 @@ actor WhisperModelService: LocalSpeechRecognizing {
         } catch {
             if preparationGeneration == generation {
                 preparationTask = nil
+            }
+            if !policy.allowDownload {
+                throw ServiceError.localModelCorrupt
             }
             throw error
         }
@@ -102,10 +261,19 @@ actor WhisperModelService: LocalSpeechRecognizing {
         }
 
         try Task.checkCancellation()
-        let results = try await whisperKit.transcribe(
-            audioArray: samples,
-            decodeOptions: options
-        )
+        let results: [TranscriptionResult]
+        await inferenceGate.acquire(priority: .live)
+        do {
+            try Task.checkCancellation()
+            results = try await whisperKit.transcribe(
+                audioArray: samples,
+                decodeOptions: options
+            )
+            await inferenceGate.release()
+        } catch {
+            await inferenceGate.release()
+            throw error
+        }
         let text = results.map(\.text).joined(separator: " ")
         let segments = results.flatMap(\.segments)
         let confidence: Float? = segments.isEmpty
@@ -119,10 +287,77 @@ actor WhisperModelService: LocalSpeechRecognizing {
         )
     }
 
+    func transcribeWindow(
+        samples: [Float],
+        speaker: BestTranscriptSpeaker,
+        absoluteWindowStart: TimeInterval,
+        vocabulary: String
+    ) async throws -> [BestTranscriptSegment] {
+        try Task.checkCancellation()
+        guard let whisperKit else { throw ServiceError.notLoaded }
+        let policy = WhisperLongFormPolicy.bestLocal
+        var options = DecodingOptions(
+            task: .transcribe,
+            language: policy.language,
+            detectLanguage: policy.detectLanguage,
+            skipSpecialTokens: true,
+            withoutTimestamps: policy.withoutTimestamps,
+            wordTimestamps: policy.wordTimestamps,
+            compressionRatioThreshold: 2.4,
+            logProbThreshold: -1.0,
+            noSpeechThreshold: 0.6,
+            concurrentWorkerCount: policy.concurrentWorkerCount,
+            chunkingStrategy: policy.usesVADChunking ? .vad : nil
+        )
+        options.temperatureFallbackCount = 3
+        Self.applyVocabulary(vocabulary, tokenizer: whisperKit.tokenizer, options: &options)
+
+        let results: [TranscriptionResult]
+        await inferenceGate.acquire(priority: .background)
+        do {
+            try Task.checkCancellation()
+            results = try await whisperKit.transcribe(
+                audioArray: samples,
+                decodeOptions: options,
+                callback: { _ in
+                    Task<Never, Never>.isCancelled ? false : true
+                }
+            )
+            await inferenceGate.release()
+        } catch {
+            await inferenceGate.release()
+            throw error
+        }
+        try Task.checkCancellation()
+
+        let raw = results.flatMap { result in
+            result.segments.map { segment in
+                BestRawWhisperSegment(
+                    startTime: TimeInterval(segment.start),
+                    endTime: TimeInterval(segment.end),
+                    text: segment.text,
+                    averageLogProbability: segment.avgLogprob,
+                    detectedLanguage: result.language,
+                    words: (segment.words ?? []).map { word in
+                        BestRawWhisperWord(
+                            text: word.word,
+                            startTime: TimeInterval(word.start),
+                            endTime: TimeInterval(word.end),
+                            probability: word.probability
+                        )
+                    }
+                )
+            }
+        }
+        return BestWhisperResultMapper.map(
+            raw,
+            speaker: speaker,
+            absoluteWindowStart: absoluteWindowStart
+        )
+    }
+
     static func cleaned(_ text: String) -> String {
-        text
-            .replacingOccurrences(of: #"<\|[^|>]*\|>"#, with: "", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        BestWhisperResultMapper.cleaned(text)
     }
 
     /// Whisper exposes average token log-probability, while the router expects
@@ -136,5 +371,24 @@ actor WhisperModelService: LocalSpeechRecognizing {
         let probability = Foundation.exp(mean)
         guard probability.isFinite else { return mean > 0 ? 1 : 0 }
         return min(1, max(0, probability))
+    }
+
+    private static func applyVocabulary(
+        _ vocabulary: String,
+        tokenizer: (any WhisperTokenizer)?,
+        options: inout DecodingOptions
+    ) {
+        let normalized = vocabulary.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty, let tokenizer else { return }
+        let terms = normalized
+            .components(separatedBy: CharacterSet(charactersIn: ",\n"))
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard !terms.isEmpty else { return }
+        let prompt = " Glossary: " + terms.joined(separator: ", ") + "."
+        options.promptTokens = tokenizer.encode(text: prompt)
+            .filter { $0 < tokenizer.specialTokens.specialTokenBegin }
+        options.usePrefillPrompt = true
+        options.detectLanguage = true
     }
 }

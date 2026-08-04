@@ -8,7 +8,7 @@ let package = Package(
         .macOS(.v14)
     ],
     dependencies: [
-        .package(url: "https://github.com/argmaxinc/WhisperKit.git", from: "0.9.0"),
+        .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "0.18.0"),
         .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.15.5"),
         // Vendored SpeexDSP for acoustic echo cancellation. Kept in sync with
         // project.yml (the xcodegen source of truth) so `swift build` works too.
@@ -22,7 +22,18 @@ let package = Package(
                 .product(name: "FluidAudio", package: "FluidAudio"),
                 .product(name: "CSpeexDSP", package: "CSpeexDSP"),
             ],
-            path: "Parrot"
+            path: "Parrot",
+            exclude: [
+                "Assets.xcassets",
+                "Info.plist",
+                "Parrot.entitlements",
+                "QwenHelper.entitlements",
+            ]
+        ),
+        .testTarget(
+            name: "ParrotTests",
+            dependencies: ["Parrot"],
+            path: "Tests/ParrotTests"
         ),
     ]
 )
