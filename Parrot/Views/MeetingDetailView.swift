@@ -25,6 +25,8 @@ struct MeetingDetailView: View {
     @State private var showCostBreakdown = false
     @State private var showBestTranscriptProgress = false
     @State private var hasCachedBestTranscript = false
+    @State private var finalTranscript: BestTranscriptArtifact?
+    @State private var showFinalTranscript = true
     @State private var bestExportError: String?
     @State private var partialAudioWarning: String?
     @State private var pendingPartialExportRequest: BestTranscriptionRequest?
@@ -57,6 +59,9 @@ struct MeetingDetailView: View {
         .onChange(of: meeting.id) { _, _ in
             prepareMeetingView()
         }
+        .onChange(of: bestProgress.stage) { _, stage in
+            if stage == .ready { loadFinalTranscript() }
+        }
         .onDisappear {
             stopPlayback()
         }
@@ -66,7 +71,7 @@ struct MeetingDetailView: View {
                     Button("Export as TXT") { exportTXT() }
                     Button("Export as SRT") { exportSRT() }
                     Divider()
-                    Button("Export Best Transcript (Whisper)…") {
+                    Button("Export Final Transcript…") {
                         startBestTranscriptExport(forceReprocess: false)
                     }
                     .disabled(!canExportBestTranscript || bestProgress.isRunning)
@@ -76,7 +81,7 @@ struct MeetingDetailView: View {
                         }
                     }
                     if hasCachedBestTranscript || bestProgress.stage == .ready {
-                        Button("Reprocess with Whisper…") {
+                        Button("Reprocess Final Transcript…") {
                             startBestTranscriptExport(forceReprocess: true)
                         }
                         .disabled(bestProgress.isRunning)
@@ -448,14 +453,47 @@ struct MeetingDetailView: View {
                     .font(Theme.Typography.sectionLabel)
                     .foregroundStyle(Theme.Colors.ink)
 
+                if finalTranscript != nil {
+                    Picker("Transcript", selection: $showFinalTranscript) {
+                        Text("Final").tag(true)
+                        Text("Live").tag(false)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 280)
+                    if showFinalTranscript, finalTranscript?.alignmentQuality == .estimated {
+                        Text("Playback positions are approximate.")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } else if bestProgress.isRunning {
+                    HStack {
+                        ProgressView().controlSize(.small)
+                        Text("Preparing final transcript…").font(Theme.Typography.secondary)
+                    }
+                } else if bestProgress.stage == .failed {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Final transcript could not finish. Your audio and live transcript are saved.")
+                            .font(Theme.Typography.secondary)
+                        Button("Retry final transcript") {
+                            recordingManager.retryFinalTranscript(for: meeting)
+                        }
+                    }
+                }
+
                 if let message = transcriptPresentation.message {
                     transcriptStatus(message, presentation: transcriptPresentation)
                 }
 
                 if transcriptPresentation.showsTranscript {
                     LazyVStack(alignment: .leading, spacing: 4) {
-                        ForEach(meeting.sortedSegments) { segment in
-                            transcriptSegmentControl(segment)
+                        if showFinalTranscript, let finalTranscript {
+                            ForEach(finalTranscript.segments) { segment in
+                                finalTranscriptControl(segment)
+                            }
+                        } else {
+                            ForEach(meeting.sortedSegments) { segment in
+                                transcriptSegmentControl(segment)
+                            }
                         }
                     }
                 }
@@ -505,6 +543,24 @@ struct MeetingDetailView: View {
         }
     }
 
+    private func finalTranscriptControl(_ segment: BestTranscriptSegment) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Button { seekTo(segment.startTime) } label: {
+                Text(String(format: "%02d:%02d", Int(segment.startTime) / 60, Int(segment.startTime) % 60))
+                    .monospacedDigit()
+            }
+            .buttonStyle(.plain)
+            .disabled(!hasPlayableAudio)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(meeting.displayName(forSpeaker: segment.speaker.rawValue))
+                    .font(Theme.Typography.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(segment.text).font(Theme.Typography.body).textSelection(.enabled)
+            }
+        }
+        .padding(.vertical, 8)
+    }
+
     // MARK: - Audio Playback
 
     private func prepareMeetingView() {
@@ -519,15 +575,20 @@ struct MeetingDetailView: View {
         themNameText = meeting.themName ?? ""
         notesExpanded = false
         hasCachedBestTranscript = false
+        finalTranscript = nil
+        showFinalTranscript = true
         prepareAudioPlayer()
+        loadFinalTranscript()
+    }
 
+    private func loadFinalTranscript() {
         let meetingID = meeting.id
         Task {
-            let hasArtifact = await recordingManager
-                .bestTranscriptionCoordinator
-                .latestCompletedArtifact(meetingID: meetingID) != nil
+            let artifact = await recordingManager.bestTranscriptionCoordinator
+                .latestCompletedArtifact(meetingID: meetingID)
             guard meeting.id == meetingID else { return }
-            hasCachedBestTranscript = hasArtifact
+            finalTranscript = artifact
+            hasCachedBestTranscript = artifact != nil
         }
     }
 
@@ -673,6 +734,7 @@ struct MeetingDetailView: View {
         showBestTranscriptProgress = true
         let completion: (Result<BestTranscriptArtifact, Error>) -> Void = {
             result in
+            guard request.meetingID == meeting.id else { return }
             switch result {
             case .success(let artifact):
                 hasCachedBestTranscript = true
@@ -709,7 +771,7 @@ struct MeetingDetailView: View {
             duration: meeting.duration,
             artifact: artifact
         )
-        let filename = "\(meeting.title) — Best Whisper Transcript"
+        let filename = "\(meeting.title) — Final Transcript"
         do {
             let url = try ExportService.save(
                 content: content,

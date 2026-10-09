@@ -1,0 +1,26 @@
+[
+  {
+    "language": "en",
+    "file": "smoke-en.aiff",
+    "reference_text": "Parrot is recording a short test meeting. The microphone and system audio should be clear. We will discuss the product design and prepare the next steps for tomorrow.",
+    "voice": "Samantha",
+    "bytes": 404354,
+    "sha256": "5e695b112cefe08bfff4d2951f6d0aeb12b2a0b24d5f9e5b549bf4069e6492c6"
+  },
+  {
+    "language": "ru",
+    "file": "smoke-ru.aiff",
+    "reference_text": "Это короткая проверка приложения Паррот на втором ноутбуке. Мы обсуждаем дизайн продукта и план работы на завтра. Распознавание речи должно работать локально, без подключения к интернету.",
+    "voice": "Milena (Русский (Россия))",
+    "bytes": 525830,
+    "sha256": "a1211459376e4705fa4fc8a770753bfd57a1ee391a159e545a13ca626e62513d"
+  },
+  {
+    "language": "pl",
+    "file": "smoke-pl.aiff",
+    "reference_text": "To jest krótki test nagrywania spotkania na drugim komputerze. Omawiamy projekt produktu i plan pracy na jutro. Rozpoznawanie mowy powinno działać lokalnie bez internetu.",
+    "voice": "Zosia",
+    "bytes": 487086,
+    "sha256": "6470678aa53c24d3bb86e6fcf8f2225e55f842b269b68fdb7dbbd7822a728273"
+  }
+]

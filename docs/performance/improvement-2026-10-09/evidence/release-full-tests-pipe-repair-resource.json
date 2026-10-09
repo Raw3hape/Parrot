@@ -1,0 +1,17 @@
+{
+  "name": "final full unit suite after pipe repair",
+  "pid": 69854,
+  "runner_pid": 69853,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "swift",
+    "test",
+    "--jobs",
+    "4"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/release-full-tests-pipe-repair.log",
+  "stop_condition": "completion or 600 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 175.07
+}

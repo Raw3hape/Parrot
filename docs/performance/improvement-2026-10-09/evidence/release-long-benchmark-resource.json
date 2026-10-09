@@ -1,0 +1,25 @@
+{
+  "name": "serialized varied long model benchmark",
+  "pid": 71831,
+  "runner_pid": 71830,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "python3",
+    "Tools/qa/benchmark_final_pipeline.py",
+    "--app",
+    "build/Parrot-improved-2026-10-09.app/Contents/MacOS/Parrot",
+    "--audio",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/corpus/varied-long.wav",
+    "--model-root",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/models",
+    "--manifest",
+    ".tmp/parrot-improvement-20261009/corpus/manifest.json",
+    "--output",
+    "docs/performance/improvement-2026-10-09/evidence/long-benchmark"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/release-long-benchmark-progress.log",
+  "stop_condition": "completion or 900 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 146.984
+}

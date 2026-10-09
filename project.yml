@@ -12,7 +12,7 @@ packages:
     exactVersion: "0.18.0"
   FluidAudio:
     url: https://github.com/FluidInference/FluidAudio.git
-    exactVersion: "0.15.5"
+    exactVersion: "0.17.3"
   # Vendored SpeexDSP for acoustic echo cancellation (mic + system-audio reference).
   CSpeexDSP:
     path: Vendor/CSpeexDSP
@@ -77,6 +77,28 @@ targets:
           signing_identity="${EXPANDED_CODE_SIGN_IDENTITY:--}"
           /usr/bin/codesign --force --sign "$signing_identity" --options runtime --timestamp=none \
             --entitlements "${SRCROOT}/Parrot/QwenHelper.entitlements" "$destination"
+          asr_source="${ASR_WORKER_SOURCE:-${SRCROOT}/Tools/ASRWorker/Build/portable}"
+          if [ ! -x "$asr_source/ParrotASRWorker" ] || [ ! -f "$asr_source/mlx.metallib" ]; then
+            echo "error: build the pinned native ASR worker before building Parrot"
+            exit 1
+          fi
+          asr_legacy="${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Helpers/ASRWorker"
+          /bin/rm -rf "$asr_legacy"
+          asr_destination="${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Helpers/ASRWorker.app"
+          /bin/mkdir -p "$asr_destination/Contents/MacOS" "$asr_destination/Contents/Resources"
+          /usr/bin/ditto "$asr_source/ParrotASRWorker" "$asr_destination/Contents/MacOS/ParrotASRWorker"
+          /usr/bin/ditto "$asr_source/mlx.metallib" "$asr_destination/Contents/Resources/mlx.metallib"
+          for asr_resource in "$asr_source"/*.bundle; do
+            [ -d "$asr_resource" ] || continue
+            /usr/bin/ditto "$asr_resource" "$asr_destination/Contents/Resources/$(/usr/bin/basename "$asr_resource")"
+          done
+          /usr/bin/python3 - "$asr_destination/Contents/Info.plist" <<'PYINFO'
+          import plistlib, sys
+          with open(sys.argv[1], "wb") as output:
+              plistlib.dump({"CFBundleExecutable": "ParrotASRWorker", "CFBundleIdentifier": "com.uygar.parrot.asr-worker", "CFBundleName": "Parrot ASR Worker", "CFBundlePackageType": "APPL", "CFBundleVersion": "1", "LSBackgroundOnly": True, "LSMinimumSystemVersion": "14.0"}, output)
+          PYINFO
+          /usr/bin/codesign --force --sign "$signing_identity" --options runtime --timestamp=none \
+            --entitlements "${SRCROOT}/Parrot/QwenHelper.entitlements" "$asr_destination"
     entitlements:
       path: Parrot/Parrot.entitlements
       properties:

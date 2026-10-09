@@ -1,0 +1,10 @@
+diagnostic: parakeet
+model: Parakeet Ultra
+fixture_transcript: Это короткая проверка приложения парад на втором ноутбуке. Мы обсуждаем дизайн продукта и план работы на завтра. Распознавание речи должно работать локально, без подключения к интернету.
+audio_seconds: 11.831
+load_seconds: 0.109
+preparation_launches: 1
+decode_seconds: 0.109
+real_time_factor: 0.0092
+transcript_characters: 186
+confidence_is_finite: 1

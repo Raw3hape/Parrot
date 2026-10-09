@@ -1,0 +1,18 @@
+{
+  "name": "best-transcript",
+  "pid": 3760,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "purpose": "check installed complete post-call transcript path on synthetic fixture",
+  "stop_condition": "completion or 90 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 3.466,
+  "diagnostic": "best_transcription",
+  "audio_seconds": "11.831",
+  "decode_seconds": "3.389",
+  "real_time_factor": "0.286",
+  "segments": "3",
+  "transcript_characters": "185",
+  "timestamps_valid": "1",
+  "contains_special_tokens": "0"
+}

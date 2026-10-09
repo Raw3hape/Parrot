@@ -1,0 +1,70 @@
+{
+  "preflight": {
+    "disk_available_gib": 105,
+    "memory_free_percent": 72,
+    "swap_used_mib": 11606.44,
+    "existing_parrot_pid": 31493
+  },
+  "agents": [
+    {
+      "name": "capture_reliability",
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "scoped implementation and tests completed"
+    },
+    {
+      "name": "background_responsiveness",
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "scoped implementation and tests completed"
+    },
+    {
+      "name": "asr_candidate_review",
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "native adapter research completed"
+    }
+  ],
+  "processes": [
+    {
+      "name": "focused reliability and coordinator tests",
+      "pid": 25800,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "completion or1800 seconds",
+      "log": "docs/performance/improvement-2026-10-09/evidence/focused-tests.log",
+      "status": "exited",
+      "exit_code": 1,
+      "elapsed_seconds": 61.06
+    },
+    {
+      "name": "pinned Qwen/MOSS model download",
+      "pid": 31946,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "completion or1800 seconds",
+      "log": "docs/performance/improvement-2026-10-09/evidence/model-download.log",
+      "status": "exited",
+      "exit_code": 0,
+      "elapsed_seconds": 166.1
+    },
+    {
+      "name": "declared synthetic corpus generator",
+      "session_id": 1868,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "ten cases; each rendering/conversion command60 seconds",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "name": "first native corpus benchmark",
+      "session_id": 48668,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "bounded startup and request; exact-child exit verified",
+      "status": "exited",
+      "note": "Qwen10/10, MOSS6/10; defects retained, not acceptance proof"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009",
+      "purpose": "owned dependency/build/benchmark scratch",
+      "stop_condition": "remove after final integration except retained deliverable evidence"
+    }
+  ]
+}

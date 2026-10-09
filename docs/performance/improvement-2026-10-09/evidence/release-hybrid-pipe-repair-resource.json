@@ -1,0 +1,29 @@
+{
+  "name": "signed hybrid corpus after pipe repair",
+  "pid": 70181,
+  "runner_pid": 70180,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "python3",
+    "Tools/qa/compare_whisper_baseline.py",
+    "--app",
+    ".tmp/parrot-improvement-20261009/candidate-derived/Build/Products/Release/Parrot.app/Contents/MacOS/Parrot",
+    "--manifest",
+    ".tmp/parrot-improvement-20261009/corpus/manifest.json",
+    "--input-root",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/corpus",
+    "--model-root",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/models",
+    "--output",
+    "docs/performance/improvement-2026-10-09/evidence/quality-hybrid",
+    "--engine",
+    "hybrid",
+    "--workers",
+    "4"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/quality-hybrid-pipe-repair-progress.log",
+  "stop_condition": "completion or 900 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 150.574
+}

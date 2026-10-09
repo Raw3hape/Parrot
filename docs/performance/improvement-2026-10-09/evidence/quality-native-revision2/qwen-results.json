@@ -1,0 +1,422 @@
+{
+  "ready": {
+    "engine": "qwen",
+    "event": "ready",
+    "loadSeconds": 10.204217916
+  },
+  "cases": [
+    {
+      "id": "ru-general",
+      "language": "ru",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 19.786438,
+      "wall_seconds": 43.043,
+      "response": {
+        "decodeSeconds": 43.037412416,
+        "generationTokens": 107,
+        "id": "ru-general",
+        "language": "Russian",
+        "languages": [
+          "Russian"
+        ],
+        "peakMemoryGB": 3.57298534,
+        "segments": [
+          {
+            "end": 2.75,
+            "speaker": null,
+            "start": 0,
+            "text": "Давайте сначала посмотрим на текущий макет."
+          },
+          {
+            "end": 8.57,
+            "speaker": null,
+            "start": 2.87,
+            "text": "Мне важно, чтобы пользователь сразу понимал, что произойдет после нажатия кнопки."
+          },
+          {
+            "end": 19.66,
+            "speaker": null,
+            "start": 8.72,
+            "text": "Сегодня мы согласуем структуру страницы, а завтра проверим новый вариант на небольшом экране. Если останутся спорные места, запишем их отдельно и вернемся к ним после созвона."
+          }
+        ],
+        "speechRegionCount": 3,
+        "text": "Давайте сначала посмотрим на текущий макет. Мне важно, чтобы пользователь сразу понимал, что произойдет после нажатия кнопки. Сегодня мы согласуем структуру страницы, а завтра проверим новый вариант на небольшом экране. Если останутся спорные места, запишем их отдельно и вернемся к ним после созвона.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "ru-product",
+      "language": "ru",
+      "reference_words": 44,
+      "word_errors": 5,
+      "wer": 0.11363636363636363,
+      "duration": 22.473438,
+      "wall_seconds": 2.732,
+      "response": {
+        "decodeSeconds": 2.728448375,
+        "generationTokens": 115,
+        "id": "ru-product",
+        "language": "Russian",
+        "languages": [
+          "Russian"
+        ],
+        "peakMemoryGB": 3.57298534,
+        "segments": [
+          {
+            "end": 8.43,
+            "speaker": null,
+            "start": 0,
+            "text": "Никита, пожалуйста, сохрани исходную запись перед обновлением приложения. Итоговая расшифровка должна содержать все реплики."
+          },
+          {
+            "end": 10.96,
+            "speaker": null,
+            "start": 8.57,
+            "text": "включая короткие ответы и уточнения."
+          },
+          {
+            "end": 22.34,
+            "speaker": null,
+            "start": 11.14,
+            "text": "Фигме нужно исправить отступы, состояние загрузки и переходка плате. Затем сравним два варианта анбординга и обсудим, почему пользователь иногда закрывает экран раньше времени."
+          }
+        ],
+        "speechRegionCount": 3,
+        "text": "Никита, пожалуйста, сохрани исходную запись перед обновлением приложения. Итоговая расшифровка должна содержать все реплики. включая короткие ответы и уточнения. Фигме нужно исправить отступы, состояние загрузки и переходка плате. Затем сравним два варианта анбординга и обсудим, почему пользователь иногда закрывает экран раньше времени.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "ru-detailed",
+      "language": "ru",
+      "reference_words": 46,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 23.7455,
+      "wall_seconds": 3.094,
+      "response": {
+        "decodeSeconds": 3.090098833,
+        "generationTokens": 111,
+        "id": "ru-detailed",
+        "language": "Russian",
+        "languages": [
+          "Russian"
+        ],
+        "peakMemoryGB": 3.573231128,
+        "segments": [
+          {
+            "end": 12.52,
+            "speaker": null,
+            "start": 0,
+            "text": "Ирина предложила оставить заголовок коротким, а подробное объяснение перенести под кнопку. Я согласен с направлением, но текст пока выглядит слишком общим. Давайте покажем конкретный результат."
+          },
+          {
+            "end": 23.63,
+            "speaker": null,
+            "start": 12.65,
+            "text": "Пользователь выбирает фотографию, меняет расположение элементов и видит готовый вариант перед покупкой. Важно также проверить восстановление незавершенной работы после закрытия окна."
+          }
+        ],
+        "speechRegionCount": 2,
+        "text": "Ирина предложила оставить заголовок коротким, а подробное объяснение перенести под кнопку. Я согласен с направлением, но текст пока выглядит слишком общим. Давайте покажем конкретный результат. Пользователь выбирает фотографию, меняет расположение элементов и видит готовый вариант перед покупкой. Важно также проверить восстановление незавершенной работы после закрытия окна.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-general",
+      "language": "pl",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 19.764688,
+      "wall_seconds": 3.879,
+      "response": {
+        "decodeSeconds": 3.875278166,
+        "generationTokens": 112,
+        "id": "pl-general",
+        "language": "Polish",
+        "languages": [
+          "Polish"
+        ],
+        "peakMemoryGB": 3.68196372,
+        "segments": [
+          {
+            "end": 19.66,
+            "speaker": null,
+            "start": 0,
+            "text": "Najpierw sprawdźmy obecną wersję projektu. Zależy mi na tym, żeby użytkownik rozumiał, co się stanie po naciśnięciu przycisku. Dzisiaj ustalimy strukturę strony, a jutro przetestujemy nowy wariant na małym ekranie. Jeśli zostaną niejasne miejsca, zapiszemy je osobno i wrócimy do nich po spotkaniu."
+          }
+        ],
+        "speechRegionCount": 1,
+        "text": "Najpierw sprawdźmy obecną wersję projektu. Zależy mi na tym, żeby użytkownik rozumiał, co się stanie po naciśnięciu przycisku. Dzisiaj ustalimy strukturę strony, a jutro przetestujemy nowy wariant na małym ekranie. Jeśli zostaną niejasne miejsca, zapiszemy je osobno i wrócimy do nich po spotkaniu.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-product",
+      "language": "pl",
+      "reference_words": 42,
+      "word_errors": 2,
+      "wer": 0.047619047619047616,
+      "duration": 23.208563,
+      "wall_seconds": 3.855,
+      "response": {
+        "decodeSeconds": 3.850595417,
+        "generationTokens": 119,
+        "id": "pl-product",
+        "language": "Polish",
+        "languages": [
+          "Polish"
+        ],
+        "peakMemoryGB": 3.68196372,
+        "segments": [
+          {
+            "end": 13.23,
+            "speaker": null,
+            "start": 0,
+            "text": "Michał, proszę zachować oryginalne nagranie przed aktualizacją aplikacji. Koncowa transkrypcja powinna zawierać wszystkie wywiedzi, również krótkie odpowiedzi i pytania. Musimy poprawić odstępy."
+          },
+          {
+            "end": 23.1,
+            "speaker": null,
+            "start": 13.42,
+            "text": "stan ładowania oraz przejście do płatności. Potem porównamy dwa warianty wprowadzenia i omówimy, dlaczego użytkownik czasami zamyka ekran zbyt wcześnie."
+          }
+        ],
+        "speechRegionCount": 2,
+        "text": "Michał, proszę zachować oryginalne nagranie przed aktualizacją aplikacji. Koncowa transkrypcja powinna zawierać wszystkie wywiedzi, również krótkie odpowiedzi i pytania. Musimy poprawić odstępy. stan ładowania oraz przejście do płatności. Potem porównamy dwa warianty wprowadzenia i omówimy, dlaczego użytkownik czasami zamyka ekran zbyt wcześnie.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-detailed",
+      "language": "pl",
+      "reference_words": 43,
+      "word_errors": 3,
+      "wer": 0.06976744186046512,
+      "duration": 21.955,
+      "wall_seconds": 3.365,
+      "response": {
+        "decodeSeconds": 3.32399325,
+        "generationTokens": 120,
+        "id": "pl-detailed",
+        "language": "Polish",
+        "languages": [
+          "Polish"
+        ],
+        "peakMemoryGB": 3.68196372,
+        "segments": [
+          {
+            "end": 11.16,
+            "speaker": null,
+            "start": 0,
+            "text": "Katarzyna zaproponowała krótki nagłówek i dokładniejsze wyjaśnienie pod przyciskiem. Zgadzam się z kierunkiem, ale tekst jest nadal zbyt ogólny. Pokażmy konkretny результат."
+          },
+          {
+            "end": 21.86,
+            "speaker": null,
+            "start": 11.37,
+            "text": "Użytkownik wybiera zbiecte, zmienia układ elementów i widzi gotowy projekt przed zakupem. Trzeba też sprawdzić odezkiwania niedokończonej pracy po zamknięciu okna."
+          }
+        ],
+        "speechRegionCount": 2,
+        "text": "Katarzyna zaproponowała krótki nagłówek i dokładniejsze wyjaśnienie pod przyciskiem. Zgadzam się z kierunkiem, ale tekst jest nadal zbyt ogólny. Pokażmy konkretny результат. Użytkownik wybiera zbiecte, zmienia układ elementów i widzi gotowy projekt przed zakupem. Trzeba też sprawdzić odezkiwania niedokończonej pracy po zamknięciu okna.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "en-general",
+      "language": "en",
+      "reference_words": 55,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 16.081188,
+      "wall_seconds": 1.665,
+      "response": {
+        "decodeSeconds": 1.659571916,
+        "generationTokens": 69,
+        "id": "en-general",
+        "language": "English",
+        "languages": [
+          "English"
+        ],
+        "peakMemoryGB": 3.68196372,
+        "segments": [
+          {
+            "end": 1.93,
+            "speaker": null,
+            "start": 0,
+            "text": "Let's look at the current design first."
+          },
+          {
+            "end": 15.95,
+            "speaker": null,
+            "start": 2.1,
+            "text": "I want the user to understand what happens after pressing the button. Today we will agree on the page structure, and tomorrow we will test the new version on a smaller screen. If anything is still unclear, let's write it down and return to it after the meeting."
+          }
+        ],
+        "speechRegionCount": 2,
+        "text": "Let's look at the current design first. I want the user to understand what happens after pressing the button. Today we will agree on the page structure, and tomorrow we will test the new version on a smaller screen. If anything is still unclear, let's write it down and return to it after the meeting.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "en-product",
+      "language": "en",
+      "reference_words": 56,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 20.834563,
+      "wall_seconds": 1.814,
+      "response": {
+        "decodeSeconds": 1.803062792,
+        "generationTokens": 74,
+        "id": "en-product",
+        "language": "English",
+        "languages": [
+          "English"
+        ],
+        "peakMemoryGB": 3.68196372,
+        "segments": [
+          {
+            "end": 9.97,
+            "speaker": null,
+            "start": 0,
+            "text": "Laura, please preserve the original recording before updating the application. The final transcript should include every speaker, including short replies and follow-up questions."
+          },
+          {
+            "end": 14.75,
+            "speaker": null,
+            "start": 10.08,
+            "text": "We need to improve the spacing, the loading state, and the transition to checkout."
+          },
+          {
+            "end": 20.7,
+            "speaker": null,
+            "start": 14.86,
+            "text": "Then we can compare the two onboarding flows and investigate why people sometimes close the screen too early."
+          }
+        ],
+        "speechRegionCount": 3,
+        "text": "Laura, please preserve the original recording before updating the application. The final transcript should include every speaker, including short replies and follow-up questions. We need to improve the spacing, the loading state, and the transition to checkout. Then we can compare the two onboarding flows and investigate why people sometimes close the screen too early.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "en-detailed",
+      "language": "en",
+      "reference_words": 58,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 20.546313,
+      "wall_seconds": 1.737,
+      "response": {
+        "decodeSeconds": 1.731664667,
+        "generationTokens": 73,
+        "id": "en-detailed",
+        "language": "English",
+        "languages": [
+          "English"
+        ],
+        "peakMemoryGB": 3.68283896,
+        "segments": [
+          {
+            "end": 16.31,
+            "speaker": null,
+            "start": 0,
+            "text": "Michael suggested keeping the headline short and moving the explanation below the button. I agree with the direction, but the copy still feels too generic. Let's show a concrete outcome. The user selects a photo, adjusts the layout, and sees the finished design before making a purchase."
+          },
+          {
+            "end": 20.41,
+            "speaker": null,
+            "start": 16.46,
+            "text": "We should also verify that unfinished work survives closing the window."
+          }
+        ],
+        "speechRegionCount": 2,
+        "text": "Michael suggested keeping the headline short and moving the explanation below the button. I agree with the direction, but the copy still feels too generic. Let's show a concrete outcome. The user selects a photo, adjusts the layout, and sees the finished design before making a purchase. We should also verify that unfinished work survives closing the window.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    },
+    {
+      "id": "mixed",
+      "language": "mixed",
+      "reference_words": 43,
+      "word_errors": 1,
+      "wer": 0.023255813953488372,
+      "duration": 18.390125,
+      "wall_seconds": 1.96,
+      "response": {
+        "decodeSeconds": 1.956888042,
+        "generationTokens": 86,
+        "id": "mixed",
+        "language": null,
+        "languages": [
+          "Russian",
+          "Polish"
+        ],
+        "peakMemoryGB": 3.68283896,
+        "segments": [
+          {
+            "end": 5.58,
+            "speaker": null,
+            "start": 0,
+            "text": "Сначала исправим ошибку сохранения записей и проверим, что последние слова не пропадают."
+          },
+          {
+            "end": 18.28,
+            "speaker": null,
+            "start": 5.7,
+            "text": "Potem porównamy jakość transkrypcji i sprawdzimy, czy aplikacja poprawnie rozpoznaje zmianę języka. Finally, let's make sure that starting a new call does not wait for the previous recording to finish processing."
+          }
+        ],
+        "speechRegionCount": 2,
+        "text": "Сначала исправим ошибку сохранения записей и проверим, что последние слова не пропадают. Potem porównamy jakość transkrypcji i sprawdzimy, czy aplikacja poprawnie rozpoznaje zmianę języka. Finally, let's make sure that starting a new call does not wait for the previous recording to finish processing.",
+        "timestampMode": "speechRegions",
+        "timestampsAdjusted": false,
+        "timestampWarning": null,
+        "tokenLimitPerRegion": 2048,
+        "truncated": false
+      }
+    }
+  ]
+}

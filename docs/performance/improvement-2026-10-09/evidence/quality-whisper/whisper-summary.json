@@ -1,0 +1,8 @@
+{
+  "engine": "whisper",
+  "completed_cases": 10,
+  "declared_cases": 10,
+  "words": 473,
+  "errors": 14,
+  "wer": 0.02959830866807611
+}

@@ -38,6 +38,7 @@ final class MeetingTitleCoordinator {
     private var queue: [UUID] = []
     private var currentMeetingID: UUID?
     private var worker: Task<Void, Never>?
+    private var runtimeShutdown: Task<Void, Never>?
     private var memoryRetryTask: Task<Void, Never>?
     private var isPaused = false
     private var isWaitingForMemory = false
@@ -88,7 +89,7 @@ final class MeetingTitleCoordinator {
     }
 
     var hasRunningJobs: Bool {
-        worker != nil || currentMeetingID != nil
+        worker != nil || currentMeetingID != nil || runtimeShutdown != nil
     }
 
     var isAutomaticEnabled: Bool {
@@ -186,13 +187,14 @@ final class MeetingTitleCoordinator {
         isPaused = true
         state = .pausedForRecording
         requeueCurrentMeetingForResume()
-        let running = worker
-        running?.cancel()
-        if let running { await running.value }
-        await shutdownRuntime()
-        worker = nil
-        currentMeetingID = nil
-        state = .pausedForRecording
+        memoryRetryTask?.cancel()
+        memoryRetryTask = nil
+        isWaitingForMemory = false
+        worker?.cancel()
+        beginRuntimeShutdown()
+        // The worker still owns the detached generator until it returns. Start
+        // recording immediately; a late response cannot be persisted, and no
+        // replacement worker starts until generation and shutdown both drain.
     }
 
     func resumeAfterRecording() {
@@ -207,11 +209,25 @@ final class MeetingTitleCoordinator {
         running?.cancel()
         memoryRetryTask?.cancel()
         memoryRetryTask = nil
+        // Stop the server before awaiting a generation that may be blocked on
+        // its response. Keep the shutdown task owned until it actually exits.
+        beginRuntimeShutdown()
+        if let runtimeShutdown { await runtimeShutdown.value }
         if let running { await running.value }
-        await shutdownRuntime()
         worker = nil
         currentMeetingID = nil
         state = .idle
+    }
+
+    private func beginRuntimeShutdown() {
+        guard runtimeShutdown == nil else { return }
+        let shutdown = shutdownRuntime
+        runtimeShutdown = Task { @MainActor [weak self] in
+            await shutdown()
+            guard let self else { return }
+            self.runtimeShutdown = nil
+            self.startWorkerIfNeeded()
+        }
     }
 
     /// Internal deterministic seam used by unit tests and isolated QA. It uses
@@ -222,7 +238,8 @@ final class MeetingTitleCoordinator {
     }
 
     private func startWorkerIfNeeded() {
-        guard isAutomaticEnabled, !isPaused, worker == nil, !queue.isEmpty else { return }
+        guard isAutomaticEnabled, !isPaused, worker == nil,
+              runtimeShutdown == nil, !queue.isEmpty else { return }
         worker = Task { @MainActor [weak self] in
             guard let self else { return }
             while !Task.isCancelled,
@@ -244,7 +261,7 @@ final class MeetingTitleCoordinator {
     }
 
     private func process(_ meeting: Meeting) async {
-        guard isBasicallyEligible(meeting), !Task.isCancelled else { return }
+        guard isBasicallyEligible(meeting), !isPaused, !Task.isCancelled else { return }
         let snapshot = snapshotBuilder.build(from: meeting.sortedSegments)
         guard snapshot.coverageReceipt.isExact else {
             lastError = "The complete transcript coverage check failed. The meeting title was left unchanged."

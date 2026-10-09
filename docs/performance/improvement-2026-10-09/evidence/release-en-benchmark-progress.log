@@ -1,0 +1,6 @@
+{"engine": "whisper", "workers": 1, "word_errors": 1, "elapsed_seconds": 6.03090500831604}
+{"engine": "whisper", "workers": 4, "word_errors": 1, "elapsed_seconds": 5.358726978302002}
+{"engine": "whisper", "workers": 4, "word_errors": 1, "elapsed_seconds": 5.3551939725875854}
+{"engine": "whisper", "workers": 1, "word_errors": 1, "elapsed_seconds": 5.8714940547943115}
+{"engine": "hybrid", "workers": 4, "word_errors": 0, "elapsed_seconds": 9.56492805480957}
+{"serial_median_seconds": 5.951199531555176, "batch4_median_seconds": 5.356960475444794, "speedup": 1.1109284003184738, "whisper_outputs_identical": true, "whisper_normalized_words_identical": true, "serial_errors": [1, 1], "batch4_errors": [1, 1], "hybrid_errors": 0, "hybrid_seconds": 9.56492805480957, "includes_local_model_prepare": true}

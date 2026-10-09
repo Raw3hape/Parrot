@@ -1,0 +1,5 @@
+{"inputs":["audio_length","audio_signal"],"model":"parakeet-tdt-0.6b-v3-coreml\/Preprocessor.mlmodelc","outputs":["mel","mel_length"],"seconds":0.37334704399108887,"status":"loaded"}
+{"inputs":["mel","mel_length"],"model":"parakeet-tdt-0.6b-v3-coreml\/Encoder.mlmodelc","outputs":["encoder","encoder_length"],"seconds":18.319700002670288,"status":"loaded"}
+{"inputs":["c_in","h_in","target_length","targets"],"model":"parakeet-tdt-0.6b-v3-coreml\/Decoder.mlmodelc","outputs":["c_out","decoder","h_out"],"seconds":0.080979108810424805,"status":"loaded"}
+{"inputs":["decoder_step","encoder_step"],"model":"parakeet-tdt-0.6b-v3-coreml\/JointDecision.mlmodelc","outputs":["duration","token_id","token_prob"],"seconds":0.046450972557067871,"status":"loaded"}
+{"inputs":["audio_input","cell_state","hidden_state"],"model":"silero-vad-coreml\/silero-vad-unified-256ms-v6.2.1.mlmodelc","outputs":["new_cell_state","new_hidden_state","vad_output"],"seconds":0.23140394687652588,"status":"loaded"}

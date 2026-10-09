@@ -1,0 +1,22 @@
+{"engine": "qwen", "ready_seconds": 10.312}
+{"engine": "qwen", "case": "ru-general", "errors": 0, "words": 43, "seconds": 43.043}
+{"engine": "qwen", "case": "ru-product", "errors": 5, "words": 44, "seconds": 2.732}
+{"engine": "qwen", "case": "ru-detailed", "errors": 0, "words": 46, "seconds": 3.094}
+{"engine": "qwen", "case": "pl-general", "errors": 0, "words": 43, "seconds": 3.879}
+{"engine": "qwen", "case": "pl-product", "errors": 2, "words": 42, "seconds": 3.855}
+{"engine": "qwen", "case": "pl-detailed", "errors": 3, "words": 43, "seconds": 3.365}
+{"engine": "qwen", "case": "en-general", "errors": 0, "words": 55, "seconds": 1.665}
+{"engine": "qwen", "case": "en-product", "errors": 0, "words": 56, "seconds": 1.814}
+{"engine": "qwen", "case": "en-detailed", "errors": 0, "words": 58, "seconds": 1.737}
+{"engine": "qwen", "case": "mixed", "errors": 1, "words": 43, "seconds": 1.96}
+{"engine": "moss", "ready_seconds": 1.052}
+{"engine": "moss", "case": "ru-general", "errors": 0, "words": 43, "seconds": 31.241}
+{"engine": "moss", "case": "ru-product", "errors": 2, "words": 44, "seconds": 6.992}
+{"engine": "moss", "case": "ru-detailed", "errors": 0, "words": 46, "seconds": 4.944}
+{"engine": "moss", "case": "pl-general", "errors": 0, "words": 43, "seconds": 4.163}
+{"engine": "moss", "case": "pl-product", "errors": 0, "words": 42, "seconds": 7.421}
+{"engine": "moss", "case": "pl-detailed", "errors": 0, "words": 43, "seconds": 8.65}
+{"engine": "moss", "case": "en-general", "errors": 1, "words": 55, "seconds": 5.829}
+{"engine": "moss", "case": "en-product", "errors": 0, "words": 56, "seconds": 9.888}
+{"engine": "moss", "case": "en-detailed", "errors": 0, "words": 58, "seconds": 10.295}
+{"engine": "moss", "case": "mixed", "errors": 14, "words": 43, "seconds": 9.817}

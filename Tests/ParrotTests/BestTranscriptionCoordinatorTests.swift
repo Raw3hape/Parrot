@@ -78,6 +78,31 @@ final class BestTranscriptionCoordinatorTests: XCTestCase {
         XCTAssertEqual(reloaded, result)
     }
 
+    func testLongTrackBatchesWindowsAndKeepsSegmentOrder() async throws {
+        let audio = try makeCAF(name: "batched-system", seconds: 65)
+        let request = makeRequest(system: audio)
+        let recognizer = BatchTrackingBestWhisperRecognizer()
+        let coordinator = BestTranscriptionCoordinator(
+            recognizer: recognizer,
+            store: store
+        )
+
+        let artifact = try await coordinator.process(request, forceReprocess: false)
+
+        let batchSizes = await recognizer.batchSizes()
+        XCTAssertEqual(batchSizes, [3])
+        XCTAssertEqual(artifact.segments.count, 3)
+        XCTAssertEqual(
+            artifact.segments.map(\.startTime),
+            [1.1, 29.1, 57.1]
+        )
+        let reloaded = try await store.loadCompletedArtifact(
+            meetingID: request.meetingID,
+            fingerprint: artifact.fingerprint
+        )
+        XCTAssertEqual(reloaded, artifact)
+    }
+
     func testPreciseTimelineOffsetsTracksAndMarksAlignmentExact() async throws {
         let system = try makeCAF(name: "timeline-system", seconds: 1)
         let mic = try makeCAF(name: "timeline-mic", seconds: 1)
@@ -277,9 +302,8 @@ final class BestTranscriptionCoordinatorTests: XCTestCase {
             completion.fulfill()
         }
 
-        while await recognizer.transcribeCalls() == 0 {
-            await Task.yield()
-        }
+        let started = await waitUntil { await recognizer.transcribeCalls() > 0 }
+        XCTAssertTrue(started)
         await coordinator.pauseForRecording()
 
         let pausedCalls = await recognizer.transcribeCalls()
@@ -292,6 +316,35 @@ final class BestTranscriptionCoordinatorTests: XCTestCase {
         XCTAssertNotNil(try finalResult?.get())
         let completedCalls = await recognizer.transcribeCalls()
         XCTAssertEqual(completedCalls, 2)
+    }
+
+    func testRecordingPauseCommitsWholeBatchBeforeResuming() async throws {
+        let audio = try makeCAF(name: "batch-pause-system", seconds: 65)
+        let request = makeRequest(system: audio)
+        let recognizer = BatchTrackingBestWhisperRecognizer(delayMilliseconds: 100)
+        let coordinator = BestTranscriptionCoordinator(
+            recognizer: recognizer,
+            store: store
+        )
+        let completion = expectation(description: "batched job resumes")
+        var finalResult: Result<BestTranscriptArtifact, Error>?
+        coordinator.startOrResume(request) { result in
+            finalResult = result
+            completion.fulfill()
+        }
+
+        let started = await waitUntil { !(await recognizer.batchSizes()).isEmpty }
+        XCTAssertTrue(started)
+        await coordinator.pauseForRecording()
+        XCTAssertEqual(coordinator.progress(for: request.meetingID).stage, .interrupted)
+
+        coordinator.resumeAfterRecording()
+        await fulfillment(of: [completion], timeout: 3)
+
+        let artifact = try XCTUnwrap(finalResult).get()
+        XCTAssertEqual(artifact.segments.count, 3)
+        let batchSizes = await recognizer.batchSizes()
+        XCTAssertEqual(batchSizes, [3])
     }
 
     func testDoubleClickSharesOneJobAndNotifiesBothCallers() async throws {
@@ -334,6 +387,194 @@ final class BestTranscriptionCoordinatorTests: XCTestCase {
         await fulfillment(of: [first, second], timeout: 3)
         let maximumConcurrency = await recognizer.maximumConcurrency()
         XCTAssertEqual(maximumConcurrency, 1)
+    }
+
+    func testPauseReturnsBeforeUncooperativeBatchAndPersistsItsCheckpoints() async throws {
+        let audio = try makeCAF(name: "controlled-batch", seconds: 65)
+        let request = makeRequest(system: audio)
+        let recognizer = ControlledBestWhisperRecognizer(batchSize: 3)
+        let coordinator = BestTranscriptionCoordinator(recognizer: recognizer, store: store)
+        var completionCount = 0
+        coordinator.startOrResume(request) { _ in completionCount += 1 }
+        let started = await waitUntil { await recognizer.counts().batches == [3] }
+        XCTAssertTrue(started)
+
+        let clock = ContinuousClock()
+        let start = clock.now
+        await coordinator.pauseForRecording()
+
+        XCTAssertLessThan(start.duration(to: clock.now), .milliseconds(100))
+        XCTAssertTrue(coordinator.hasRunningJobs, "The draining model task must stay owned")
+        XCTAssertEqual(completionCount, 0)
+        XCTAssertEqual(coordinator.progress(for: request.meetingID).stage, .interrupted)
+
+        await recognizer.releaseBatch()
+        let drained = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(drained)
+        XCTAssertEqual(completionCount, 0, "Pause must not deliver a late completed artifact")
+        XCTAssertEqual(coordinator.progress(for: request.meetingID).stage, .interrupted)
+        let savedManifest = await store.loadJobManifest(meetingID: request.meetingID)
+        let manifest = try XCTUnwrap(savedManifest)
+        let checkpoints = try await store.loadCheckpoints(
+            meetingID: request.meetingID,
+            fingerprint: manifest.fingerprint
+        )
+        XCTAssertEqual(manifest.state, .interrupted)
+        XCTAssertEqual(checkpoints.map(\.window.index), [0, 1, 2])
+        XCTAssertEqual(checkpoints.flatMap(\.segments).count, 3)
+
+        coordinator.resumeAfterRecording()
+        let completed = await waitUntil { completionCount == 1 }
+        XCTAssertTrue(completed)
+        let counts = await recognizer.counts()
+        XCTAssertEqual(counts.batches, [3], "Resume must reuse every saved window")
+        XCTAssertEqual(coordinator.progress(for: request.meetingID).stage, .ready)
+    }
+
+    func testRapidResumeWaitsForOldBatchWithoutLaunchingDuplicateInference() async throws {
+        let audio = try makeCAF(name: "rapid-resume", seconds: 35)
+        let request = makeRequest(system: audio)
+        let recognizer = ControlledBestWhisperRecognizer()
+        let coordinator = BestTranscriptionCoordinator(recognizer: recognizer, store: store)
+        let completion = expectation(description: "rapidly resumed meeting")
+        coordinator.startOrResume(request) { result in
+            XCTAssertNotNil(try? result.get())
+            completion.fulfill()
+        }
+        let started = await waitUntil { await recognizer.counts().batches == [1] }
+        XCTAssertTrue(started)
+
+        for _ in 0..<3 {
+            await coordinator.pauseForRecording()
+            coordinator.resumeAfterRecording()
+        }
+        let beforeRelease = await recognizer.counts()
+        XCTAssertEqual(beforeRelease.prepare, 1)
+        XCTAssertEqual(beforeRelease.batches, [1])
+        XCTAssertTrue(coordinator.hasRunningJobs)
+
+        await recognizer.releaseBatch()
+        await fulfillment(of: [completion], timeout: 3)
+        let afterRelease = await recognizer.counts()
+        XCTAssertEqual(afterRelease.starts, [[0], [28]])
+        XCTAssertEqual(afterRelease.maximumConcurrency, 1)
+        XCTAssertFalse(coordinator.hasRunningJobs)
+    }
+
+    func testQueuedAndNewRequestsDoNotPrepareOrTranscribeWhileRecording() async throws {
+        let firstAudio = try makeCAF(name: "paused-active", seconds: 1)
+        let secondAudio = try makeCAF(name: "paused-queued", seconds: 1)
+        let thirdAudio = try makeCAF(name: "paused-new", seconds: 1)
+        let recognizer = ControlledBestWhisperRecognizer()
+        let coordinator = BestTranscriptionCoordinator(recognizer: recognizer, store: store)
+        let completed = expectation(description: "all queued meetings")
+        completed.expectedFulfillmentCount = 4
+        coordinator.startOrResume(makeRequest(system: firstAudio)) { _ in completed.fulfill() }
+        let started = await waitUntil { await recognizer.counts().batches == [1] }
+        XCTAssertTrue(started)
+        coordinator.startOrResume(makeRequest(system: secondAudio)) { _ in completed.fulfill() }
+
+        await coordinator.pauseForRecording()
+        let third = makeRequest(system: thirdAudio)
+        coordinator.startOrResume(third) { _ in completed.fulfill() }
+        coordinator.startOrResume(third) { _ in completed.fulfill() }
+        await recognizer.releaseBatch()
+        let drained = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(drained)
+        let pausedCounts = await recognizer.counts()
+        XCTAssertEqual(pausedCounts.prepare, 1)
+        XCTAssertEqual(pausedCounts.batches, [1])
+        XCTAssertEqual(coordinator.progress(for: third.meetingID).stage, .interrupted)
+
+        coordinator.resumeAfterRecording()
+        await fulfillment(of: [completed], timeout: 3)
+        let resumedCounts = await recognizer.counts()
+        XCTAssertEqual(resumedCounts.batches, [1, 1, 1])
+        XCTAssertEqual(resumedCounts.maximumConcurrency, 1)
+    }
+
+    func testCancellingQueuedRequestDoesNotWaitForUnrelatedUncooperativeBatch() async throws {
+        let audio = try makeCAF(name: "cancel-queued", seconds: 1)
+        let active = makeRequest(system: audio)
+        let queued = makeRequest(system: audio)
+        let recognizer = ControlledBestWhisperRecognizer()
+        let coordinator = BestTranscriptionCoordinator(recognizer: recognizer, store: store)
+        let activeCompleted = expectation(description: "active request finishes")
+        coordinator.startOrResume(active) { _ in activeCompleted.fulfill() }
+        let started = await waitUntil { await recognizer.counts().batches == [1] }
+        XCTAssertTrue(started)
+        var queuedResult: Result<BestTranscriptArtifact, Error>?
+        coordinator.startOrResume(queued) { queuedResult = $0 }
+        // Let the queued task enter the cancellation-aware gate.
+        await Task.yield()
+
+        coordinator.cancel(meetingID: queued.meetingID)
+        let cancelled = await waitUntil { queuedResult != nil }
+        XCTAssertTrue(cancelled, "Queued cancellation must not await another model's result")
+        if case let .failure(error)? = queuedResult {
+            XCTAssertEqual(error as? BestTranscriptionError, .cancelled)
+        } else {
+            XCTFail("Expected the queued request to be cancelled")
+        }
+        let counts = await recognizer.counts()
+        XCTAssertEqual(counts.prepare, 1)
+        await recognizer.releaseBatch()
+        await fulfillment(of: [activeCompleted], timeout: 3)
+        XCTAssertFalse(coordinator.hasRunningJobs)
+    }
+
+    func testPauseDuringPreparationDoesNotLaunchInferenceWhenPreparationReturns() async throws {
+        let audio = try makeCAF(name: "pause-prepare", seconds: 1)
+        let request = makeRequest(system: audio)
+        let recognizer = ControlledBestWhisperRecognizer(holdPreparation: true)
+        let coordinator = BestTranscriptionCoordinator(recognizer: recognizer, store: store)
+        let completion = expectation(description: "preparation resumes")
+        coordinator.startOrResume(request) { _ in completion.fulfill() }
+        let started = await waitUntil { await recognizer.counts().prepare == 1 }
+        XCTAssertTrue(started)
+
+        await coordinator.pauseForRecording()
+        await recognizer.releasePreparation()
+        let drained = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(drained)
+        let paused = await recognizer.counts()
+        XCTAssertTrue(paused.batches.isEmpty)
+        await recognizer.releaseBatch()
+        coordinator.resumeAfterRecording()
+        await fulfillment(of: [completion], timeout: 3)
+        let resumed = await recognizer.counts()
+        XCTAssertEqual(resumed.batches, [1])
+    }
+
+    func testForcedReprocessResumesNewCheckpointInsteadOfResettingItAgain() async throws {
+        let audio = try makeCAF(name: "force-pause", seconds: 35)
+        let request = makeRequest(system: audio)
+        let recognizer = ControlledBestWhisperRecognizer()
+        let coordinator = BestTranscriptionCoordinator(recognizer: recognizer, store: store)
+        let completion = expectation(description: "forced reprocess resumes")
+        coordinator.reprocess(request) { _ in completion.fulfill() }
+        let started = await waitUntil { await recognizer.counts().batches == [1] }
+        XCTAssertTrue(started)
+
+        await coordinator.pauseForRecording()
+        await recognizer.releaseBatch()
+        let drained = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(drained)
+        coordinator.resumeAfterRecording()
+        await fulfillment(of: [completion], timeout: 3)
+        let counts = await recognizer.counts()
+        XCTAssertEqual(counts.starts, [[0], [28]], "Reprocess checkpoints must be retained")
+    }
+
+    private func waitUntil(
+        condition: @MainActor () async -> Bool
+    ) async -> Bool {
+        let deadline = ContinuousClock.now + .seconds(2)
+        while ContinuousClock.now < deadline {
+            if await condition() { return true }
+            try? await Task.sleep(for: .milliseconds(5))
+        }
+        return await condition()
     }
 
     private func makeRequest(
@@ -474,5 +715,139 @@ private actor ConcurrencyTrackingBestWhisperRecognizer: BestWhisperRecognizing {
 
     func maximumConcurrency() -> Int {
         maximum
+    }
+}
+
+private actor BatchTrackingBestWhisperRecognizer: BestWhisperRecognizing {
+    nonisolated var preferredWindowBatchSize: Int { 3 }
+    private let delayMilliseconds: Int
+    private var recordedBatchSizes: [Int] = []
+
+    init(delayMilliseconds: Int = 0) {
+        self.delayMilliseconds = delayMilliseconds
+    }
+
+    func prepareLocalOnly(modelName: String) async throws {}
+
+    func transcribeWindow(
+        samples: [Float],
+        speaker: BestTranscriptSpeaker,
+        absoluteWindowStart: TimeInterval,
+        vocabulary: String
+    ) async throws -> [BestTranscriptSegment] {
+        XCTFail("Coordinator should use the batch entry point")
+        return []
+    }
+
+    func transcribeWindows(
+        _ windows: [BestWhisperWindowInput],
+        vocabulary: String
+    ) async throws -> [[BestTranscriptSegment]] {
+        recordedBatchSizes.append(windows.count)
+        if delayMilliseconds > 0 {
+            try await Task.sleep(for: .milliseconds(delayMilliseconds))
+        }
+        return windows.map { window in
+            [BestTranscriptSegment(
+                id: UUID(),
+                speaker: window.speaker,
+                startTime: window.absoluteWindowStart + 1.1,
+                endTime: window.absoluteWindowStart + 1.8,
+                text: "Window \(window.absoluteWindowStart)",
+                confidence: 0.9,
+                detectedLanguage: "en",
+                words: []
+            )]
+        }
+    }
+
+    func batchSizes() -> [Int] {
+        recordedBatchSizes
+    }
+}
+
+/// Deliberately ignores cancellation while its first operation is held. Tests
+/// release it explicitly, proving that recording pause never waits for it or
+/// drops ownership of its lifetime.
+private actor ControlledBestWhisperRecognizer: BestWhisperRecognizing {
+    nonisolated let preferredWindowBatchSize: Int
+    private var holdsPreparation: Bool
+    private var holdsBatch = true
+    private var preparationContinuation: CheckedContinuation<Void, Never>?
+    private var batchContinuation: CheckedContinuation<Void, Never>?
+    private var prepareCount = 0
+    private var starts: [[TimeInterval]] = []
+    private var active = 0
+    private var maximum = 0
+
+    init(batchSize: Int = 1, holdPreparation: Bool = false) {
+        preferredWindowBatchSize = batchSize
+        holdsPreparation = holdPreparation
+    }
+
+    func prepareLocalOnly(modelName: String) async throws {
+        prepareCount += 1
+        if holdsPreparation {
+            await withCheckedContinuation { preparationContinuation = $0 }
+        }
+    }
+
+    func transcribeWindow(
+        samples: [Float],
+        speaker: BestTranscriptSpeaker,
+        absoluteWindowStart: TimeInterval,
+        vocabulary: String
+    ) async throws -> [BestTranscriptSegment] {
+        try await transcribeWindows(
+            [.init(samples: samples, speaker: speaker, absoluteWindowStart: absoluteWindowStart)],
+            vocabulary: vocabulary
+        )[0]
+    }
+
+    func transcribeWindows(
+        _ windows: [BestWhisperWindowInput],
+        vocabulary: String
+    ) async throws -> [[BestTranscriptSegment]] {
+        starts.append(windows.map(\.absoluteWindowStart))
+        active += 1
+        maximum = max(maximum, active)
+        if holdsBatch {
+            await withCheckedContinuation { batchContinuation = $0 }
+        }
+        active -= 1
+        return windows.map { window in
+            let offset = window.absoluteWindowStart > 0 ? 1.1 : 0.1
+            return [BestTranscriptSegment(
+                id: UUID(),
+                speaker: window.speaker,
+                startTime: window.absoluteWindowStart + offset,
+                endTime: window.absoluteWindowStart + offset + 0.7,
+                text: "controlled \(window.absoluteWindowStart)",
+                confidence: 0.9,
+                detectedLanguage: "en",
+                words: []
+            )]
+        }
+    }
+
+    func releasePreparation() {
+        holdsPreparation = false
+        preparationContinuation?.resume()
+        preparationContinuation = nil
+    }
+
+    func releaseBatch() {
+        holdsBatch = false
+        batchContinuation?.resume()
+        batchContinuation = nil
+    }
+
+    func counts() -> (
+        prepare: Int,
+        batches: [Int],
+        starts: [[TimeInterval]],
+        maximumConcurrency: Int
+    ) {
+        (prepareCount, starts.map(\.count), starts, maximum)
     }
 }

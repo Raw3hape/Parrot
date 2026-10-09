@@ -1,0 +1,9 @@
+{
+  "name": "qwen native corpus",
+  "pid": 41486,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "stop_condition": "ten requests complete; startup120s, each inference120s, exact-child shutdown10s",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 19.312
+}

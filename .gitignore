@@ -38,3 +38,26 @@ Local_Transcripts/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# Private incident recovery: audio, transcript, database, and diagnostic logs
+/recordings/recovery/
+
+# Owned intermediate builds and private model-comparison recordings
+/.tmp/parrot-improvement-20261009/
+/recordings/quality-2026-10-09/
+/recordings/backups/
+/Tools/ASRWorker/Build/
+
+# Regenerable Python bytecode
+__pycache__/
+*.py[cod]
+
+# Local release snapshots and bulky debug traces; aggregate acceptance stays in Git
+/docs/performance/improvement-2026-10-09/evidence/source-snapshot.tar.gz
+/docs/performance/improvement-2026-10-09/evidence/source-working-tree.patch
+/docs/performance/improvement-2026-10-09/evidence/pre-task-dirty.patch
+/docs/performance/improvement-2026-10-09/evidence/hybrid-first-case-sample.txt
+/docs/performance/improvement-2026-10-09/evidence/*build*.log
+/docs/parakeet-ultra/release-build.log
+/docs/parakeet-ultra/evidence/release-final-build.log
+/docs/parakeet-ultra/evidence/second-gui-inspect.json

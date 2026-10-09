@@ -1,0 +1,9 @@
+diagnostic: parakeet
+model: Parakeet Ultra
+audio_seconds: 11.831
+load_seconds: 0.349
+preparation_launches: 1
+decode_seconds: 0.251
+real_time_factor: 0.0212
+transcript_characters: 186
+confidence_is_finite: 1

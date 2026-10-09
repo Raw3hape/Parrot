@@ -1,0 +1,2 @@
+started_child_pid: 9409
+{"bind_address":"127.0.0.1","child_pid":9409,"elapsed_seconds":16.548256993293762,"exit_code_after_stop":0,"load_seconds":15.006406903266907,"parent_sandbox":"Parrot app sandbox","passed":true,"port":62766,"response_text":"{\n  \"title\": \"Обсуждение дизайна продукта и плана на завтра\"\n}"}

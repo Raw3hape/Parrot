@@ -1,0 +1,29 @@
+{
+  "name": "exact installed c1 full hybrid quality gate",
+  "pid": 77124,
+  "runner_pid": 77122,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "python3",
+    "Tools/qa/compare_whisper_baseline.py",
+    "--app",
+    "/Applications/Parrot.app/Contents/MacOS/Parrot",
+    "--manifest",
+    ".tmp/parrot-improvement-20261009/corpus/manifest.json",
+    "--input-root",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/corpus",
+    "--model-root",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/models",
+    "--output",
+    "docs/performance/improvement-2026-10-09/evidence/quality-installed",
+    "--engine",
+    "hybrid",
+    "--workers",
+    "4"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/quality-installed-progress.log",
+  "stop_condition": "completion or 900 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 43.73
+}

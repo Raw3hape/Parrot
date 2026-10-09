@@ -1,0 +1,360 @@
+[
+  {
+    "model": "mlx-community/Qwen3-ASR-1.7B-8bit",
+    "sha": "a8379a2e2f9e313c9292cdf1af4055ab56d50d55",
+    "lastModified": "2026-01-29T15:11:55.000Z",
+    "files": [
+      {
+        "rfilename": "chat_template.json",
+        "size": 1161,
+        "blobId": "c44736493efd71ec96218cc626904698cdb13235",
+        "lfs": null
+      },
+      {
+        "rfilename": "config.json",
+        "size": 7188,
+        "blobId": "888cc7fae19ea9ede543b1ae82e9c78aa06104ca",
+        "lfs": null
+      },
+      {
+        "rfilename": "generation_config.json",
+        "size": 142,
+        "blobId": "7382a4d347c0a865b76bb1b8277f66a5ac312854",
+        "lfs": null
+      },
+      {
+        "rfilename": "merges.txt",
+        "size": 1671853,
+        "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+        "lfs": null
+      },
+      {
+        "rfilename": "model.safetensors",
+        "size": 2463307541,
+        "blobId": "de177bf40049eee64602f9128e9daf09cf3d6ff2",
+        "lfs": {
+          "sha256": "bf304b009cc7eca79283056f787b44c952d24ac22cec787b39732bba3c23c13c",
+          "size": 2463307541,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "model.safetensors.index.json",
+        "size": 78968,
+        "blobId": "f0191caac2794d5b6fba0ab3eeb70f8eff90319e",
+        "lfs": null
+      },
+      {
+        "rfilename": "preprocessor_config.json",
+        "size": 330,
+        "blobId": "8f7f07346466d5d494ec0d4969d1c3d0190eed72",
+        "lfs": null
+      },
+      {
+        "rfilename": "tokenizer_config.json",
+        "size": 12487,
+        "blobId": "b93109843922a40c6654c5449d3bf95372267c66",
+        "lfs": null
+      },
+      {
+        "rfilename": "vocab.json",
+        "size": 2776833,
+        "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+        "lfs": null
+      }
+    ]
+  },
+  {
+    "model": "mlx-community/Qwen3-ASR-1.7B-4bit",
+    "sha": "78a389c776a5483b2d0d4ea5494e11012e0d6159",
+    "lastModified": "2026-01-29T14:59:03.000Z",
+    "files": [
+      {
+        "rfilename": "chat_template.json",
+        "size": 1161,
+        "blobId": "c44736493efd71ec96218cc626904698cdb13235",
+        "lfs": null
+      },
+      {
+        "rfilename": "config.json",
+        "size": 7188,
+        "blobId": "4299bbdf5835cd26e6e22ba4e731e83ac073d192",
+        "lfs": null
+      },
+      {
+        "rfilename": "generation_config.json",
+        "size": 142,
+        "blobId": "7382a4d347c0a865b76bb1b8277f66a5ac312854",
+        "lfs": null
+      },
+      {
+        "rfilename": "merges.txt",
+        "size": 1671853,
+        "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+        "lfs": null
+      },
+      {
+        "rfilename": "model.safetensors",
+        "size": 1603081617,
+        "blobId": "f14e738e4f4bc7a4e9101545f8f168fd1e12eabf",
+        "lfs": {
+          "sha256": "9848eaf7a5c1589c671b35035ac27b72e248dd0c604eacae547e7e403d29db45",
+          "size": 1603081617,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "model.safetensors.index.json",
+        "size": 78968,
+        "blobId": "b3d7c7b45a07ba7fdb4565b464ac3b3a55ad36f7",
+        "lfs": null
+      },
+      {
+        "rfilename": "preprocessor_config.json",
+        "size": 330,
+        "blobId": "8f7f07346466d5d494ec0d4969d1c3d0190eed72",
+        "lfs": null
+      },
+      {
+        "rfilename": "tokenizer_config.json",
+        "size": 12487,
+        "blobId": "b93109843922a40c6654c5449d3bf95372267c66",
+        "lfs": null
+      },
+      {
+        "rfilename": "vocab.json",
+        "size": 2776833,
+        "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+        "lfs": null
+      }
+    ]
+  },
+  {
+    "model": "mlx-community/MOSS-Transcribe-Diarize",
+    "error": "HTTP Error 401: Unauthorized"
+  },
+  {
+    "model": "mlx-community/MOSS-Transcribe-Diarize-4bit",
+    "error": "HTTP Error 401: Unauthorized"
+  },
+  {
+    "model": "OpenMOSS-Team/MOSS-Transcribe-Diarize",
+    "sha": "704aa4a9c304e8520be88901e0d1960158ef5b15",
+    "lastModified": "2026-09-02T08:46:58.000Z",
+    "files": [
+      {
+        "rfilename": "added_tokens.json",
+        "size": 707,
+        "blobId": "b54f9135e44c1e81047e8d05cb027af8bc039eed",
+        "lfs": null
+      },
+      {
+        "rfilename": "config.json",
+        "size": 2335,
+        "blobId": "87f0b37e0048e8b10b914cfa0dbfe887f96fab01",
+        "lfs": null
+      },
+      {
+        "rfilename": "configuration_moss_transcribe_diarize.py",
+        "size": 2663,
+        "blobId": "d82c5c6fdfdd408a408c8ad06b8d7149312e32c8",
+        "lfs": null
+      },
+      {
+        "rfilename": "generation_config.json",
+        "size": 107,
+        "blobId": "70fb308092f1563e0d716b7e1933e44ca3ff438c",
+        "lfs": null
+      },
+      {
+        "rfilename": "merges.txt",
+        "size": 1671853,
+        "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+        "lfs": null
+      },
+      {
+        "rfilename": "model-00000-of-00001.safetensors",
+        "size": 1817113576,
+        "blobId": "b458c6c61d8b21e992a30f8ac02191c17cc4e013",
+        "lfs": {
+          "sha256": "9a0ceb4ab7330357db3ff583dba8d83625d5b733b00e1d55d6970e11b07026c4",
+          "size": 1817113576,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "model.safetensors.index.json",
+        "size": 65401,
+        "blobId": "97047f804b673b7f4192d72823262ea790f32208",
+        "lfs": null
+      },
+      {
+        "rfilename": "modeling_moss_transcribe_diarize.py",
+        "size": 15101,
+        "blobId": "d6c3db9569a1302a24b9b55aacff9934096fb626",
+        "lfs": null
+      },
+      {
+        "rfilename": "preprocessor_config.json",
+        "size": 315,
+        "blobId": "c876ba478425fdf8bc1d36b35fa165a151284602",
+        "lfs": null
+      },
+      {
+        "rfilename": "processing_moss_transcribe_diarize.py",
+        "size": 10975,
+        "blobId": "783d899c56b405960b87b9323f09c82ce67acfa5",
+        "lfs": null
+      },
+      {
+        "rfilename": "processor_config.json",
+        "size": 292,
+        "blobId": "5a3d630b8cb8387a082a36897413f49011180ba6",
+        "lfs": null
+      },
+      {
+        "rfilename": "special_tokens_map.json",
+        "size": 613,
+        "blobId": "ac23c0aaa2434523c494330aeb79c58395378103",
+        "lfs": null
+      },
+      {
+        "rfilename": "tokenizer.json",
+        "size": 11423222,
+        "blobId": "5ac718f112af542c39adcd73bb3bde829991ce0c",
+        "lfs": {
+          "sha256": "bcf03774334462d6e34b5005cb11120a62275f146ee2953e68731ecdbce84fbb",
+          "size": 11423222,
+          "pointerSize": 133
+        }
+      },
+      {
+        "rfilename": "tokenizer_config.json",
+        "size": 503,
+        "blobId": "f8ef6420f8887c88dc6e100c77f580c462e3b37e",
+        "lfs": null
+      },
+      {
+        "rfilename": "vocab.json",
+        "size": 2776833,
+        "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+        "lfs": null
+      }
+    ]
+  },
+  {
+    "model": "aufklarer/MOSS-Transcribe-Diarize-0.9B-MLX-5bit",
+    "sha": "88aa6b0de4816abc77f8e24384bce74fb087791a",
+    "lastModified": "2026-07-24T08:46:21.000Z",
+    "files": [
+      {
+        "rfilename": "added_tokens.json",
+        "size": 707,
+        "blobId": "b54f9135e44c1e81047e8d05cb027af8bc039eed",
+        "lfs": null
+      },
+      {
+        "rfilename": "audio_encoder.safetensors",
+        "size": 624970399,
+        "blobId": "c827de5522356cf3bfd125070dbc5e51ee82699e",
+        "lfs": {
+          "sha256": "9cd0ac331cba4fddbd3c770e1ee327a8d03cbd65c740fcc4eafe9bbf0d21a71d",
+          "size": 624970399,
+          "pointerSize": 134
+        }
+      },
+      {
+        "rfilename": "config.json",
+        "size": 1035,
+        "blobId": "585d18e7b212f84fc35a856153e6fe2d49dac536",
+        "lfs": null
+      },
+      {
+        "rfilename": "decoder.safetensors",
+        "size": 409944112,
+        "blobId": "e5e87e8b60eed5a01f1f4c712d83da5368083fd8",
+        "lfs": {
+          "sha256": "2870649eac5880797816be87ea8fc094ede789039715aa2a4edb1693a4735a71",
+          "size": 409944112,
+          "pointerSize": 134
+        }
+      },
+      {
+        "rfilename": "export_config.json",
+        "size": 2370,
+        "blobId": "7141ec4ef2ba656922a3a1d6890a97b8a8796ed4",
+        "lfs": null
+      },
+      {
+        "rfilename": "generation_config.json",
+        "size": 107,
+        "blobId": "70fb308092f1563e0d716b7e1933e44ca3ff438c",
+        "lfs": null
+      },
+      {
+        "rfilename": "merges.txt",
+        "size": 1671853,
+        "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+        "lfs": null
+      },
+      {
+        "rfilename": "preprocessor_config.json",
+        "size": 315,
+        "blobId": "c876ba478425fdf8bc1d36b35fa165a151284602",
+        "lfs": null
+      },
+      {
+        "rfilename": "processing_moss_transcribe_diarize.py",
+        "size": 10975,
+        "blobId": "783d899c56b405960b87b9323f09c82ce67acfa5",
+        "lfs": null
+      },
+      {
+        "rfilename": "processor_config.json",
+        "size": 292,
+        "blobId": "5a3d630b8cb8387a082a36897413f49011180ba6",
+        "lfs": null
+      },
+      {
+        "rfilename": "source_config.json",
+        "size": 2335,
+        "blobId": "87f0b37e0048e8b10b914cfa0dbfe887f96fab01",
+        "lfs": null
+      },
+      {
+        "rfilename": "special_tokens_map.json",
+        "size": 613,
+        "blobId": "ac23c0aaa2434523c494330aeb79c58395378103",
+        "lfs": null
+      },
+      {
+        "rfilename": "tokenizer.json",
+        "size": 11423222,
+        "blobId": "5ac718f112af542c39adcd73bb3bde829991ce0c",
+        "lfs": {
+          "sha256": "bcf03774334462d6e34b5005cb11120a62275f146ee2953e68731ecdbce84fbb",
+          "size": 11423222,
+          "pointerSize": 133
+        }
+      },
+      {
+        "rfilename": "tokenizer_config.json",
+        "size": 503,
+        "blobId": "f8ef6420f8887c88dc6e100c77f580c462e3b37e",
+        "lfs": null
+      },
+      {
+        "rfilename": "validation.json",
+        "size": 1793,
+        "blobId": "ab427ac1fd3b778b98d5cc3864c0a8223d0c3291",
+        "lfs": null
+      },
+      {
+        "rfilename": "vocab.json",
+        "size": 2776833,
+        "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+        "lfs": null
+      }
+    ]
+  }
+]

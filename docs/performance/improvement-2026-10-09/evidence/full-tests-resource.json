@@ -1,0 +1,10 @@
+{
+  "name": "full integrated unit tests",
+  "pid": 57285,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "log": "docs/performance/improvement-2026-10-09/evidence/full-tests.log",
+  "stop_condition": "completion or900 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 235.96
+}

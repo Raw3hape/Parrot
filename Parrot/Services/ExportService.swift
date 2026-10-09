@@ -13,7 +13,7 @@ enum ExportService {
         Meeting: \(title)
         Date: \(formatDate(date))
         Duration: \(formatDuration(duration))
-        Generated locally with Whisper Large V3 Turbo
+        Generated locally with \(FinalSpeechModelCatalog.displayName(for: artifact.modelID))
         Language detection: Polish / Russian / English auto-detection
 
         """

@@ -1,0 +1,20 @@
+{
+  "name": "final signed speech pipeline with network denied",
+  "pid": 73681,
+  "runner_pid": 73680,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    ".tmp/parrot-improvement-20261009/Parrot-offline-validation.app/Contents/MacOS/Parrot",
+    "--final-transcription-test",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/corpus/mixed.wav",
+    "hybrid",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/models",
+    "4",
+    "--print-fixture-transcript"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/release-offline-hybrid.log",
+  "stop_condition": "completion or 180 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 13.774
+}

@@ -1,0 +1,14 @@
+{"engine": "qwen", "revision": "a8379a2e2f9e313c9292cdf1af4055ab56d50d55", "bytes": 2467856503}
+{"file": "model.safetensors", "received": 321912832, "expected": 2463307541}
+{"file": "model.safetensors", "received": 737148928, "expected": 2463307541}
+{"file": "model.safetensors", "received": 1174405120, "expected": 2463307541}
+{"file": "model.safetensors", "received": 1617952768, "expected": 2463307541}
+{"file": "model.safetensors", "received": 2047868928, "expected": 2463307541}
+{"file": "model.safetensors", "received": 2457862144, "expected": 2463307541}
+{"engine": "qwen", "verified_files": 9}
+{"engine": "moss", "revision": "704aa4a9c304e8520be88901e0d1960158ef5b15", "bytes": 1833055757}
+{"file": "model-00000-of-00001.safetensors", "received": 382730240, "expected": 1817113576}
+{"file": "model-00000-of-00001.safetensors", "received": 756023296, "expected": 1817113576}
+{"file": "model-00000-of-00001.safetensors", "received": 1185939456, "expected": 1817113576}
+{"file": "model-00000-of-00001.safetensors", "received": 1698693120, "expected": 1817113576}
+{"engine": "moss", "verified_files": 12}

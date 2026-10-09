@@ -1,0 +1,8 @@
+2026-10-06 18:45:32.166 Parrot[11973:660005] Parrot: starting capture — input: Микрофон MacBook Pro, output: Динамики MacBook Pro
+capture_ready: 1
+2026-10-06 18:45:44.601 Parrot[11973:660007] Parrot: system audio file finalized — 779776 bytes, 606 callbacks, 0 conversion failures
+{"diagnostic":"production_capture","input_device":"Микрофон MacBook Pro","me_frames":191680,"me_rms":0.00030172325178767231,"mic_active":true,"microphone_authorization":3,"output_device":"Динамики MacBook Pro","passed":true,"them_frames":193920,"them_rms":0.020690364981482003}
+2026-10-06 18:56:29.337 Parrot[12165:667279] Parrot: starting capture — input: Микрофон MacBook Pro, output: Динамики MacBook Pro
+capture_ready: 1
+2026-10-06 18:56:41.296 Parrot[12165:667281] Parrot: system audio file finalized — 755456 bytes, 587 callbacks, 0 conversion failures
+{"diagnostic":"production_capture","input_device":"Микрофон MacBook Pro","me_frames":185280,"me_rms":0.00034237582141741007,"mic_active":true,"microphone_authorization":3,"output_device":"Динамики MacBook Pro","passed":true,"them_frames":187840,"them_rms":0.020188461242467721}

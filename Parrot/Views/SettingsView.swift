@@ -78,11 +78,14 @@ struct SettingsView: View {
 
             Section("Local Transcription") {
                 LabeledContent("Primary model") {
-                    Text("NVIDIA Parakeet TDT 0.6B V3")
+                    Text(ParakeetModelService.modelDisplayName)
                         .fontWeight(.medium)
                 }
                 LabeledContent("Fallback model") {
                     Text("Whisper Large V3 Turbo")
+                }
+                LabeledContent("Final transcript") {
+                    Text(recordingManager.bestTranscriptionCoordinator.modelDisplayName)
                 }
                 LabeledContent("Speech detection") {
                     Text("Silero VAD")

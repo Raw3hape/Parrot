@@ -1,0 +1,28 @@
+Test Suite 'Selected tests' started at 2026-10-06 18:39:29.064.
+Test Suite 'ParrotTests.xctest' started at 2026-10-06 18:39:29.065.
+Test Suite 'CallDetectionCoordinatorTests' started at 2026-10-06 18:39:29.065.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testCallEndClearsSuggestionAfterIdleGrace]' started.
+/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source/Tests/ParrotTests/CallDetectionCoordinatorTests.swift:101: error: -[ParrotTests.CallDetectionCoordinatorTests testCallEndClearsSuggestionAfterIdleGrace] : XCTAssertNotNil failed
+/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source/Tests/ParrotTests/CallDetectionCoordinatorTests.swift:104: error: -[ParrotTests.CallDetectionCoordinatorTests testCallEndClearsSuggestionAfterIdleGrace] : XCTAssertNotNil failed
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testCallEndClearsSuggestionAfterIdleGrace]' failed (0.112 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDisablingStopsMonitorAndHidesOpenSuggestion]' started.
+/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source/Tests/ParrotTests/CallDetectionCoordinatorTests.swift:40: error: -[ParrotTests.CallDetectionCoordinatorTests testDisablingStopsMonitorAndHidesOpenSuggestion] : XCTAssertNotNil failed
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDisablingStopsMonitorAndHidesOpenSuggestion]' failed (0.038 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDismissalClosesSuggestionAndDoesNotRepromptSameActivity]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDismissalClosesSuggestionAndDoesNotRepromptSameActivity]' passed (0.072 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testRecordingStateSuppressesOpenSuggestionForSameCall]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testRecordingStateSuppressesOpenSuggestionForSameCall]' passed (0.081 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testSustainedActivityPublishesExactlyOneSuggestion]' started.
+/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source/Tests/ParrotTests/CallDetectionCoordinatorTests.swift:24: error: -[ParrotTests.CallDetectionCoordinatorTests testSustainedActivityPublishesExactlyOneSuggestion] : XCTAssertEqual failed: ("nil") is not equal to ("Optional("native.slack")")
+/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source/Tests/ParrotTests/CallDetectionCoordinatorTests.swift:25: error: -[ParrotTests.CallDetectionCoordinatorTests testSustainedActivityPublishesExactlyOneSuggestion] : XCTAssertEqual failed: ("0") is not equal to ("1")
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testSustainedActivityPublishesExactlyOneSuggestion]' failed (0.073 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testWindowProviderIsConsultedOnlyAfterAudioActivity]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testWindowProviderIsConsultedOnlyAfterAudioActivity]' passed (0.000 seconds).
+Test Suite 'CallDetectionCoordinatorTests' failed at 2026-10-06 18:39:29.443.
+	 Executed 6 tests, with 5 failures (0 unexpected) in 0.376 (0.378) seconds
+Test Suite 'ParrotTests.xctest' failed at 2026-10-06 18:39:29.443.
+	 Executed 6 tests, with 5 failures (0 unexpected) in 0.376 (0.378) seconds
+Test Suite 'Selected tests' failed at 2026-10-06 18:39:29.443.
+	 Executed 6 tests, with 5 failures (0 unexpected) in 0.376 (0.379) seconds
+Note: Some test targets reported failures:
+  - ParrotTests (XCTest)

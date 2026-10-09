@@ -187,7 +187,28 @@ struct ParrotMain {
         }
         if let i = args.firstIndex(of: "--best-transcription-test"),
            i + 1 < args.count {
-            BestTranscriptionIntegrationTest.run(audioPath: args[i + 1])
+            let workerCount = i + 2 < args.count ? Int(args[i + 2]) : nil
+            BestTranscriptionIntegrationTest.run(
+                audioPath: args[i + 1],
+                workerCount: workerCount,
+                exportPath: i + 3 < args.count ? args[i + 3] : nil
+            )
+            return
+        }
+        if let i = args.firstIndex(of: "--final-transcription-test"), i + 3 < args.count {
+            let workers = i + 4 < args.count ? Int(args[i + 4]) ?? 1 : 1
+            FinalTranscriptionIntegrationTest.run(
+                audioPath: args[i + 1], engine: args[i + 2],
+                modelRoot: args[i + 3], workers: workers
+            )
+            return
+        }
+        if let i = args.firstIndex(of: "--promote-final-model"), i + 3 < args.count {
+            FinalModelPromotion.run(engine: args[i + 1], sourceRoot: args[i + 2], evidenceSHA256: args[i + 3])
+            return
+        }
+        if args.contains("--capture-test") {
+            CaptureIntegrationTest.run()
             return
         }
         if args.contains("--profile-test") {

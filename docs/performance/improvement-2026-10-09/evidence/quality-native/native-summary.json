@@ -1,0 +1,37 @@
+[
+  {
+    "engine": "qwen",
+    "completed_cases": 10,
+    "declared_cases": 10,
+    "words": 473,
+    "errors": 19,
+    "wer": 0.040169133192389,
+    "resource": {
+      "name": "qwen native corpus",
+      "pid": 41486,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "ten requests complete; startup120s, each inference120s, exact-child shutdown10s",
+      "status": "exited",
+      "exit_code": 0,
+      "elapsed_seconds": 19.312
+    }
+  },
+  {
+    "engine": "moss",
+    "completed_cases": 6,
+    "declared_cases": 10,
+    "words": 261,
+    "errors": 2,
+    "wer": 0.007662835249042145,
+    "resource": {
+      "name": "moss native corpus",
+      "pid": 41528,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "ten requests complete; startup120s, each inference120s, exact-child shutdown10s",
+      "status": "exited",
+      "failure": "Native inference did not complete: MOSS returned invalid timestamps for this audio window.",
+      "exit_code": -15,
+      "elapsed_seconds": 12.473
+    }
+  }
+]

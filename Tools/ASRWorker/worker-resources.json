@@ -1,0 +1,214 @@
+{
+  "createdAt": "2026-10-09T19:39:42.596769+00:00",
+  "projectDirectory": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker",
+  "supervisorPID": 44775,
+  "openingProcessCount": 1303,
+  "freeDiskBytes": 107920257024,
+  "resources": [
+    {
+      "kind": "xcode-build",
+      "pid": 32732,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/ParrotASRWorker.xcodeproj",
+        "-scheme",
+        "ParrotASRWorker",
+        "-configuration",
+        "Release",
+        "-destination",
+        "platform=macOS,arch=arm64",
+        "-derivedDataPath",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData",
+        "-jobs",
+        "2",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "purpose": "compile portable native ASR worker and Metal resources",
+      "startedAt": "2026-10-09T19:09:23.232820+00:00",
+      "stopCondition": "build completion or 1200s timeout",
+      "log": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/xcode-build.log",
+      "status": "exited",
+      "exitCode": 65,
+      "finishedAt": "2026-10-09T19:11:31.894051+00:00",
+      "verifiedExited": true,
+      "remainingDirectChildren": []
+    },
+    {
+      "kind": "xcode-build",
+      "pid": 37247,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/ParrotASRWorker.xcodeproj",
+        "-scheme",
+        "ParrotASRWorker",
+        "-configuration",
+        "Release",
+        "-destination",
+        "platform=macOS,arch=arm64",
+        "-derivedDataPath",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData",
+        "-jobs",
+        "2",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-onlyUsePackageVersionsFromResolvedFile",
+        "build"
+      ],
+      "purpose": "compile portable native ASR worker and Metal resources",
+      "startedAt": "2026-10-09T19:17:25.430873+00:00",
+      "stopCondition": "build completion or 1200s timeout",
+      "log": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/xcode-build.log",
+      "status": "terminated",
+      "finishedAt": "2026-10-09T19:19:19.181995+00:00",
+      "verifiedExited": true,
+      "survivingOwnedPIDs": []
+    },
+    {
+      "kind": "xcode-build",
+      "pid": 38535,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/ParrotASRWorker.xcodeproj",
+        "-scheme",
+        "ParrotASRWorker",
+        "-configuration",
+        "Release",
+        "-destination",
+        "platform=macOS,arch=arm64",
+        "-derivedDataPath",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData",
+        "-jobs",
+        "2",
+        "CODE_SIGNING_ALLOWED=NO",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "-onlyUsePackageVersionsFromResolvedFile",
+        "build"
+      ],
+      "purpose": "compile portable native ASR worker and Metal resources",
+      "startedAt": "2026-10-09T19:19:48.263783+00:00",
+      "stopCondition": "build completion or 1200s timeout",
+      "log": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/xcode-build.log",
+      "status": "exited",
+      "exitCode": 0,
+      "finishedAt": "2026-10-09T19:23:03.239607+00:00",
+      "verifiedExited": true
+    },
+    {
+      "kind": "xcode-build",
+      "pid": 44783,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/ParrotASRWorker.xcodeproj",
+        "-scheme",
+        "ParrotASRWorker",
+        "-configuration",
+        "Release",
+        "-destination",
+        "platform=macOS,arch=arm64",
+        "-derivedDataPath",
+        "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData",
+        "-jobs",
+        "2",
+        "CODE_SIGNING_ALLOWED=NO",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "-onlyUsePackageVersionsFromResolvedFile",
+        "build"
+      ],
+      "purpose": "compile portable native ASR worker and Metal resources",
+      "startedAt": "2026-10-09T19:39:42.601643+00:00",
+      "stopCondition": "build completion or 1200s timeout",
+      "log": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/xcode-build.log",
+      "status": "exited",
+      "exitCode": 0,
+      "finishedAt": "2026-10-09T19:56:57.810845+00:00",
+      "verifiedExited": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData",
+      "purpose": "bounded helper build",
+      "disposition": "retained for root-authorized integration iterations; remove after root acceptance"
+    },
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/portable",
+      "purpose": "deliverable",
+      "disposition": "keep"
+    },
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/xcode-build.log",
+      "purpose": "small build evidence",
+      "disposition": "keep"
+    }
+  ],
+  "closingProcessCount": 1333,
+  "ownedHelpersRemaining": 0,
+  "portableManifest": {
+    "builtAt": "2026-10-09T19:56:57.862975+00:00",
+    "sourceRevision": "dbe5eaac964e8257785f9d015c81f819a38016a8",
+    "binary": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/portable/ParrotASRWorker",
+    "binarySHA256": "940761f7a91779e8015ed77ec68e385d52a851dffef5cd8a8f68bd8ffe6e1e61",
+    "metalSourcePath": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData/Build/Products/Release/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib",
+    "metalSHA256": "282550b064507602f7da8cfa2dab2ca8f10341c2802191234a1cbf17f892952f",
+    "resourceBundles": [
+      "swift-transformers_Hub.bundle",
+      "swift-crypto_Crypto.bundle",
+      "mlx-swift_Cmlx.bundle"
+    ],
+    "unsignedNestedApp": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/portable/ASRWorker.app"
+  },
+  "cleanupVerified": [
+    {
+      "pid": 32732,
+      "running": false
+    },
+    {
+      "pid": 37247,
+      "running": false
+    },
+    {
+      "pid": 38535,
+      "running": false
+    },
+    {
+      "pid": 44783,
+      "running": false
+    },
+    {
+      "pid": 44934,
+      "running": false
+    },
+    {
+      "pid": 44968,
+      "running": false
+    },
+    {
+      "pid": 44969,
+      "running": false
+    },
+    {
+      "pid": 44970,
+      "running": false
+    },
+    {
+      "pid": 44971,
+      "running": false
+    },
+    {
+      "pid": 44972,
+      "running": false
+    },
+    {
+      "pid": 44992,
+      "running": false
+    }
+  ],
+  "cleanupCheckedAt": "2026-10-09T20:00:17.164138+00:00",
+  "buildStatus": "revised_portable_app_complete"
+}

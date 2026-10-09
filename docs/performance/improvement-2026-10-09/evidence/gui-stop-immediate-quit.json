@@ -1,0 +1,8 @@
+{
+  "scenario": "Stop immediately followed by Cmd-Q",
+  "app_pid": 74961,
+  "issued_at": "2026-10-09T21:04:04.326Z",
+  "checked_at": "2026-10-09T21:04:24.547371+00:00",
+  "process_exited": true,
+  "check_wait_seconds": 0.004
+}

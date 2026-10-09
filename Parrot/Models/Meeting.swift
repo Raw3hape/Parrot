@@ -25,6 +25,9 @@ final class Meeting {
     var micAudioPath: String?
     var status: MeetingStatus
     var errorMessage: String?
+    /// Only recordings created by the updated app request an automatic final
+    /// pass. Old history is preserved without launching a surprise backfill.
+    var finalTranscriptRequested: Bool = false
     /// AI-generated post-call report; set shortly after recording stops.
     var summary: String?
     /// Local summaries are fingerprinted separately from titles. Defaulted

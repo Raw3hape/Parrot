@@ -1,0 +1,17 @@
+{
+  "name": "original installed whisper smoke varied long",
+  "pid": 70077,
+  "runner_pid": 70075,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "/Applications/Parrot.app/Contents/MacOS/Parrot",
+    "--best-transcription-test",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/corpus/varied-long.wav",
+    "1"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/original-best-smoke-long.log",
+  "stop_condition": "completion or 120 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 79.044
+}

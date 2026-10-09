@@ -1,0 +1,12 @@
+{
+  "name": "Aqua production capture check",
+  "label": "com.nikita.parrot-ultra-capture-second-installed-20261006",
+  "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+  "stop_condition": "diagnostic ends after 11 seconds, 45 second driver timeout",
+  "finished": true,
+  "capture_pid": 12165,
+  "player_pid": 12167,
+  "exit_code": 0,
+  "elapsed_seconds": 12.719,
+  "capture_process_exited": true
+}

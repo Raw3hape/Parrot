@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-10-09T20:43:46.112019+00:00",
+  "deliverable": "/Users/nikita/Documents/My_Projects/Parrot/build/Parrot-improved-2026-10-09.app",
+  "main_sha256": "c1c3aacfb66bae5768f6593d5ca466a0a0d7ce43712e2b433422f17c96746302",
+  "helper_sha256": "40ae743eb0482925f30057d0d345ad602250bc469cb070eafaf2f57dc3636b5a",
+  "signature_verified": true,
+  "entitlements_equal_to_original": true,
+  "offline_clone": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/Parrot-offline-validation.app",
+  "offline_clone_entitlements": {
+    "com.apple.security.app-sandbox": true,
+    "com.apple.security.device.audio-input": true,
+    "com.apple.security.device.microphone": true,
+    "com.apple.security.files.downloads.read-write": true,
+    "com.apple.security.files.user-selected.read-write": true,
+    "com.apple.security.get-task-allow": true
+  },
+  "network_entitlements_absent": true
+}

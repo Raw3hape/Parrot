@@ -1,0 +1,8 @@
+{
+  "owned_disposable_processes": 0,
+  "owned_launchagents": 0,
+  "temporary_directory_removed": true,
+  "owned_build_service_exited": true,
+  "parrot_running": true,
+  "generic_cleanup_dry_run": "Other app sessions matched; they were not started by this task and were left untouched."
+}

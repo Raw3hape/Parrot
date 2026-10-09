@@ -71,9 +71,16 @@ struct QwenMemoryAdmissionPolicy: Sendable {
     }
 }
 
-private enum SystemQwenMemoryAdmission {
+enum SystemQwenMemoryAdmission {
     static func startupDecision() -> QwenMemoryAdmissionDecision {
         QwenMemoryAdmissionPolicy().decision(for: snapshot())
+    }
+
+    /// The independent 8-bit ASR worker is smaller than the 9B title model.
+    /// This does not change the title/summary model's existing 10 GiB guard.
+    static func speechStartupDecision() -> QwenMemoryAdmissionDecision {
+        QwenMemoryAdmissionPolicy(requiredReclaimableBytes: 6 * 1_024 * 1_024 * 1_024)
+            .decision(for: snapshot())
     }
 
     static func continuationDecision() -> QwenMemoryAdmissionDecision {

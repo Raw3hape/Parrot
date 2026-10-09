@@ -1,5 +1,18 @@
 import SwiftUI
 
+/// Exit after the popover/button update has unwound. Synchronous terminate from
+/// a SwiftUI action can hold its update lock while Stop publishes capture state.
+@MainActor
+enum MenuBarQuitRequest {
+    static func perform(
+        closePopover: () -> Void,
+        terminate: @escaping @MainActor () -> Void
+    ) {
+        closePopover()
+        DispatchQueue.main.async { terminate() }
+    }
+}
+
 struct MenuBarView: View {
     @Environment(RecordingManager.self) private var recordingManager
     @Environment(ProfileStore.self) private var profileStore
@@ -75,8 +88,9 @@ struct MenuBarView: View {
             }
 
             Button("Quit") {
-                closePopover()
-                NSApplication.shared.terminate(nil)
+                MenuBarQuitRequest.perform(closePopover: closePopover) {
+                    NSApplication.shared.terminate(nil)
+                }
             }
             .keyboardShortcut("q")
         }

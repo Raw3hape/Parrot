@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-10-09T20:54:46.416673+00:00",
+  "installed": "/Applications/Parrot.app",
+  "main_sha256": "c1c3aacfb66bae5768f6593d5ca466a0a0d7ce43712e2b433422f17c96746302",
+  "matches_deliverable": true,
+  "signature_verified": true,
+  "recording_processes_before_replace": [],
+  "rollback_app": "recordings/backups/2026-10-09-improvement/Parrot-Ultra-rollback.app",
+  "temporary_old_bundle": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/preupdate-installed.app",
+  "gui_validation": "passed available runtime scenarios; custom status popup has unit-only coverage",
+  "history_original_meetings": 88,
+  "qa_meetings": 6,
+  "all_qa_finals": true
+}

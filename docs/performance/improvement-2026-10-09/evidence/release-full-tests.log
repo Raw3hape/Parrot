@@ -1,0 +1,497 @@
+Fetching https://github.com/apple/swift-argument-parser.git from cache
+Fetching https://github.com/FluidInference/FluidAudio.git from cache
+Fetching https://github.com/huggingface/swift-transformers.git from cache
+Fetching https://github.com/apple/swift-asn1.git from cache
+Fetching https://github.com/argmaxinc/WhisperKit.git from cache
+Fetching https://github.com/huggingface/swift-jinja.git from cache
+Fetching https://github.com/ibireme/yyjson.git from cache
+Fetching https://github.com/apple/swift-crypto.git from cache
+Fetching https://github.com/apple/swift-collections.git from cache
+Fetched https://github.com/apple/swift-collections.git from cache (1.06s)
+Fetched https://github.com/huggingface/swift-jinja.git from cache (1.42s)
+Fetched https://github.com/argmaxinc/WhisperKit.git from cache (1.42s)
+Fetched https://github.com/FluidInference/FluidAudio.git from cache (1.42s)
+Computing version for https://github.com/FluidInference/FluidAudio.git
+Fetched https://github.com/apple/swift-argument-parser.git from cache (1.51s)
+Fetched https://github.com/apple/swift-asn1.git from cache (1.52s)
+Fetched https://github.com/apple/swift-crypto.git from cache (1.57s)
+Fetched https://github.com/huggingface/swift-transformers.git from cache (1.58s)
+Fetched https://github.com/ibireme/yyjson.git from cache (1.59s)
+Computed https://github.com/FluidInference/FluidAudio.git at 0.17.3 (2.61s)
+Computing version for https://github.com/argmaxinc/WhisperKit.git
+Computed https://github.com/argmaxinc/WhisperKit.git at 0.18.0 (1.13s)
+Computing version for https://github.com/apple/swift-argument-parser.git
+Computed https://github.com/apple/swift-argument-parser.git at 1.8.2 (0.66s)
+Computing version for https://github.com/huggingface/swift-transformers.git
+Computed https://github.com/huggingface/swift-transformers.git at 1.1.9 (0.61s)
+Computing version for https://github.com/ibireme/yyjson.git
+Computed https://github.com/ibireme/yyjson.git at 0.12.0 (0.68s)
+Computing version for https://github.com/apple/swift-crypto.git
+Computed https://github.com/apple/swift-crypto.git at 4.5.0 (0.72s)
+Computing version for https://github.com/apple/swift-collections.git
+Computed https://github.com/apple/swift-collections.git at 1.6.0 (0.64s)
+Computing version for https://github.com/huggingface/swift-jinja.git
+Computed https://github.com/huggingface/swift-jinja.git at 2.3.6 (0.46s)
+Computing version for https://github.com/apple/swift-asn1.git
+Computed https://github.com/apple/swift-asn1.git at 1.7.1 (0.62s)
+Creating working copy for https://github.com/huggingface/swift-jinja.git
+Working copy of https://github.com/huggingface/swift-jinja.git resolved at 2.3.6
+Creating working copy for https://github.com/apple/swift-asn1.git
+Working copy of https://github.com/apple/swift-asn1.git resolved at 1.7.1
+Creating working copy for https://github.com/huggingface/swift-transformers.git
+Working copy of https://github.com/huggingface/swift-transformers.git resolved at 1.1.9
+Creating working copy for https://github.com/apple/swift-argument-parser.git
+Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.8.2
+Creating working copy for https://github.com/apple/swift-collections.git
+Working copy of https://github.com/apple/swift-collections.git resolved at 1.6.0
+Creating working copy for https://github.com/FluidInference/FluidAudio.git
+Working copy of https://github.com/FluidInference/FluidAudio.git resolved at 0.17.3
+Creating working copy for https://github.com/apple/swift-crypto.git
+Working copy of https://github.com/apple/swift-crypto.git resolved at 4.5.0
+Creating working copy for https://github.com/argmaxinc/WhisperKit.git
+Working copy of https://github.com/argmaxinc/WhisperKit.git resolved at 0.18.0
+Creating working copy for https://github.com/ibireme/yyjson.git
+Working copy of https://github.com/ibireme/yyjson.git resolved at 0.12.0
+Fetching binary artifact https://github.com/FluidInference/text-processing-rs/releases/download/v0.3.1/NemoTextProcessing.xcframework.zip from cache
+Fetched https://github.com/FluidInference/text-processing-rs/releases/download/v0.3.1/NemoTextProcessing.xcframework.zip from cache (3.16s)
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 602]
+[Planning deferred tasks]
+[108 / 282]
+[151 / 282] FluidAudio_FluidAudio
+[153 / 282]
+[158 / 285] InternalCollectionsUtilities
+[160 / 305] Crypto
+[161 / 326]
+[162 / 339]
+[163 / 339]
+[164 / 339] InternalCollectionsUtilities
+[165 / 339]
+[169 / 339] InternalCollectionsUtilities
+[171 / 379]
+[174 / 393]
+[175 / 393]
+[177 / 393]
+[178 / 393]
+[181 / 393]
+[183 / 393]
+[185 / 393] FastClusterWrapper
+[187 / 393]
+[189 / 393]
+[193 / 393]
+[195 / 393]
+[196 / 393]
+[198 / 393]
+[201 / 393]
+[203 / 393]
+[206 / 394] FluidAudio
+[206 / 408] FluidAudio
+[210 / 472]
+[213 / 472]
+[217 / 472]
+[218 / 472]
+[222 / 472]
+[224 / 472]
+[228 / 472]
+[229 / 472]
+[230 / 472]
+[231 / 472]
+[233 / 472]
+[235 / 472]
+[236 / 472]
+[238 / 472]
+[239 / 472]
+[241 / 472]
+[243 / 472] yyjson
+[245 / 472] MachTaskSelfWrapper
+[246 / 472]
+[247 / 472] MachTaskSelfWrapper
+[248 / 472]
+[248 / 472] MachTaskSelfWrapper
+[250 / 472] InternalCollectionsUtilities
+[251 / 472] InternalCollectionsUtilities
+[253 / 472]
+[254 / 472]
+[256 / 472]
+[257 / 472]
+[259 / 472]
+[260 / 472]
+[262 / 472]
+[263 / 472] yyjson
+[264 / 472]
+[265 / 472] yyjson
+[267 / 472] InternalCollectionsUtilities
+[269 / 472]
+[272 / 472] InternalCollectionsUtilities
+[273 / 472] OrderedCollections
+[274 / 472] OrderedCollections
+[276 / 472] InternalCollectionsUtilities
+[278 / 472] InternalCollectionsUtilities
+[279 / 472] InternalCollectionsUtilities
+[281 / 472]
+[283 / 472]
+[285 / 472]
+[287 / 472]
+[289 / 472]
+[291 / 472]
+[293 / 472] InternalCollectionsUtilities
+[295 / 472] CSpeexDSP
+[299 / 472] InternalCollectionsUtilities
+[301 / 472] Crypto
+[303 / 472] Crypto
+[304 / 472]
+[308 / 472] Crypto
+[313 / 472] Crypto
+[314 / 472] Crypto
+[315 / 472]
+[319 / 472]
+[323 / 472] Crypto
+[324 / 472] Crypto
+[325 / 472]
+[327 / 472]
+[328 / 472] Crypto-product
+[329 / 472] Crypto-product
+[332 / 472] Crypto
+[334 / 472] Crypto
+[335 / 472]
+[336 / 472]
+[337 / 472]
+[338 / 472]
+[340 / 472] Crypto
+[341 / 472] Crypto
+[342 / 472] Crypto
+[345 / 472] Crypto
+[346 / 472] Crypto
+[348 / 472]
+[350 / 472] CSpeexDSP
+[353 / 472] CSpeexDSP
+[354 / 472] CSpeexDSP
+[359 / 472]
+[360 / 472]
+[364 / 473] Crypto
+[364 / 473]
+[368 / 474] OrderedCollections
+[369 / 492] OrderedCollections
+[370 / 492] FluidAudio
+[375 / 492] OrderedCollections
+[380 / 492] FluidAudio
+[383 / 492] OrderedCollections
+[385 / 492] OrderedCollections
+[386 / 492] OrderedCollections
+[387 / 492] OrderedCollections
+[388 / 492] OrderedCollections-product
+[389 / 492] OrderedCollections-product
+[391 / 492] FluidAudio
+[393 / 492] OrderedCollections
+[394 / 492] OrderedCollections
+[395 / 492] OrderedCollections
+[397 / 492] OrderedCollections
+[398 / 492] OrderedCollections
+[399 / 492] OrderedCollections
+[399 / 492] Jinja
+[400 / 492] Jinja
+[402 / 492] FluidAudio
+[403 / 492] FluidAudio
+[404 / 492] OrderedCollections
+[405 / 492] FluidAudio
+[405 / 492] OrderedCollections
+[406 / 492] FluidAudio
+[407 / 492] FluidAudio
+[408 / 492] FluidAudio-product
+[409 / 492] FluidAudio-product
+[411 / 492] FluidAudio
+[412 / 492] FluidAudio
+[413 / 492] FluidAudio
+[414 / 492] FluidAudio
+[415 / 492] FluidAudio
+[415 / 492]
+[416 / 492] OrderedCollections
+[416 / 492]
+[417 / 493]
+[419 / 508] Jinja
+[420 / 508] Jinja
+[422 / 508] Jinja
+[429 / 508] Jinja
+[430 / 508] Jinja
+[431 / 508] Jinja-product
+[433 / 508] Jinja-product
+[435 / 508] Jinja
+[436 / 508] Jinja
+[438 / 508] Jinja
+[438 / 508] OrderedCollections
+[439 / 509]
+[439 / 509] Hub
+[442 / 557]
+[444 / 557]
+[445 / 557]
+[446 / 557]
+[447 / 557]
+[448 / 557]
+[449 / 557]
+[451 / 557]
+[454 / 557]
+[455 / 557] Jinja
+[458 / 557]
+[459 / 557] Jinja
+[461 / 557]
+[462 / 557]
+[465 / 557]
+[466 / 557]
+[467 / 557]
+[468 / 557] FluidAudio
+[470 / 557] FluidAudio
+[471 / 557]
+[474 / 557] FluidAudio
+[474 / 557]
+[475 / 557]
+[478 / 557]
+[479 / 557]
+[480 / 557]
+[481 / 557]
+[483 / 557]
+[488 / 557] Hub
+[489 / 557] Hub
+[491 / 557] Hub
+[496 / 557] Hub
+[497 / 557] Tokenizers
+[499 / 559]
+[499 / 559] Tokenizers
+[502 / 572] Tokenizers
+[503 / 599]
+[503 / 599] Tokenizers
+[506 / 599] Tokenizers
+[513 / 599]
+[514 / 599]
+[516 / 599]
+[519 / 599]
+[520 / 599] Tokenizers
+[522 / 599]
+[523 / 599] Tokenizers-product
+[526 / 599] Tokenizers
+[527 / 599]
+[530 / 599] Tokenizers
+[531 / 599] Tokenizers
+[532 / 599] Hub
+[533 / 599] Hub
+[533 / 599] Tokenizers
+[535 / 599] Tokenizers
+[535 / 599]
+[540 / 599] ArgmaxCore
+[542 / 599] ArgmaxCore
+[550 / 599] ArgmaxCore
+[551 / 599] WhisperKit
+[553 / 599] ArgmaxCore
+[554 / 599] ArgmaxCore
+[556 / 600]
+[556 / 600] ArgmaxCore
+[558 / 600] ArgmaxCore
+[558 / 600] WhisperKit
+[563 / 636]
+[566 / 636]
+[567 / 636]
+[569 / 636]
+[570 / 636]
+[571 / 636]
+[572 / 636]
+[574 / 636]
+[575 / 636]
+[580 / 636] WhisperKit
+[581 / 636] WhisperKit
+[583 / 636] WhisperKit
+[584 / 636] WhisperKit
+[591 / 636] WhisperKit
+[592 / 636] WhisperKit-product
+[593 / 636] WhisperKit-product
+[596 / 636] WhisperKit
+[597 / 636] WhisperKit
+[598 / 636] WhisperKit
+[600 / 636] WhisperKit
+[600 / 636] Parrot-product
+[603 / 637]
+[604 / 638]
+[604 / 638] WhisperKit
+[606 / 638] WhisperKit
+[606 / 638] WhisperKit-product
+[606 / 638] Parrot-product
+[611 / 694]
+[614 / 694]
+[617 / 694]
+[619 / 694]
+[620 / 694]
+[623 / 694]
+[624 / 694]
+[629 / 694] Parrot-product
+[630 / 694] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[632 / 694] Parrot-product
+[635 / 694] Parrot
+[641 / 694] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[643 / 694] Parrot-product
+[644 / 694] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[645 / 694] Parrot-product
+[646 / 694] Parrot-product
+[647 / 694] Parrot-product
+[648 / 694] Parrot-product
+[649 / 694] Parrot-product
+[651 / 694] Parrot-product
+[652 / 694] Parrot
+[653 / 694] Parrot
+[654 / 694] Parrot
+[655 / 694] Parrot
+[657 / 694] Parrot-product
+[657 / 694] Parrot
+[659 / 694] Parrot
+[661 / 694] Parrot
+[662 / 694] Parrot
+[663 / 694] Parrot
+[664 / 694] Parrot
+[665 / 694] Parrot
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[666 / 694] Parrot
+[669 / 694] Parrot
+[670 / 694] Parrot
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[671 / 694] Parrot
+[671 / 694]
+[674 / 694] Parrot-product
+[675 / 694] Parrot
+[677 / 694] Parrot
+[684 / 695] ParrotTests-product
+[686 / 719]
+[688 / 719]
+[689 / 719]
+[694 / 719] ParrotTests-product
+error: SwiftCompile normal arm64 /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/NativeFinalTranscriptionServiceTests.swift failed with a nonzero exit code. Command line:     cd /Users/nikita/Documents/My_Projects
+    builtin-SwiftPerFileCompile NativeFinalTranscriptionServiceTests.swift
+[697 / 719] ParrotTests-product/Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/NativeFinalTranscriptionServiceTests.swift:355:13: error: cannot find 'NativeFinalPipeRead' in scope
+353 |             try? pipe.fileHandleForWriting.close()
+354 |         }
+355 |         try NativeFinalPipeRead.makeNonblocking(pipe.fileHandleForReading)
+    |             `- error: cannot find 'NativeFinalPipeRead' in scope
+356 |         let inbox = NativeWorkerLineInbox()
+357 |         try pipe.fileHandleForWriting.write(contentsOf: Data("ready\n".utf8))
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/DerivedSources/test_entry_point.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/ApplicationLifecyclePolicyTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/AudioRouteChangePolicyTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/AudioTimelineAccumulatorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/AudioTimelineStoreTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/BackgroundPreferencesTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/BestAudioFileReaderTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/BestTranscriptionCoordinatorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/BestTranscriptionCoreTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/BestTranscriptionStoreTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/BestWhisperResultMapperTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/CallCandidateClassifierTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/CallDetectionCoordinatorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/CallSuggestionStateMachineTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/CaptureLifecycleReliabilityTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/CoreAudioCallbackCoalescerTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/DockVisibilityPreferenceTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/EchoAlignmentReliabilityTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/FinalTranscriptResultAwaiterTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/HybridFinalTranscriptionServiceTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/LocalMeetingTitleGeneratorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/MeetingPresentationPolicyTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/MeetingSummaryCoordinatorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/MeetingTitleCoordinatorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/MeetingTitleProvenanceTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/MeetingTitleSnapshotBuilderTests.swift -primary-file /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/MenuBarPresentationPolicyTests.swift -primary-file /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/NativeFinalTranscriptionServiceTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/QwenMeetingSummaryGeneratorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/QwenMeetingTitleGeneratorTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/RecordingManagerPreparationTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/RecordingNavigationPolicyTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/TypographyTests.swift /Users/nikita/Documents/My_Projects/Parrot/Tests/ParrotTests/WhisperInferenceGateTests.swift -emit-dependencies-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/MenuBarPresentationPolicyTests.d -emit-const-values-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/MenuBarPresentationPolicyTests.swiftconstvalues -emit-reference-dependencies-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/MenuBarPresentationPolicyTests.swiftdeps -serialize-diagnostics-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/MenuBarPresentationPolicyTests.dia -emit-dependencies-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/NativeFinalTranscriptionServiceTests.d -emit-const-values-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/NativeFinalTranscriptionServiceTests.swiftconstvalues -emit-reference-dependencies-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/NativeFinalTranscriptionServiceTests.swiftdeps -serialize-diagnostics-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/NativeFinalTranscriptionServiceTests.dia -target arm64-apple-macos14.0 -module-can-import-version Testing 2084 0 -module-can-import-version XCTest 25228 0 -disable-cross-import-overlay-search -swift-module-cross-import SwiftData /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftData.framework/Modules/SwiftData.swiftcrossimport/CoreData.swiftoverlay -swift-module-cross-import SwiftData /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftData.framework/Modules/SwiftData.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/AppKit.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreGraphics.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreImage.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreTransferable.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/Foundation.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftDataMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftDataMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib\#\#TestingMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/ParrotTests-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -I /Users/nikita/Documents/My_Projects/Parrot/.build/out/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/nikita/Documents/My_Projects/Parrot/.build/out/Products/Debug/PackageFrameworks -F /Users/nikita/Documents/My_Projects/Parrot/.build/out/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -module-cache-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/SwiftExplicitPrecompiledModules -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -swift-version 5 -Onone -D SWIFT_PACKAGE -D DEBUG -D Xcode -serialize-debugging-options -enable-experimental-feature DebugDescriptionMacro -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/nikita/Documents/My_Projects/Parrot/.build/out/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/nikita/Documents/My_Projects -enable-anonymous-context-mangled-names -file-compilation-dir /Users/nikita/Documents/My_Projects -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/GeneratedModuleMaps/yyjson.modulemap -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/.build/checkouts/FluidAudio/Sources/MachTaskSelfWrapper/include/module.modulemap -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/.build/checkouts/FluidAudio/Sources/FastClusterWrapper/include/module.modulemap -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/Vendor/CSpeexDSP/Sources/CSpeexDSP/include/module.modulemap -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/nikita/Documents/My_Projects/Parrot/.build/out/SDKStatCaches.noindex/macosx27.0-26A425-80c5bbf1d171475443272936d42f90a37231f6df4def33e022ae2eb8f782df1a.sdkstatcache -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/checkouts/yyjson/src -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/checkouts/FluidAudio/Sources/MachTaskSelfWrapper/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/checkouts/FluidAudio/Sources/FastClusterWrapper/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/Vendor/CSpeexDSP/Sources/CSpeexDSP/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/out/Products/Debug/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/DerivedSources-normal/arm64 -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/DerivedSources/arm64 -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name ParrotTests -package-name parrot -const-gather-protocols-file /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/ParrotTests_const_extract_protocols.json -disable-clang-spi -clang-target arm64-apple-macos27.0 -target-sdk-version 27.0 -target-sdk-name macosx27.0 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -parse-as-library -o /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/MenuBarPresentationPolicyTests.o -o /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/NativeFinalTranscriptionServiceTests.o -debug-module-path /Users/nikita/Documents/My_Projects/Parrot/.build/out/Intermediates.noindex/Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/ParrotTests.swiftmodule -index-unit-output-path /Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/MenuBarPresentationPolicyTests.o -index-unit-output-path /Parrot.build/Debug/ParrotTests-p.build/Objects-normal/arm64/NativeFinalTranscriptionServiceTests.o -index-store-path /Users/nikita/Documents/My_Projects/Parrot/.build/out -index-system-modules
+
+error: Build failed
+error: fatalError

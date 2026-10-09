@@ -1,0 +1,12 @@
+{
+  "v3": {
+    "median_decode_seconds": 0.0995,
+    "word_errors": 2,
+    "reference_words": 156
+  },
+  "ultra": {
+    "median_decode_seconds": 0.0985,
+    "word_errors": 2,
+    "reference_words": 156
+  }
+}

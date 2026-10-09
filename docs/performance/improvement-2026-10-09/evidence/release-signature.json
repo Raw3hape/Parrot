@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-10-09T20:28:42.515924+00:00",
+  "candidate": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/candidate-derived/Build/Products/Release/Parrot.app",
+  "main_sha256": "75fec73c31e614d4406c38531988e2a3ae2092ae8513386e0e01c34f08110837",
+  "helper_sha256": "f16d9052c32eea890dc424d0131540aa7cff241454eb90f03999c54beef08439",
+  "portable_helper_sha256": "940761f7a91779e8015ed77ec68e385d52a851dffef5cd8a8f68bd8ffe6e1e61",
+  "helper_unsigned_code_matches": false,
+  "stripped_sha256": [
+    "399084f0b62f49c324a79275f1fc6ec778fffbb05db261c68b1d3241c8505143",
+    "a88c2d074258a596ecb07039395b6a80348b26eab30d886fb0b982be0389e623"
+  ],
+  "candidate_entitlements": {
+    "com.apple.security.app-sandbox": true,
+    "com.apple.security.device.audio-input": true,
+    "com.apple.security.device.microphone": true,
+    "com.apple.security.files.downloads.read-write": true,
+    "com.apple.security.files.user-selected.read-write": true,
+    "com.apple.security.get-task-allow": true,
+    "com.apple.security.network.client": true,
+    "com.apple.security.network.server": true
+  },
+  "installed_entitlements": {
+    "com.apple.security.app-sandbox": true,
+    "com.apple.security.device.audio-input": true,
+    "com.apple.security.device.microphone": true,
+    "com.apple.security.files.downloads.read-write": true,
+    "com.apple.security.files.user-selected.read-write": true,
+    "com.apple.security.get-task-allow": true,
+    "com.apple.security.network.client": true,
+    "com.apple.security.network.server": true
+  },
+  "entitlements_equal": true,
+  "signature": "Executable=/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/candidate-derived/Build/Products/Release/Parrot.app/Contents/MacOS/Parrot\nIdentifier=com.uygar.parrot\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=85340 flags=0x10000(runtime) hashes=2656+7 location=embedded\nSignature size=4793\nAuthority=Apple Development: Mikita Siarhushkin (34U4CW2VY4)\nAuthority=Apple Worldwide Developer Relations Certification Authority\nAuthority=Apple Root CA\nSigned Time=9 Oct 2026 at 22:24:02\nInfo.plist entries=24\nTeamIdentifier=5C2PL8729F\nRuntime Version=27.0.0\nSealed Resources version=2 rules=13 files=13\nInternal requirements count=1 size=184\nTotal signatures=1\nChosen signature=1\n",
+  "section_count": 46,
+  "all_macho_sections_match": true,
+  "mismatched_sections": []
+}

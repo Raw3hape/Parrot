@@ -1,0 +1,8 @@
+diagnostic: whisper
+model: large-v3-v20240930_turbo
+audio_seconds: 11.831
+load_seconds: 1.038
+preparation_launches: 1
+decode_seconds: 0.729
+transcript_characters: 187
+confidence_is_finite: 1

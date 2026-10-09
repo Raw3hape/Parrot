@@ -1,0 +1,59 @@
+{
+  "baseline": {
+    "ru": {
+      "words": 133,
+      "errors": 2,
+      "wer": 0.015037593984962405
+    },
+    "pl": {
+      "words": 128,
+      "errors": 0,
+      "wer": 0.0
+    },
+    "en": {
+      "words": 169,
+      "errors": 0,
+      "wer": 0.0
+    },
+    "mixed": {
+      "words": 43,
+      "errors": 12,
+      "wer": 0.27906976744186046
+    }
+  },
+  "hybrid": {
+    "ru": {
+      "words": 133,
+      "errors": 2,
+      "wer": 0.015037593984962405
+    },
+    "pl": {
+      "words": 128,
+      "errors": 0,
+      "wer": 0.0
+    },
+    "en": {
+      "words": 169,
+      "errors": 0,
+      "wer": 0.0
+    },
+    "mixed": {
+      "words": 43,
+      "errors": 1,
+      "wer": 0.023255813953488372
+    }
+  },
+  "baseline_errors": 14,
+  "hybrid_errors": 3,
+  "cases": 10,
+  "words": 473,
+  "all_completed": true,
+  "timestamps_valid": true,
+  "workers_exited": true,
+  "no_language_regression_over_2pp": true,
+  "tested_main_sha256": "c1c3aacfb66bae5768f6593d5ca466a0a0d7ce43712e2b433422f17c96746302",
+  "corpus_manifest_sha256": "568a83ecc89acf343833b53221c184299f02e72bf9748b6e22a9d238172f1f0a",
+  "qualification": "Declared synthetic TTS corpus only; does not establish accuracy on every real meeting",
+  "resource": "quality-installed-resource.json",
+  "passed": true
+}

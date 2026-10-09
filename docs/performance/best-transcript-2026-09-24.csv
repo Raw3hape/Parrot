@@ -1,0 +1,7 @@
+scenario,language,build,workers,audio_seconds,elapsed_seconds,segments,characters,content_sha256,timestamps_valid
+varied_english,en,debug,1,303.033,16.487,77,4974,3821a23befe35e54881c91267de2c9cab8c7be895cc155a6c3e4d16f3b973220,true
+varied_english,en,debug,4,303.033,13.311,77,4974,3821a23befe35e54881c91267de2c9cab8c7be895cc155a6c3e4d16f3b973220,true
+varied_english,en,release,4,303.033,12.551,77,4974,3821a23befe35e54881c91267de2c9cab8c7be895cc155a6c3e4d16f3b973220,true
+varied_english,en,xcode_release,4,303.033,13.036,77,4974,3821a23befe35e54881c91267de2c9cab8c7be895cc155a6c3e4d16f3b973220,true
+varied_russian,ru,debug,1,303.353,18.775,64,5036,1a15061eb34fe56e07c5d1e1e7977238af40040a112d4e54af153470b28d93f3,true
+varied_russian,ru,debug,4,303.353,14.491,65,5052,3c797509ecc7fc6e48a82f514b5776f89f4ffb6aa35f9b0523876aed37485ee9,true

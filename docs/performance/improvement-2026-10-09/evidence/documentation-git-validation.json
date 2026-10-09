@@ -1,0 +1,39 @@
+{
+  "checked_at": "2026-10-09T22:51:48.552116+00:00",
+  "scope": "Documentation/Git handoff only; executable code unchanged; prior runtime evidence retained",
+  "documents_checked": 14,
+  "relative_links_checked": 127,
+  "missing_relative_links": [],
+  "local_only_links": [
+    {
+      "document": "docs/performance/improvement-2026-10-09/README.md",
+      "target": "evidence/source-snapshot.tar.gz"
+    },
+    {
+      "document": "docs/performance/improvement-2026-10-09/README.md",
+      "target": "evidence/source-working-tree.patch"
+    },
+    {
+      "document": "docs/performance/improvement-2026-10-09/README.md",
+      "target": "../../../recordings/quality-2026-10-09/qa-meeting-manifest-labeled.json"
+    },
+    {
+      "document": "docs/incidents/2026-10-08-finalizing.md",
+      "target": "../../recordings/recovery/2026-10-08-finalizing/README.md"
+    }
+  ],
+  "bash_blocks_syntax_ok": 3,
+  "python_files_syntax_ok": 7,
+  "json_files_parsed_before_report": 137,
+  "sealed_release_code_files_checked": 139,
+  "sealed_release_code_mismatches": [],
+  "sealed_evidence_hashes_unchanged": true,
+  "installed_main_sha256": "c1c3aacfb66bae5768f6593d5ca466a0a0d7ce43712e2b433422f17c96746302",
+  "staged_private_data_paths": [],
+  "staged_credential_pattern_hits": [],
+  "source_and_documentation_whitespace_check_passed": true,
+  "raw_evidence_whitespace": "Captured logs/patches retain original bytes via .gitattributes",
+  "runtime_tests_rerun": false,
+  "runtime_tests_reason": "No executable code changed in documentation handoff; accepted release tests/gates remain applicable",
+  "passed": true
+}

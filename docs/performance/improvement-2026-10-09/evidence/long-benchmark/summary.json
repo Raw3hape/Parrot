@@ -1,0 +1,20 @@
+{
+  "serial_median_seconds": 22.76604551076889,
+  "batch4_median_seconds": 19.615917444229126,
+  "speedup": 1.160590401927212,
+  "whisper_outputs_identical": false,
+  "serial_errors": [
+    133,
+    64
+  ],
+  "batch4_errors": [
+    142,
+    110
+  ],
+  "hybrid_errors": 23,
+  "hybrid_seconds": 60.62205195426941,
+  "includes_local_model_prepare": true,
+  "whisper_normalized_words_identical": false,
+  "batch_quality_gate_passed": false,
+  "qualification": "Language switches at30s window boundaries; unstable Whisper outputs, unsuitable as batch-equivalence acceptance."
+}

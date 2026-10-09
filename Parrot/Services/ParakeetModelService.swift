@@ -12,6 +12,13 @@ actor ParakeetModelService: LocalSpeechRecognizing {
         }
     }
 
+    nonisolated static let modelDisplayName = "Parakeet Ultra"
+    private let modelVersion: AsrModelVersion
+
+    init(modelVersion: AsrModelVersion = .ultra) {
+        self.modelVersion = modelVersion
+    }
+
     private var manager: AsrManager?
     private var preparationTask: Task<AsrManager, Error>?
     private var preparationGeneration = UUID()
@@ -39,7 +46,7 @@ actor ParakeetModelService: LocalSpeechRecognizing {
             preparationLaunchCount += 1
             task = Task {
                 let models = try await AsrModels.downloadAndLoad(
-                    version: .v3,
+                    version: modelVersion,
                     encoderPrecision: .int8,
                     progressHandler: progressHandler
                 )

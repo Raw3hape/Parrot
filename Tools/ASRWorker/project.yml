@@ -1,0 +1,43 @@
+name: ParrotASRWorker
+options:
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "27.0"
+packages:
+  MLXAudio:
+    url: https://github.com/Blaizzy/mlx-audio-swift.git
+    revision: dbe5eaac964e8257785f9d015c81f819a38016a8
+  MLX:
+    url: https://github.com/ml-explore/mlx-swift.git
+    exactVersion: 0.32.3
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: YES
+    CODE_SIGNING_ALLOWED: NO
+    SWIFT_STRICT_CONCURRENCY: complete
+targets:
+  ParrotASRWorker:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Sources
+    dependencies:
+      - package: MLXAudio
+        product: MLXAudioSTT
+      - package: MLX
+        product: MLX
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nikita.parrot.asr-worker
+schemes:
+  ParrotASRWorker:
+    build:
+      targets:
+        ParrotASRWorker: all
+    run:
+      config: Debug
+    archive:
+      config: Release

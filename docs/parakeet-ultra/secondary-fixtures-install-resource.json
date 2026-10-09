@@ -1,0 +1,9 @@
+{
+  "pid": 92766,
+  "kind": "fixtures",
+  "host": "secondary",
+  "timeout_seconds": 600,
+  "finished": true,
+  "exit_code": 0,
+  "elapsed_seconds": 0.913
+}

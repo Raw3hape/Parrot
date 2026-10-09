@@ -1,0 +1,10 @@
+diagnostic: parakeet
+model: Parakeet Ultra
+fixture_transcript: Parrot is recording a short test meeting, the microphone and system audio should be clear, we will discuss the product design and prepare the next steps for tomorrow.
+audio_seconds: 9.076
+load_seconds: 0.110
+preparation_launches: 1
+decode_seconds: 0.094
+real_time_factor: 0.0104
+transcript_characters: 166
+confidence_is_finite: 1

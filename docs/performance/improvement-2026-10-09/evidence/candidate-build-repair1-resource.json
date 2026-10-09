@@ -1,0 +1,10 @@
+{
+  "name": "signed candidate build after standard helper bundle packaging",
+  "pid": 50666,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "log": "docs/performance/improvement-2026-10-09/evidence/candidate-build-repair1.log",
+  "stop_condition": "completion or1200 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 96.07
+}

@@ -1,0 +1,11 @@
+{
+  "name": "serialized final pipeline benchmark",
+  "pid": 72783,
+  "engine": "hybrid",
+  "workers": 4,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "status": "exited",
+  "stop_condition": "completion or180s",
+  "exit_code": 0,
+  "wall_seconds": 9.697200124996016
+}

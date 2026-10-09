@@ -1,0 +1,15 @@
+{
+  "name": "GUI synthetic recording playback four",
+  "pid": 83665,
+  "runner_pid": 83664,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "/usr/bin/afplay",
+    ".tmp/parrot-improvement-20261009/capture-fixture.wav"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/gui-playback-four.log",
+  "stop_condition": "completion or 20 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 8.277
+}

@@ -1,0 +1,18 @@
+{
+  "file": "varied-long.wav",
+  "duration_seconds": 216.785813,
+  "sha256": "979a3a129fc30ee9a86e28b94fd46860589a68bcc35cb389003bf19188bb63da",
+  "source_cases": [
+    "ru-general",
+    "ru-product",
+    "ru-detailed",
+    "pl-general",
+    "pl-product",
+    "pl-detailed",
+    "en-general",
+    "en-product",
+    "en-detailed",
+    "mixed"
+  ],
+  "boundary_silence_seconds": 1
+}

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/Users/nikita/Documents/My_Projects/Parrot/Tools/qa/compare_whisper_baseline.py", line 63, in <module>
+    main()
+    ~~~~^^
+  File "/Users/nikita/Documents/My_Projects/Parrot/Tools/qa/compare_whisper_baseline.py", line 46, in main
+    raise RuntimeError(f"Legacy baseline fixture failed: {case['id']} exit={code}")
+RuntimeError: Legacy baseline fixture failed: ru-general exit=124

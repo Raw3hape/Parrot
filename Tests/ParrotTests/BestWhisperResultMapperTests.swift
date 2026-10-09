@@ -2,15 +2,33 @@ import XCTest
 @testable import Parrot
 
 final class BestWhisperResultMapperTests: XCTestCase {
-    func testLongFormPolicyUsesAutoLanguageTimestampsAndOneWorker() {
-        let policy = WhisperLongFormPolicy.bestLocal
+    func testLongFormPolicyUsesAutoLanguageTimestampsAndRequestedWorkers() {
+        let policy = WhisperLongFormPolicy.bestLocal(workerCount: 4)
 
         XCTAssertNil(policy.language)
         XCTAssertTrue(policy.detectLanguage)
         XCTAssertTrue(policy.wordTimestamps)
         XCTAssertFalse(policy.withoutTimestamps)
-        XCTAssertEqual(policy.concurrentWorkerCount, 1)
+        XCTAssertEqual(policy.concurrentWorkerCount, 4)
         XCTAssertTrue(policy.usesVADChunking)
+    }
+
+    func testBackgroundWindowCountFitsMachineCapacity() {
+        let gibibyte: UInt64 = 1_024 * 1_024 * 1_024
+        XCTAssertEqual(
+            WhisperLongFormPolicy.recommendedWindowBatchSize(
+                processorCount: 18,
+                physicalMemory: 64 * gibibyte
+            ),
+            4
+        )
+        XCTAssertEqual(
+            WhisperLongFormPolicy.recommendedWindowBatchSize(
+                processorCount: 8,
+                physicalMemory: 8 * gibibyte
+            ),
+            1
+        )
     }
 
     func testBestExportPreparationNeverDownloadsAModel() {

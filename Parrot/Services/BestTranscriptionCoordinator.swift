@@ -1,7 +1,18 @@
 import Foundation
 import Observation
 
+struct BestWhisperWindowInput: Sendable {
+    var samples: [Float]
+    var speaker: BestTranscriptSpeaker
+    var absoluteWindowStart: TimeInterval
+}
+
 protocol BestWhisperRecognizing: Sendable {
+    var preferredWindowBatchSize: Int { get }
+    var modelIdentity: String { get }
+    var modelDisplayName: String { get }
+    var windowOverlapSeconds: TimeInterval { get }
+    var hasWordAlignment: Bool { get }
     func prepareLocalOnly(modelName: String) async throws
     func transcribeWindow(
         samples: [Float],
@@ -9,6 +20,34 @@ protocol BestWhisperRecognizing: Sendable {
         absoluteWindowStart: TimeInterval,
         vocabulary: String
     ) async throws -> [BestTranscriptSegment]
+    func transcribeWindows(
+        _ windows: [BestWhisperWindowInput],
+        vocabulary: String
+    ) async throws -> [[BestTranscriptSegment]]
+}
+
+extension BestWhisperRecognizing {
+    var preferredWindowBatchSize: Int { 1 }
+    var modelIdentity: String { WhisperModelService.fallbackModel }
+    var modelDisplayName: String { "Whisper Large V3 Turbo" }
+    var windowOverlapSeconds: TimeInterval { 2 }
+    var hasWordAlignment: Bool { true }
+
+    func transcribeWindows(
+        _ windows: [BestWhisperWindowInput],
+        vocabulary: String
+    ) async throws -> [[BestTranscriptSegment]] {
+        var results: [[BestTranscriptSegment]] = []
+        for window in windows {
+            results.append(try await transcribeWindow(
+                samples: window.samples,
+                speaker: window.speaker,
+                absoluteWindowStart: window.absoluteWindowStart,
+                vocabulary: vocabulary
+            ))
+        }
+        return results
+    }
 }
 
 extension WhisperModelService: BestWhisperRecognizing {}
@@ -59,7 +98,7 @@ enum BestTranscriptionError: LocalizedError, Equatable {
         case .insufficientDiskSpace:
             "There is not enough free disk space to create the best transcript."
         case .cancelled:
-            "Whisper processing was cancelled."
+            "Local transcription was cancelled."
         case .damagedAudioAvailable(let warnings):
             """
             Part of the recording is damaged or missing. \(warnings.joined(separator: " ")) \
@@ -90,9 +129,9 @@ enum BestTranscriptionStage: String, Sendable {
     var title: String {
         switch self {
         case .idle: "Ready"
-        case .queued: "Waiting for another Whisper export…"
+        case .queued: "Waiting for another final transcript…"
         case .validating: "Checking recording audio…"
-        case .preparingModel: "Preparing Whisper model…"
+        case .preparingModel: "Preparing local speech model…"
         case .transcribingSystem: "Transcribing system audio…"
         case .transcribingMicrophone: "Transcribing microphone…"
         case .merging: "Merging speakers…"
@@ -127,22 +166,39 @@ struct BestTranscriptionProgress: Sendable {
 
 private actor BestTranscriptionJobGate {
     private var held = false
-    private var waiters: [CheckedContinuation<Void, Never>] = []
+    private var waiters: [(UUID, CheckedContinuation<Void, Error>)] = []
 
-    func acquire() async {
+    func acquire() async throws {
+        try Task.checkCancellation()
         if !held {
             held = true
             return
         }
-        await withCheckedContinuation { waiters.append($0) }
+        let waiterID = UUID()
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                if Task.isCancelled {
+                    continuation.resume(throwing: CancellationError())
+                } else {
+                    waiters.append((waiterID, continuation))
+                }
+            }
+        } onCancel: {
+            Task { await self.cancelWaiter(waiterID) }
+        }
     }
 
     func release() {
         if waiters.isEmpty {
             held = false
         } else {
-            waiters.removeFirst().resume()
+            waiters.removeFirst().1.resume()
         }
+    }
+
+    private func cancelWaiter(_ id: UUID) {
+        guard let index = waiters.firstIndex(where: { $0.0 == id }) else { return }
+        waiters.remove(at: index).1.resume(throwing: CancellationError())
     }
 }
 
@@ -152,6 +208,7 @@ final class BestTranscriptionCoordinator {
     nonisolated static let pipelineVersion = 1
 
     private let recognizer: any BestWhisperRecognizing
+    var modelDisplayName: String { recognizer.modelDisplayName }
     private let store: BestTranscriptionStore
     private let jobGate = BestTranscriptionJobGate()
     private struct JobSpec {
@@ -162,6 +219,8 @@ final class BestTranscriptionCoordinator {
     private var activeRequests: [UUID: JobSpec] = [:]
     private var pausedForRecording: [UUID: JobSpec] = [:]
     private var suspendingForRecording: Set<UUID> = []
+    private var isPausedForRecording = false
+    private var isTerminating = false
     private var userCancelled: Set<UUID> = []
     private var completionHandlers: [
         UUID: [(Result<BestTranscriptArtifact, Error>) -> Void]
@@ -191,12 +250,20 @@ final class BestTranscriptionCoordinator {
         completion: @escaping (Result<BestTranscriptArtifact, Error>) -> Void
     ) {
         completionHandlers[request.meetingID, default: []].append(completion)
-        guard tasks[request.meetingID] == nil else { return }
+        guard tasks[request.meetingID] == nil,
+              pausedForRecording[request.meetingID] == nil else { return }
+        userCancelled.remove(request.meetingID)
         let spec = JobSpec(
             request: request,
             forceReprocess: forceReprocess
         )
         activeRequests[request.meetingID] = spec
+        if isPausedForRecording || isTerminating {
+            pausedForRecording[request.meetingID] = spec
+            suspendingForRecording.insert(request.meetingID)
+            update(request.meetingID, stage: .interrupted, fraction: 0)
+            return
+        }
         update(request.meetingID, stage: .queued, fraction: 0)
         launch(spec)
     }
@@ -218,6 +285,9 @@ final class BestTranscriptionCoordinator {
             }
             self.tasks[request.meetingID] = nil
             if self.suspendingForRecording.remove(request.meetingID) != nil {
+                // A recording can end before an uncooperative model returns.
+                // Keep that task owned and resume only after its gate releases.
+                self.resumePausedJobIfPossible(request.meetingID)
                 return
             }
             self.activeRequests.removeValue(forKey: request.meetingID)
@@ -275,6 +345,8 @@ final class BestTranscriptionCoordinator {
     }
 
     func prepareForTermination() async {
+        isTerminating = true
+        isPausedForRecording = true
         let running = tasks
         for meetingID in running.keys {
             suspendingForRecording.insert(meetingID)
@@ -292,26 +364,33 @@ final class BestTranscriptionCoordinator {
     }
 
     func pauseForRecording() async {
-        let running = tasks
-        for (meetingID, _) in running {
-            guard let spec = activeRequests[meetingID] else { continue }
+        isPausedForRecording = true
+        for (meetingID, spec) in activeRequests {
             pausedForRecording[meetingID] = spec
             suspendingForRecording.insert(meetingID)
             update(meetingID, stage: .interrupted)
         }
-        for (_, task) in running {
-            _ = await task.result
-        }
+        // Do not await an active Core ML batch on the recording-start path.
+        // Its task remains tracked until it commits its completed checkpoints;
+        // no subsequent batch, queued meeting, or replacement task can start.
     }
 
     func resumeAfterRecording() {
-        let paused = pausedForRecording
-        pausedForRecording.removeAll()
-        for (meetingID, spec) in paused where tasks[meetingID] == nil {
-            activeRequests[meetingID] = spec
-            update(meetingID, stage: .queued)
-            launch(spec)
+        guard !isTerminating else { return }
+        isPausedForRecording = false
+        for meetingID in Array(pausedForRecording.keys) {
+            resumePausedJobIfPossible(meetingID)
         }
+    }
+
+    private func resumePausedJobIfPossible(_ meetingID: UUID) {
+        guard !isPausedForRecording, !isTerminating,
+              tasks[meetingID] == nil,
+              let spec = pausedForRecording.removeValue(forKey: meetingID) else { return }
+        suspendingForRecording.remove(meetingID)
+        activeRequests[meetingID] = spec
+        update(meetingID, stage: .queued)
+        launch(spec)
     }
 
     func latestCompletedArtifact(meetingID: UUID) async -> BestTranscriptArtifact? {
@@ -323,16 +402,23 @@ final class BestTranscriptionCoordinator {
         forceReprocess: Bool
     ) async throws -> BestTranscriptArtifact {
         update(request.meetingID, stage: .queued, fraction: 0)
-        await jobGate.acquire()
-        defer { Task { await jobGate.release() } }
+        var holdsJobGate = false
+        defer {
+            if holdsJobGate { Task { await jobGate.release() } }
+        }
 
         do {
+            try await jobGate.acquire()
+            holdsJobGate = true
             try throwIfCheckpointPauseRequested(request.meetingID)
             try Task.checkCancellation()
             update(request.meetingID, stage: .validating, fraction: 0.01)
             try await Self.preflightDiskSpace()
+            try throwIfCheckpointPauseRequested(request.meetingID)
 
             let validation = try await Self.validateTracks(request)
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
             if validation.tracks.isEmpty,
                !forceReprocess,
                let cached = await store.loadLatestCompletedArtifact(
@@ -358,14 +444,19 @@ final class BestTranscriptionCoordinator {
             }
             let fingerprint = try await Self.makeFingerprint(
                 tracks: validation.tracks,
-                vocabulary: request.vocabulary
+                vocabulary: request.vocabulary,
+                modelIdentity: recognizer.modelIdentity
             )
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
 
             if !forceReprocess,
                let cached = try await store.loadCompletedArtifact(
                    meetingID: request.meetingID,
                    fingerprint: fingerprint
                ) {
+                try throwIfCheckpointPauseRequested(request.meetingID)
+                try Task.checkCancellation()
                 update(
                     request.meetingID,
                     stage: .ready,
@@ -377,7 +468,15 @@ final class BestTranscriptionCoordinator {
 
             if forceReprocess {
                 try await store.resetPendingJob(meetingID: request.meetingID)
+                // Reprocess invalidates old checkpoints once. A later recording
+                // pause must resume the new checkpoints rather than erase them.
+                if activeRequests[request.meetingID] != nil {
+                    activeRequests[request.meetingID]?.forceReprocess = false
+                    pausedForRecording[request.meetingID]?.forceReprocess = false
+                }
             }
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
             try await store.saveJobManifest(
                 .init(
                     schemaVersion: BestTranscriptionManifest.schemaVersion,
@@ -390,10 +489,13 @@ final class BestTranscriptionCoordinator {
                 )
             )
 
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
             update(request.meetingID, stage: .preparingModel, fraction: 0.03)
             try await recognizer.prepareLocalOnly(
-                modelName: WhisperModelService.fallbackModel
+                modelName: recognizer.modelIdentity
             )
+            try throwIfCheckpointPauseRequested(request.meetingID)
             try Task.checkCancellation()
 
             var checkpoints = forceReprocess
@@ -432,12 +534,78 @@ final class BestTranscriptionCoordinator {
                     : .transcribingMicrophone
                 let windows = BestAudioWindowPlanner.plan(
                     totalFrames: track.canonicalFrameCount,
-                    sampleRate: BestAudioFileReader.canonicalSampleRate
+                    sampleRate: BestAudioFileReader.canonicalSampleRate,
+                    overlapSeconds: recognizer.windowOverlapSeconds
                 )
-                for window in windows {
+                let batchSize = max(1, recognizer.preferredWindowBatchSize)
+                for batchStart in stride(from: 0, to: windows.count, by: batchSize) {
+                    try throwIfCheckpointPauseRequested(request.meetingID)
                     try Task.checkCancellation()
-                    let key = Self.checkpointKey(track.speaker, window.index)
-                    if knownCheckpointKeys.contains(key) {
+                    let batch = windows[batchStart..<min(batchStart + batchSize, windows.count)]
+                    var inputs: [BestWhisperWindowInput] = []
+                    var inputWindowIndices: [Int] = []
+                    for window in batch {
+                        let key = Self.checkpointKey(track.speaker, window.index)
+                        guard !knownCheckpointKeys.contains(key) else { continue }
+                        let samples = try await Self.readWindow(
+                            url: track.url,
+                            window: window
+                        )
+                        try throwIfCheckpointPauseRequested(request.meetingID)
+                        try Task.checkCancellation()
+                        guard !BestTranscriptionSignalPolicy.isSilent(samples) else { continue }
+                        inputs.append(BestWhisperWindowInput(
+                            samples: samples,
+                            speaker: track.speaker,
+                            absoluteWindowStart: Double(window.startFrame)
+                                / BestAudioFileReader.canonicalSampleRate
+                        ))
+                        inputWindowIndices.append(window.index)
+                    }
+
+                    let recognizedBatch: [[BestTranscriptSegment]]
+                    try throwIfCheckpointPauseRequested(request.meetingID)
+                    try Task.checkCancellation()
+                    if inputs.isEmpty {
+                        recognizedBatch = []
+                    } else {
+                        recognizedBatch = try await recognizer.transcribeWindows(
+                            inputs,
+                            vocabulary: request.vocabulary
+                        )
+                    }
+                    guard recognizedBatch.count == inputs.count else {
+                        throw BestTranscriptionError.failed(
+                            "Whisper returned an incomplete audio batch."
+                        )
+                    }
+                    try Task.checkCancellation()
+                    let recognizedByIndex = Dictionary(
+                        uniqueKeysWithValues: zip(inputWindowIndices, recognizedBatch)
+                    )
+                    for window in batch {
+                        try Task.checkCancellation()
+                        let key = Self.checkpointKey(track.speaker, window.index)
+                        guard !knownCheckpointKeys.contains(key) else { continue }
+                        let owned = BestWindowOwnership.segmentsOwned(
+                            recognizedByIndex[window.index] ?? [],
+                            by: window,
+                            sampleRate: BestAudioFileReader.canonicalSampleRate
+                        )
+                        let checkpoint = BestTranscriptionCheckpoint(
+                            meetingID: request.meetingID,
+                            fingerprint: fingerprint,
+                            speaker: track.speaker,
+                            window: window,
+                            segments: owned
+                        )
+                        try await store.saveCheckpoint(checkpoint)
+                        checkpoints.append(checkpoint)
+                        knownCheckpointKeys.insert(key)
+                        processedFrames += max(
+                            0,
+                            window.ownedEndFrame - window.ownedStartFrame
+                        )
                         updateTranscriptionProgress(
                             request.meetingID,
                             stage: stage,
@@ -446,64 +614,21 @@ final class BestTranscriptionCoordinator {
                             startedAt: startedAt,
                             warning: validation.warnings.first
                         )
-                        continue
                     }
-
-                    let samples = try await Self.readWindow(
-                        url: track.url,
-                        window: window
-                    )
-                    let recognized: [BestTranscriptSegment]
-                    if BestTranscriptionSignalPolicy.isSilent(samples) {
-                        recognized = []
-                    } else {
-                        recognized = try await recognizer.transcribeWindow(
-                            samples: samples,
-                            speaker: track.speaker,
-                            absoluteWindowStart: Double(window.startFrame)
-                                / BestAudioFileReader.canonicalSampleRate,
-                            vocabulary: request.vocabulary
-                        )
-                    }
-                    try Task.checkCancellation()
-                    let owned = BestWindowOwnership.segmentsOwned(
-                        recognized,
-                        by: window,
-                        sampleRate: BestAudioFileReader.canonicalSampleRate
-                    )
-                    let checkpoint = BestTranscriptionCheckpoint(
-                        meetingID: request.meetingID,
-                        fingerprint: fingerprint,
-                        speaker: track.speaker,
-                        window: window,
-                        segments: owned
-                    )
-                    try await store.saveCheckpoint(checkpoint)
-                    checkpoints.append(checkpoint)
-                    knownCheckpointKeys.insert(key)
-                    processedFrames += max(
-                        0,
-                        window.ownedEndFrame - window.ownedStartFrame
-                    )
-                    updateTranscriptionProgress(
-                        request.meetingID,
-                        stage: stage,
-                        processedFrames: processedFrames,
-                        totalFrames: totalFrames,
-                        startedAt: startedAt,
-                        warning: validation.warnings.first
-                    )
                     try throwIfCheckpointPauseRequested(request.meetingID)
                 }
             }
 
             try Task.checkCancellation()
+            try throwIfCheckpointPauseRequested(request.meetingID)
             update(request.meetingID, stage: .merging, fraction: 0.92)
             try await store.markJob(
                 meetingID: request.meetingID,
                 state: .merging,
                 error: nil
             )
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
             let aligned = Self.align(
                 checkpoints.flatMap(\.segments),
                 tracks: validation.tracks,
@@ -517,17 +642,22 @@ final class BestTranscriptionCoordinator {
                 state: .exporting,
                 error: nil
             )
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
             let artifact = BestTranscriptArtifact(
                 meetingID: request.meetingID,
                 generatedAt: .now,
-                modelID: WhisperModelService.fallbackModel,
+                modelID: recognizer.modelIdentity,
                 pipelineVersion: Self.pipelineVersion,
                 fingerprint: fingerprint,
-                alignmentQuality: aligned.quality,
-                warnings: validation.warnings + aligned.warnings,
+                alignmentQuality: recognizer.hasWordAlignment ? aligned.quality : .estimated,
+                warnings: validation.warnings + aligned.warnings
+                    + (recognizer.hasWordAlignment ? [] : ["Transcript positions are approximate; the recorded audio is unchanged."]),
                 segments: merged
             )
             try await store.saveCompletedArtifact(artifact)
+            try throwIfCheckpointPauseRequested(request.meetingID)
+            try Task.checkCancellation()
             update(
                 request.meetingID,
                 stage: .ready,
@@ -552,19 +682,24 @@ final class BestTranscriptionCoordinator {
             )
             throw BestCheckpointInterruption()
         } catch is CancellationError {
-            let cancelledByUser = userCancelled.remove(request.meetingID) != nil
-            try? await store.markJob(
-                meetingID: request.meetingID,
-                state: cancelledByUser ? .cancelled : .interrupted,
-                error: nil
-            )
-            update(
-                request.meetingID,
-                stage: cancelledByUser ? .cancelled : .interrupted,
-                error: BestTranscriptionError.cancelled.errorDescription
-            )
-            throw BestTranscriptionError.cancelled
+            let cancellation = await recordCancellation(request.meetingID)
+            throw cancellation
         } catch {
+            // Some native engines report their own error when cancellation
+            // terminates inference. Preserve the user's cancellation state.
+            if Task.isCancelled {
+                let cancellation = await recordCancellation(request.meetingID)
+                throw cancellation
+            }
+            if isPausedForRecording || suspendingForRecording.contains(request.meetingID) {
+                try? await store.markJob(
+                    meetingID: request.meetingID,
+                    state: .interrupted,
+                    error: nil
+                )
+                update(request.meetingID, stage: .interrupted)
+                throw BestCheckpointInterruption()
+            }
             try? await store.markJob(
                 meetingID: request.meetingID,
                 state: .failed,
@@ -579,8 +714,24 @@ final class BestTranscriptionCoordinator {
         }
     }
 
+    private func recordCancellation(_ meetingID: UUID) async -> BestTranscriptionError {
+        let cancelledByUser = userCancelled.remove(meetingID) != nil
+        try? await store.markJob(
+            meetingID: meetingID,
+            state: cancelledByUser ? .cancelled : .interrupted,
+            error: nil
+        )
+        update(
+            meetingID,
+            stage: cancelledByUser ? .cancelled : .interrupted,
+            error: BestTranscriptionError.cancelled.errorDescription
+        )
+        return .cancelled
+    }
+
     private func throwIfCheckpointPauseRequested(_ meetingID: UUID) throws {
-        if suspendingForRecording.contains(meetingID) {
+        try Task.checkCancellation()
+        if isPausedForRecording || suspendingForRecording.contains(meetingID) {
             throw BestCheckpointInterruption()
         }
     }
@@ -624,7 +775,18 @@ final class BestTranscriptionCoordinator {
         error: String? = nil
     ) {
         var progress = progressByMeeting[meetingID] ?? BestTranscriptionProgress()
-        progress.stage = stage
+        switch stage {
+        case .queued, .validating, .preparingModel, .transcribingSystem,
+             .transcribingMicrophone, .merging, .saving, .ready:
+            if userCancelled.contains(meetingID) {
+                progress.stage = .cancelled
+            } else {
+                progress.stage = isPausedForRecording || suspendingForRecording.contains(meetingID)
+                    ? .interrupted : stage
+            }
+        default:
+            progress.stage = stage
+        }
         if let fraction { progress.fraction = min(1, max(0, fraction)) }
         if let processedDuration { progress.processedDuration = processedDuration }
         if let totalDuration { progress.totalDuration = totalDuration }
@@ -683,12 +845,13 @@ final class BestTranscriptionCoordinator {
 
     private static func makeFingerprint(
         tracks: [BestAudioTrackInfo],
-        vocabulary: String
+        vocabulary: String,
+        modelIdentity: String
     ) async throws -> BestTranscriptionFingerprint {
         try await Task.detached(priority: .utility) {
             try BestTranscriptionFingerprintBuilder.make(
                 tracks: tracks.map { ($0.speaker, $0.url) },
-                modelID: WhisperModelService.fallbackModel,
+                modelID: modelIdentity,
                 pipelineVersion: Self.pipelineVersion,
                 vocabulary: vocabulary
             )

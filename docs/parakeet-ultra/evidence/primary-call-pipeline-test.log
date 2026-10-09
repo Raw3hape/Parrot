@@ -1,0 +1,9 @@
+diagnostic: call_pipeline
+previews: 0
+final_segments: 1
+final_audio_samples: 145219
+transcript_characters: 166
+energy_noise_rejection: 1
+energy_short_speech_start: 1
+vad_handoff_closure: 1
+final_backlog_order_and_bound: 1

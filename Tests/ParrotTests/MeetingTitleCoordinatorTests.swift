@@ -299,7 +299,7 @@ final class MeetingTitleCoordinatorTests: XCTestCase {
         _ = container
     }
 
-    func testPauseAndTerminationSynchronouslyReleaseTitleRuntime() async throws {
+    func testPauseTracksRuntimeShutdownAndTerminationDrainsIt() async throws {
         let calls = LockedCounter()
         let coordinator = MeetingTitleCoordinator(
             shutdownRuntime: { calls.increment() },
@@ -314,10 +314,125 @@ final class MeetingTitleCoordinatorTests: XCTestCase {
         )
 
         await coordinator.pauseForRecording()
+        let pausedRuntimeReleased = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(pausedRuntimeReleased)
         XCTAssertEqual(calls.value, 1)
 
         await coordinator.prepareForTermination()
         XCTAssertEqual(calls.value, 2)
+    }
+
+    func testUncooperativeGenerationCannotDelayRecordingOrPersistAfterRapidResume() async throws {
+        let (container, context, meetings) = try makeMeetings(texts: ["first topic", "second topic"])
+        let first = meetings[0]
+        let second = meetings[1]
+        let generator = ControlledMeetingTitleGenerator()
+        let coordinator = MeetingTitleCoordinator(
+            shutdownRuntime: { await generator.shutdown() },
+            generate: { snapshot in await generator.generate(snapshot) }
+        )
+        coordinator.configure(modelContext: context, enqueueExisting: false)
+        coordinator.enqueue(first)
+        let started = await waitForGenerator {
+            await generator.counts().generations == 1
+        }
+        XCTAssertTrue(started)
+
+        let clock = ContinuousClock()
+        let start = clock.now
+        await coordinator.pauseForRecording()
+        XCTAssertLessThan(start.duration(to: clock.now), .milliseconds(100))
+        XCTAssertEqual(coordinator.state, .pausedForRecording)
+        XCTAssertTrue(coordinator.hasRunningJobs, "Generation and shutdown must remain tracked")
+        coordinator.enqueue(second)
+        for _ in 0..<3 {
+            coordinator.resumeAfterRecording()
+            await coordinator.pauseForRecording()
+        }
+        coordinator.resumeAfterRecording()
+
+        await generator.releaseGeneration()
+        let shutdownStarted = await waitForGenerator { await generator.counts().shutdowns == 1 }
+        XCTAssertTrue(shutdownStarted)
+        XCTAssertTrue(first.hasPlaceholderTitle, "A cancelled stale generation must not change data")
+        XCTAssertNil(first.titleTranscriptFingerprint)
+        XCTAssertTrue(coordinator.hasRunningJobs, "An outstanding shutdown is an owned resource")
+        let beforeShutdown = await generator.counts()
+        XCTAssertEqual(beforeShutdown.generations, 1)
+
+        await generator.releaseShutdown()
+        let resumed = await waitUntil {
+            first.title == "First Topic" && second.title == "Second Topic"
+        }
+        XCTAssertTrue(resumed)
+        let drained = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(drained)
+        let afterShutdown = await generator.counts()
+        XCTAssertEqual(afterShutdown.generations, 3)
+        XCTAssertEqual(afterShutdown.maximumConcurrency, 1)
+        _ = container
+    }
+
+    func testReturningGenerationWhilePausedPreservesMeetingAndWaitsForResume() async throws {
+        let (container, context, meetings) = try makeMeetings(texts: ["first topic"])
+        let meeting = meetings[0]
+        let generator = ControlledMeetingTitleGenerator()
+        let coordinator = MeetingTitleCoordinator(
+            shutdownRuntime: { await generator.shutdown() },
+            generate: { snapshot in await generator.generate(snapshot) }
+        )
+        coordinator.configure(modelContext: context, enqueueExisting: false)
+        coordinator.enqueue(meeting)
+        let started = await waitForGenerator { await generator.counts().generations == 1 }
+        XCTAssertTrue(started)
+
+        await coordinator.pauseForRecording()
+        await generator.releaseGeneration()
+        await generator.releaseShutdown()
+        let drained = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(drained)
+        XCTAssertEqual(coordinator.state, .pausedForRecording)
+        XCTAssertTrue(meeting.hasPlaceholderTitle)
+        XCTAssertNil(meeting.titleTranscriptFingerprint)
+        let paused = await generator.counts()
+        XCTAssertEqual(paused.generations, 1)
+        XCTAssertEqual(coordinator.queuedCount, 1)
+
+        coordinator.resumeAfterRecording()
+        let resumed = await waitUntil { meeting.title == "First Topic" }
+        XCTAssertTrue(resumed)
+        let finished = await waitUntil { !coordinator.hasRunningJobs }
+        XCTAssertTrue(finished)
+        _ = container
+    }
+
+    func testTerminationStopsRuntimeBeforeWaitingForBlockedGeneration() async throws {
+        let (container, context, meetings) = try makeMeetings(texts: ["first topic"])
+        let generator = ControlledMeetingTitleGenerator()
+        let coordinator = MeetingTitleCoordinator(
+            shutdownRuntime: { await generator.shutdown() },
+            generate: { snapshot in await generator.generate(snapshot) }
+        )
+        coordinator.configure(modelContext: context, enqueueExisting: false)
+        coordinator.enqueue(meetings[0])
+        let started = await waitForGenerator { await generator.counts().generations == 1 }
+        XCTAssertTrue(started)
+        var terminated = false
+        let termination = Task { @MainActor in
+            await coordinator.prepareForTermination()
+            terminated = true
+        }
+        let shutdownStarted = await waitForGenerator { await generator.counts().shutdowns == 1 }
+        XCTAssertTrue(shutdownStarted, "Shutdown must start before awaiting the blocked response")
+        XCTAssertFalse(terminated)
+
+        await generator.releaseShutdown()
+        await generator.releaseGeneration()
+        await termination.value
+        XCTAssertTrue(terminated)
+        XCTAssertFalse(coordinator.hasRunningJobs)
+        XCTAssertTrue(meetings[0].hasPlaceholderTitle)
+        _ = container
     }
 
     func testRapidDisableEnableRescansCanceledCurrentMeeting() async throws {
@@ -334,7 +449,10 @@ final class MeetingTitleCoordinatorTests: XCTestCase {
         let coordinator = MeetingTitleCoordinator(generate: { snapshot in
             counter.increment()
             if counter.value == 1 {
-                while !Task.isCancelled { try? await Task.sleep(for: .milliseconds(5)) }
+                let deadline = ContinuousClock.now + .seconds(2)
+                while !Task.isCancelled, ContinuousClock.now < deadline {
+                    try? await Task.sleep(for: .milliseconds(5))
+                }
             }
             return MeetingTitleGeneration(
                 title: "Checkout Redesign",
@@ -416,6 +534,17 @@ final class MeetingTitleCoordinatorTests: XCTestCase {
         }
         return condition()
     }
+
+    private func waitForGenerator(
+        condition: @MainActor () async -> Bool
+    ) async -> Bool {
+        let deadline = ContinuousClock.now + .seconds(2)
+        while ContinuousClock.now < deadline {
+            if await condition() { return true }
+            try? await Task.sleep(for: .milliseconds(5))
+        }
+        return await condition()
+    }
 }
 
 private enum PersistenceFailure: Error {
@@ -432,5 +561,58 @@ private final class LockedCounter: @unchecked Sendable {
 
     func increment() {
         lock.withLock { storage += 1 }
+    }
+}
+
+private actor ControlledMeetingTitleGenerator {
+    private var holdsGeneration = true
+    private var holdsShutdown = true
+    private var generationContinuation: CheckedContinuation<Void, Never>?
+    private var shutdownContinuation: CheckedContinuation<Void, Never>?
+    private var generationCount = 0
+    private var shutdownCount = 0
+    private var active = 0
+    private var maximum = 0
+
+    func generate(_ snapshot: MeetingTitleSnapshot) async -> MeetingTitleGeneration {
+        generationCount += 1
+        let firstGeneration = generationCount == 1
+        active += 1
+        maximum = max(maximum, active)
+        if holdsGeneration {
+            // Intentionally uncooperative: cancellation cannot make this return.
+            await withCheckedContinuation { generationContinuation = $0 }
+        }
+        active -= 1
+        let text = snapshot.orderedSegments.map(\.text).joined()
+        return MeetingTitleGeneration(
+            title: firstGeneration ? "Stale Topic" : (text.contains("first") ? "First Topic" : "Second Topic"),
+            fingerprint: snapshot.fingerprint,
+            coverageReceipt: snapshot.coverageReceipt,
+            reductionDepth: 1
+        )
+    }
+
+    func shutdown() async {
+        shutdownCount += 1
+        if holdsShutdown {
+            await withCheckedContinuation { shutdownContinuation = $0 }
+        }
+    }
+
+    func releaseGeneration() {
+        holdsGeneration = false
+        generationContinuation?.resume()
+        generationContinuation = nil
+    }
+
+    func releaseShutdown() {
+        holdsShutdown = false
+        shutdownContinuation?.resume()
+        shutdownContinuation = nil
+    }
+
+    func counts() -> (generations: Int, shutdowns: Int, maximumConcurrency: Int) {
+        (generationCount, shutdownCount, maximum)
     }
 }

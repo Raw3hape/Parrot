@@ -1,0 +1,530 @@
+[
+  {
+    "repo": "mlx-audio-swift",
+    "sha": "dbe5eaac964e8257785f9d015c81f819a38016a8",
+    "path": "Package.swift",
+    "url": "https://raw.githubusercontent.com/Blaizzy/mlx-audio-swift/dbe5eaac964e8257785f9d015c81f819a38016a8/Package.swift",
+    "line_count": 300,
+    "observedLines": [
+      {
+        "line": 1,
+        "text": "// swift-tools-version:6.2"
+      },
+      {
+        "line": 6,
+        "text": "    platforms: [.macOS(.v14), .iOS(.v17)],"
+      },
+      {
+        "line": 63,
+        "text": "        .package(url: \"https://github.com/ml-explore/mlx-swift.git\", .upToNextMajor(from: \"0.30.6\")),"
+      },
+      {
+        "line": 64,
+        "text": "        .package(url: \"https://github.com/ml-explore/mlx-swift-lm.git\", .upToNextMajor(from: \"3.32.3\")),"
+      },
+      {
+        "line": 65,
+        "text": "        .package(url: \"https://github.com/huggingface/swift-transformers.git\", .upToNextMajor(from: \"1.1.6\")),"
+      },
+      {
+        "line": 66,
+        "text": "        .package(url: \"https://github.com/huggingface/swift-huggingface.git\", .upToNextMajor(from: \"0.8.1\"))"
+      }
+    ]
+  },
+  {
+    "repo": "mlx-audio-swift",
+    "sha": "dbe5eaac964e8257785f9d015c81f819a38016a8",
+    "path": "Sources/MLXAudioSTT/Models/Qwen3ASR/README.md",
+    "url": "https://raw.githubusercontent.com/Blaizzy/mlx-audio-swift/dbe5eaac964e8257785f9d015c81f819a38016a8/Sources/MLXAudioSTT/Models/Qwen3ASR/README.md",
+    "line_count": 76,
+    "observedLines": []
+  },
+  {
+    "repo": "mlx-audio-swift",
+    "sha": "dbe5eaac964e8257785f9d015c81f819a38016a8",
+    "path": "Sources/MLXAudioSTT/Models/Qwen3ASR/Qwen3ASR.swift",
+    "url": "https://raw.githubusercontent.com/Blaizzy/mlx-audio-swift/dbe5eaac964e8257785f9d015c81f819a38016a8/Sources/MLXAudioSTT/Models/Qwen3ASR/Qwen3ASR.swift",
+    "line_count": 1862,
+    "observedLines": [
+      {
+        "line": 41,
+        "text": "            chunkDuration: 1200.0,"
+      },
+      {
+        "line": 46,
+        "text": "    public func generate(audio: MLXArray, generationParameters: STTGenerateParameters) -> STTOutput {"
+      },
+      {
+        "line": 51,
+        "text": "            context: \"\","
+      },
+      {
+        "line": 53,
+        "text": "            chunkDuration: generationParameters.chunkDuration,"
+      },
+      {
+        "line": 60,
+        "text": "    public func generateStream("
+      },
+      {
+        "line": 68,
+        "text": "            context: \"\","
+      },
+      {
+        "line": 70,
+        "text": "            chunkDuration: generationParameters.chunkDuration,"
+      },
+      {
+        "line": 156,
+        "text": "///   - chunkDuration: Maximum chunk duration in seconds (default: 1200 = 20 min)"
+      },
+      {
+        "line": 164,
+        "text": "    chunkDuration: Float = 1200.0,"
+      },
+      {
+        "line": 1170,
+        "text": "        context: String = \"\","
+      },
+      {
+        "line": 1192,
+        "text": "        context: String = \"\","
+      },
+      {
+        "line": 1201,
+        "text": "            context: context,"
+      },
+      {
+        "line": 1222,
+        "text": "        context: String,"
+      },
+      {
+        "line": 1237,
+        "text": "            context: context,"
+      },
+      {
+        "line": 1301,
+        "text": "            // <=3 unique IDs, force-stop to prevent multi-GB KV cache growth and"
+      },
+      {
+        "line": 1355,
+        "text": "    public func generate("
+      },
+      {
+        "line": 1359,
+        "text": "        context: String = \"\","
+      },
+      {
+        "line": 1361,
+        "text": "        chunkDuration: Float = 1200.0,"
+      },
+      {
+        "line": 1373,
+        "text": "            chunkDuration: chunkDuration,"
+      },
+      {
+        "line": 1393,
+        "text": "                context: context,"
+      },
+      {
+        "line": 1438,
+        "text": "    public func generateStream("
+      },
+      {
+        "line": 1442,
+        "text": "        context: String = \"\","
+      },
+      {
+        "line": 1444,
+        "text": "        chunkDuration: Float = 1200.0,"
+      },
+      {
+        "line": 1467,
+        "text": "                        chunkDuration: chunkDuration,"
+      },
+      {
+        "line": 1485,
+        "text": "                            context: context,"
+      },
+      {
+        "line": 1782,
+        "text": "    public static func fromPretrained("
+      },
+      {
+        "line": 1807,
+        "text": "    public static func fromModelDirectory(_ modelDir: URL) async throws -> Qwen3ASRModel {"
+      }
+    ]
+  },
+  {
+    "repo": "mlx-audio-swift",
+    "sha": "dbe5eaac964e8257785f9d015c81f819a38016a8",
+    "path": "Sources/MLXAudioSTT/Models/MossTranscribeDiarize/README.md",
+    "url": "https://raw.githubusercontent.com/Blaizzy/mlx-audio-swift/dbe5eaac964e8257785f9d015c81f819a38016a8/Sources/MLXAudioSTT/Models/MossTranscribeDiarize/README.md",
+    "line_count": 28,
+    "observedLines": []
+  },
+  {
+    "repo": "mlx-audio-swift",
+    "sha": "dbe5eaac964e8257785f9d015c81f819a38016a8",
+    "path": "Sources/MLXAudioSTT/Models/MossTranscribeDiarize/MossTranscribeDiarize.swift",
+    "url": "https://raw.githubusercontent.com/Blaizzy/mlx-audio-swift/dbe5eaac964e8257785f9d015c81f819a38016a8/Sources/MLXAudioSTT/Models/MossTranscribeDiarize/MossTranscribeDiarize.swift",
+    "line_count": 1105,
+    "observedLines": [
+      {
+        "line": 279,
+        "text": "            chunkDuration: 1800.0,"
+      },
+      {
+        "line": 312,
+        "text": "    public func generate(audio: MLXArray, generationParameters: STTGenerateParameters) -> STTOutput {"
+      },
+      {
+        "line": 317,
+        "text": "            chunkDuration: generationParameters.chunkDuration,"
+      },
+      {
+        "line": 327,
+        "text": "    public func generateStream("
+      },
+      {
+        "line": 341,
+        "text": "                        chunkDuration: generationParameters.chunkDuration,"
+      },
+      {
+        "line": 405,
+        "text": "    public func generate("
+      },
+      {
+        "line": 409,
+        "text": "        chunkDuration: Float = 1800.0,"
+      },
+      {
+        "line": 422,
+        "text": "                chunkDuration: chunkDuration,"
+      },
+      {
+        "line": 615,
+        "text": "        chunkDuration: Float,"
+      },
+      {
+        "line": 622,
+        "text": "            chunkDuration: safeChunkDuration,"
+      },
+      {
+        "line": 997,
+        "text": "    public static func fromPretrained("
+      },
+      {
+        "line": 1021,
+        "text": "    public static func fromModelDirectory(_ modelDir: URL) async throws -> MossTranscribeDiarizeModel {"
+      }
+    ]
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "Package.swift",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/Package.swift",
+    "line_count": 1306,
+    "observedLines": [
+      {
+        "line": 1,
+        "text": "// swift-tools-version: 5.10"
+      },
+      {
+        "line": 7,
+        "text": "        .macOS(\"15.0\"),"
+      },
+      {
+        "line": 234,
+        "text": "        .package(url: \"https://github.com/ml-explore/mlx-swift\", from: \"0.30.0\"),"
+      },
+      {
+        "line": 240,
+        "text": "        .package(url: \"https://github.com/ml-explore/mlx-swift-lm\", exact: \"3.31.4\"),"
+      },
+      {
+        "line": 241,
+        "text": "        .package(url: \"https://github.com/apple/swift-argument-parser\", from: \"1.5.0\"),"
+      },
+      {
+        "line": 242,
+        "text": "        .package(url: \"https://github.com/modelcontextprotocol/swift-sdk.git\", exact: \"0.12.1\"),"
+      },
+      {
+        "line": 243,
+        "text": "        .package(url: \"https://github.com/apple/swift-system.git\", from: \"1.8.0\"),"
+      },
+      {
+        "line": 244,
+        "text": "        .package(url: \"https://github.com/huggingface/swift-transformers\", from: \"1.1.6\"),"
+      },
+      {
+        "line": 245,
+        "text": "        .package(url: \"https://github.com/hummingbird-project/hummingbird.git\", \"2.5.0\"..<\"2.17.0\"),"
+      },
+      {
+        "line": 246,
+        "text": "        .package(url: \"https://github.com/hummingbird-project/hummingbird-websocket.git\", \"2.6.0\"..<\"2.7.0\"),"
+      },
+      {
+        "line": 250,
+        "text": "        .package(url: \"https://github.com/hummingbird-project/swift-websocket.git\", \"1.5.0\"..<\"1.6.0\"),"
+      },
+      {
+        "line": 252,
+        "text": "        .package(url: \"https://github.com/argmaxinc/WhisperKit\", from: \"1.0.0\"),"
+      },
+      {
+        "line": 256,
+        "text": "        .package(url: \"https://github.com/mlc-ai/xgrammar\", exact: \"0.2.7\")"
+      }
+    ]
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "docs/inference/qwen3-asr-inference.md",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/docs/inference/qwen3-asr-inference.md",
+    "line_count": 249,
+    "observedLines": [
+      {
+        "line": 70,
+        "text": "The legacy overload `transcribe(audio:sampleRate:language:maxTokens:context:)`"
+      },
+      {
+        "line": 75,
+        "text": "`transcribeBatch(audios:sampleRate:language:maxTokens:context:options:)`"
+      },
+      {
+        "line": 200,
+        "text": "M5 Pro, 48 GB; LibriSpeech test-clean n=200; isolated per-engine. See [docs/benchmarks/asr-wer.md](../benchmarks/asr-wer.md) for the full cross-engine table including WhisperKit, Parakeet, Omnilingual, and Nemotron."
+      }
+    ]
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "Sources/Qwen3ASR/Qwen3ASR.swift",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/Sources/Qwen3ASR/Qwen3ASR.swift",
+    "line_count": 1421,
+    "observedLines": [
+      {
+        "line": 26,
+        "text": "    public var context: String?"
+      },
+      {
+        "line": 59,
+        "text": "        context: String? = nil,"
+      },
+      {
+        "line": 176,
+        "text": "    public func transcribeBatch("
+      },
+      {
+        "line": 181,
+        "text": "        context: String? = nil,"
+      },
+      {
+        "line": 187,
+        "text": "            language: language, maxTokens: maxTokens, context: context, options: options"
+      },
+      {
+        "line": 212,
+        "text": "                context: resolvedOptions.context"
+      },
+      {
+        "line": 233,
+        "text": "                    context: resolvedOptions.context,"
+      },
+      {
+        "line": 246,
+        "text": "                context: resolvedOptions.context"
+      },
+      {
+        "line": 257,
+        "text": "    /// The legacy `transcribe(audio:sampleRate:language:maxTokens:context:)`"
+      },
+      {
+        "line": 266,
+        "text": "    public func transcribe("
+      },
+      {
+        "line": 291,
+        "text": "    public func transcribeCheckingCancellation("
+      },
+      {
+        "line": 302,
+        "text": "    /// cancellation-aware entry points. `checkCancellation` is invoked at"
+      },
+      {
+        "line": 330,
+        "text": "            context: effective.context,"
+      },
+      {
+        "line": 343,
+        "text": "    public func transcribe("
+      },
+      {
+        "line": 348,
+        "text": "        context: String? = nil"
+      },
+      {
+        "line": 354,
+        "text": "            maxTokens: maxTokens, language: language, context: context)"
+      },
+      {
+        "line": 387,
+        "text": "                context: effective.context,"
+      },
+      {
+        "line": 397,
+        "text": "            context: effective.context,"
+      },
+      {
+        "line": 422,
+        "text": "        context: String? = nil,"
+      },
+      {
+        "line": 435,
+        "text": "            language: language, maxTokens: maxTokens, context: context,"
+      },
+      {
+        "line": 444,
+        "text": "        context: String?,"
+      },
+      {
+        "line": 563,
+        "text": "        context: String?,"
+      },
+      {
+        "line": 620,
+        "text": "    /// Cooperative cancellation: `checkCancellation` runs exactly once"
+      },
+      {
+        "line": 719,
+        "text": "        context: String? = nil"
+      },
+      {
+        "line": 726,
+        "text": "            language: language, context: context, tokenizer: tokenizer"
+      },
+      {
+        "line": 815,
+        "text": "        context: String? = nil"
+      },
+      {
+        "line": 831,
+        "text": "            language: language, context: context, tokenizer: tokenizer"
+      },
+      {
+        "line": 949,
+        "text": "        context: String?,"
+      },
+      {
+        "line": 1248,
+        "text": "    /// hangs cluster on 8/16 GB Macs with other apps open; 24 GB+ has"
+      },
+      {
+        "line": 1251,
+        "text": "    static let largeModelRAMWarningThresholdGB: Double = 24.0"
+      },
+      {
+        "line": 1254,
+        "text": "    /// default tracks `recommendedMaxWorkingSetSize` which on a 16 GB Mac"
+      },
+      {
+        "line": 1255,
+        "text": "    /// can grow to several GB under sustained decoding \u2014 pushing residency"
+      }
+    ]
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "docs/models/moss-transcribe-diarize.md",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/docs/models/moss-transcribe-diarize.md",
+    "line_count": 127,
+    "observedLines": []
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "docs/inference/moss-transcribe-diarize.md",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/docs/inference/moss-transcribe-diarize.md",
+    "line_count": 201,
+    "observedLines": [
+      {
+        "line": 133,
+        "text": "| FP16 | 7.74 GB |"
+      },
+      {
+        "line": 134,
+        "text": "| INT8 affine | 4.11 GB |"
+      }
+    ]
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "Sources/MossTranscribe/MossMLXRuntime.swift",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/Sources/MossTranscribe/MossMLXRuntime.swift",
+    "line_count": 638,
+    "observedLines": [
+      {
+        "line": 24,
+        "text": "    public static let maximumContextTokens ="
+      },
+      {
+        "line": 87,
+        "text": "    public static func fromPretrained("
+      },
+      {
+        "line": 90,
+        "text": "        offlineMode: Bool = false,"
+      },
+      {
+        "line": 96,
+        "text": "            offlineMode: offlineMode,"
+      },
+      {
+        "line": 101,
+        "text": "    public static func fromPretrained("
+      },
+      {
+        "line": 104,
+        "text": "        offlineMode: Bool = false,"
+      },
+      {
+        "line": 125,
+        "text": "                offlineMode: offlineMode"
+      },
+      {
+        "line": 148,
+        "text": "    public static func fromDirectory("
+      },
+      {
+        "line": 288,
+        "text": "    public func transcribeDetailed("
+      },
+      {
+        "line": 307,
+        "text": "    public func transcribeDetailed("
+      },
+      {
+        "line": 321,
+        "text": "    public func transcribe("
+      }
+    ]
+  },
+  {
+    "repo": "speech-swift",
+    "sha": "cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa",
+    "path": "Sources/MossTranscribe/MossTypes.swift",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/Sources/MossTranscribe/MossTypes.swift",
+    "line_count": 337,
+    "observedLines": []
+  }
+]

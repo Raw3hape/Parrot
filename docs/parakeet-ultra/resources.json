@@ -1,0 +1,225 @@
+{
+  "base_commit": "5193b3543ecdfbe5d478fbb1687155466eb76e53",
+  "resources": [
+    {
+      "name": "Parrot application quit",
+      "label": "com.nikita.parrot-ultra-quit-primary-20261006",
+      "pid": 73851,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume",
+      "stop_condition": "completion or 30 seconds",
+      "finished": true,
+      "exit_code": null,
+      "resource_file": "quit-resource.json"
+    },
+    {
+      "name": "Final unit tests after Whisper cache fix",
+      "pid": 71375,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source",
+      "stop_condition": "completion or 600 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "whisper-fix-test-resource.json"
+    },
+    {
+      "name": "Ultra candidate unit tests",
+      "pid": 61981,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source",
+      "stop_condition": "test completion or 1200 seconds",
+      "finished": true,
+      "exit_code": 1,
+      "resource_file": "test-resource.json"
+    },
+    {
+      "name": "primary-ultra-pl-2",
+      "pid": 67571,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "completion or 240 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "primary-benchmark-resource.json"
+    },
+    {
+      "name": "primary-whisper-fallback-test",
+      "pid": 72942,
+      "stop_condition": "completion or 300 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "elapsed_seconds": 1.853,
+      "resource_file": "primary-pipeline-resource.json"
+    },
+    {
+      "name": "primary Ultra asset import",
+      "pid": 66444,
+      "command": [
+        "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/AssetInstaller.app/Contents/MacOS/AssetInstaller"
+      ],
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "EOF plus 600 second maximum",
+      "finished": true,
+      "exit_code": 0,
+      "elapsed_seconds": 1.13,
+      "resource_file": "primary-import-resource.json"
+    },
+    {
+      "name": "second-whisper-fallback-test",
+      "pid": 72948,
+      "stop_condition": "completion or 300 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "elapsed_seconds": 6.338,
+      "resource_file": "second-pipeline-resource.json"
+    },
+    {
+      "name": "Candidate-pinned unit tests with bounded coordinator waits",
+      "pid": 69546,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source",
+      "stop_condition": "completion or 900 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "test-resource-final.json"
+    },
+    {
+      "name": "Parrot application open",
+      "label": "com.nikita.parrot-ultra-open-primary-20261006",
+      "pid": 74997,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume",
+      "stop_condition": "completion or 30 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "open-resource.json"
+    },
+    {
+      "name": "V3 reserve transfer over cable",
+      "pids": [
+        67346,
+        67347
+      ],
+      "stop_condition": "completion or 600 seconds",
+      "finished": true,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "elapsed_seconds": 31.808,
+      "resource_file": "v3-transfer-resource.json"
+    },
+    {
+      "name": "Aqua production capture check",
+      "label": "com.nikita.parrot-ultra-capture-primary-installed-20261006",
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume",
+      "stop_condition": "diagnostic ends after 11 seconds, 45 second driver timeout",
+      "finished": true,
+      "capture_pid": 74622,
+      "player_pid": 74624,
+      "exit_code": 0,
+      "elapsed_seconds": 13.918,
+      "capture_process_exited": true,
+      "resource_file": "capture-resource.json"
+    },
+    {
+      "name": "Ultra final build with offline Whisper fallback",
+      "pid": 70863,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parakeet-ultra-resume/source",
+      "stop_condition": "completion or 1200 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "build-resource.json"
+    },
+    {
+      "name": "second-ultra-pl-2",
+      "pid": 68985,
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "completion or 240 seconds",
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "second-benchmark-resource.json"
+    },
+    {
+      "pid": 66812,
+      "finished": true,
+      "exit_code": 0,
+      "resource_file": "first-v3-resource.json"
+    },
+    {
+      "name": "second Ultra asset import",
+      "pid": 66801,
+      "command": [
+        "ssh",
+        "-B",
+        "en5",
+        "-b",
+        "169.254.214.129",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "StrictHostKeyChecking=yes",
+        "-o",
+        "HostKeyAlias=100.121.242.34",
+        "-o",
+        "ConnectTimeout=5",
+        "nikita@169.254.212.174",
+        "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006/AssetInstaller.app/Contents/MacOS/AssetInstaller"
+      ],
+      "cwd": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "EOF plus 600 second maximum",
+      "finished": true,
+      "exit_code": 0,
+      "elapsed_seconds": 16.554,
+      "resource_file": "second-import-resource.json"
+    }
+  ],
+  "live_owned_disposable_resources": 0,
+  "retained_products": [
+    "/Applications/Parrot.app on both Macs",
+    "build/Parrot-ultra-candidate-2026-10-06.app",
+    "model assets and installation backups"
+  ],
+  "cleanup_verification": "All owned disposable processes and LaunchAgents exited; temporary source/build/cache directories removed; installed Parrot remains on both Macs.",
+  "remote_cleanup": {
+    "owned_disposable_processes": 0,
+    "owned_launchagents": 0,
+    "cache_removed": true,
+    "parrot_running": true,
+    "resources": [
+      {
+        "name": "Parrot application quit",
+        "label": "com.nikita.parrot-ultra-quit-second-20261006",
+        "pid": 12127,
+        "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+        "stop_condition": "completion or 30 seconds",
+        "finished": true,
+        "exit_code": 0
+      },
+      {
+        "name": "Parrot application open",
+        "label": "com.nikita.parrot-ultra-open-second-20261006",
+        "pid": 12321,
+        "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+        "stop_condition": "completion or 30 seconds",
+        "finished": true,
+        "exit_code": 0
+      },
+      {
+        "name": "Aqua production capture check",
+        "label": "com.nikita.parrot-ultra-capture-second-installed-20261006",
+        "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+        "stop_condition": "diagnostic ends after 11 seconds, 45 second driver timeout",
+        "finished": true,
+        "capture_pid": 12165,
+        "player_pid": 12167,
+        "exit_code": 0,
+        "elapsed_seconds": 12.719,
+        "capture_process_exited": true
+      },
+      {
+        "name": "Parrot application inspect",
+        "label": "com.nikita.parrot-ultra-inspect-second-20261006",
+        "pid": 12331,
+        "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+        "stop_condition": "completion or 30 seconds",
+        "finished": true,
+        "exit_code": 0
+      }
+    ]
+  }
+}

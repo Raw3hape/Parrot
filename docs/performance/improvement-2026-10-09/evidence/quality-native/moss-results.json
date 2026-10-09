@@ -1,0 +1,333 @@
+{
+  "ready": {
+    "engine": "moss",
+    "event": "ready",
+    "loadSeconds": 0.539373625
+  },
+  "cases": [
+    {
+      "id": "ru-general",
+      "language": "ru",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 19.786438,
+      "wall_seconds": 3.77,
+      "response": {
+        "decodeSeconds": 3.767650166,
+        "generationTokens": 156,
+        "id": "ru-general",
+        "language": null,
+        "peakMemoryGB": 2.5174521,
+        "segments": [
+          {
+            "end": 2.82,
+            "speaker": "S01",
+            "start": 0,
+            "text": "Давайте сначала посмотрим на текущий макет."
+          },
+          {
+            "end": 8.52,
+            "speaker": "S01",
+            "start": 2.94,
+            "text": "Мне важно, чтобы пользователь сразу понимал, что произойдет после нажатия кнопки."
+          },
+          {
+            "end": 14.28,
+            "speaker": "S01",
+            "start": 8.64,
+            "text": "Сегодня мы согласуем структуру страницы, а завтра проверим новый вариант на небольшом экране."
+          },
+          {
+            "end": 19.62,
+            "speaker": "S01",
+            "start": 14.4,
+            "text": "Если останутся спорные места, запишем их отдельно и вернемся к ним после созвона."
+          }
+        ],
+        "text": "Давайте сначала посмотрим на текущий макет. Мне важно, чтобы пользователь сразу понимал, что произойдет после нажатия кнопки. Сегодня мы согласуем структуру страницы, а завтра проверим новый вариант на небольшом экране. Если останутся спорные места, запишем их отдельно и вернемся к ним после созвона.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "ru-product",
+      "language": "ru",
+      "reference_words": 44,
+      "word_errors": 2,
+      "wer": 0.045454545454545456,
+      "duration": 22.473438,
+      "wall_seconds": 1.702,
+      "response": {
+        "decodeSeconds": 1.7000379589999999,
+        "generationTokens": 233,
+        "id": "ru-product",
+        "language": null,
+        "peakMemoryGB": 2.51761608,
+        "segments": [
+          {
+            "end": 3.45,
+            "speaker": "S01",
+            "start": 0.06,
+            "text": "Никита, пожалуйста, сохрани исходную запись перед"
+          },
+          {
+            "end": 5.24,
+            "speaker": "S01",
+            "start": 3.45,
+            "text": "обновлением приложения."
+          },
+          {
+            "end": 8.53,
+            "speaker": "S01",
+            "start": 5.24,
+            "text": "Итоговая расшифровка должна содержать все реплики,"
+          },
+          {
+            "end": 11.08,
+            "speaker": "S01",
+            "start": 8.53,
+            "text": "включая короткие ответы и уточнения."
+          },
+          {
+            "end": 14.41,
+            "speaker": "S01",
+            "start": 11.08,
+            "text": "В FIGMe нужно исправить отступы, состояние загрузки"
+          },
+          {
+            "end": 15.82,
+            "speaker": "S01",
+            "start": 14.41,
+            "text": "и переход к оплате."
+          },
+          {
+            "end": 19.28,
+            "speaker": "S01",
+            "start": 15.82,
+            "text": "Затем сравним два варианта анбординга и обсудим, почему"
+          },
+          {
+            "end": 22.23,
+            "speaker": "S01",
+            "start": 19.28,
+            "text": "пользователь иногда закрывает экран раньше времени."
+          }
+        ],
+        "text": "Никита, пожалуйста, сохрани исходную запись перед обновлением приложения. Итоговая расшифровка должна содержать все реплики, включая короткие ответы и уточнения. В FIGMe нужно исправить отступы, состояние загрузки и переход к оплате. Затем сравним два варианта анбординга и обсудим, почему пользователь иногда закрывает экран раньше времени.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "ru-detailed",
+      "language": "ru",
+      "reference_words": 46,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 23.7455,
+      "wall_seconds": 1.754,
+      "response": {
+        "decodeSeconds": 1.752674958,
+        "generationTokens": 246,
+        "id": "ru-detailed",
+        "language": null,
+        "peakMemoryGB": 2.517698076,
+        "segments": [
+          {
+            "end": 2.81,
+            "speaker": "S01",
+            "start": 0.06,
+            "text": "Ирина предложила оставить заголовок коротким,"
+          },
+          {
+            "end": 5.74,
+            "speaker": "S01",
+            "start": 2.81,
+            "text": "а подробное объяснение перенести под кнопку."
+          },
+          {
+            "end": 9.53,
+            "speaker": "S01",
+            "start": 5.74,
+            "text": "Я согласен с направлением, но текст пока выглядит слишком"
+          },
+          {
+            "end": 10.23,
+            "speaker": "S01",
+            "start": 9.53,
+            "text": "общим."
+          },
+          {
+            "end": 12.74,
+            "speaker": "S01",
+            "start": 10.23,
+            "text": "Давайте покажем конкретный результат."
+          },
+          {
+            "end": 16.01,
+            "speaker": "S01",
+            "start": 12.74,
+            "text": "Пользователь выбирает фотографию, меняет расположение"
+          },
+          {
+            "end": 18.91,
+            "speaker": "S01",
+            "start": 16.01,
+            "text": "элементов и видит готовый вариант перед покупкой."
+          },
+          {
+            "end": 22.55,
+            "speaker": "S01",
+            "start": 18.91,
+            "text": "Важно также проверить восстановление незавершенной работы после"
+          },
+          {
+            "end": 23.55,
+            "speaker": "S01",
+            "start": 22.55,
+            "text": "закрытия окна."
+          }
+        ],
+        "text": "Ирина предложила оставить заголовок коротким, а подробное объяснение перенести под кнопку. Я согласен с направлением, но текст пока выглядит слишком общим. Давайте покажем конкретный результат. Пользователь выбирает фотографию, меняет расположение элементов и видит готовый вариант перед покупкой. Важно также проверить восстановление незавершенной работы после закрытия окна.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-general",
+      "language": "pl",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 19.764688,
+      "wall_seconds": 1.232,
+      "response": {
+        "decodeSeconds": 1.231293459,
+        "generationTokens": 168,
+        "id": "pl-general",
+        "language": null,
+        "peakMemoryGB": 2.517698076,
+        "segments": [
+          {
+            "end": 2.74,
+            "speaker": "S01",
+            "start": 0,
+            "text": "Najpierw sprawdźmy obecną wersję projektu."
+          },
+          {
+            "end": 8.62,
+            "speaker": "S01",
+            "start": 2.88,
+            "text": "Zależy mi na tym, żeby użytkownik rozumiał, co się stanie po naciśnięciu przycisku."
+          },
+          {
+            "end": 14.16,
+            "speaker": "S01",
+            "start": 8.78,
+            "text": "Dzisiaj ustalimy strukturę strony, a jutro przetestujemy nowy wariant na małym ekranie."
+          },
+          {
+            "end": 19.64,
+            "speaker": "S01",
+            "start": 14.31,
+            "text": "Jeśli zostaną niejasne miejsca, zapiszemy je osobno i wrócimy do nich po spotkaniu."
+          }
+        ],
+        "text": "Najpierw sprawdźmy obecną wersję projektu. Zależy mi na tym, żeby użytkownik rozumiał, co się stanie po naciśnięciu przycisku. Dzisiaj ustalimy strukturę strony, a jutro przetestujemy nowy wariant na małym ekranie. Jeśli zostaną niejasne miejsca, zapiszemy je osobno i wrócimy do nich po spotkaniu.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-product",
+      "language": "pl",
+      "reference_words": 42,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 23.208563,
+      "wall_seconds": 1.286,
+      "response": {
+        "decodeSeconds": 1.285267417,
+        "generationTokens": 176,
+        "id": "pl-product",
+        "language": null,
+        "peakMemoryGB": 2.517698076,
+        "segments": [
+          {
+            "end": 4.97,
+            "speaker": "S01",
+            "start": 0,
+            "text": "Michał, proszę zachować oryginalne nagranie przed aktualizacją aplikacji."
+          },
+          {
+            "end": 11.11,
+            "speaker": "S01",
+            "start": 5.11,
+            "text": "Końcowa transkrypcja powinna zawierać wszystkie wypowiedzi, również krótkie odpowiedzi i pytania."
+          },
+          {
+            "end": 16.14,
+            "speaker": "S01",
+            "start": 11.24,
+            "text": "Musimy poprawić odstępy, stan ładowania oraz przejście do płatności."
+          },
+          {
+            "end": 23.06,
+            "speaker": "S01",
+            "start": 16.23,
+            "text": "Potem porównamy dwa warianty wprowadzenia i omówimy, dlaczego użytkownik czasami zamyka ekran zbyt wcześnie."
+          }
+        ],
+        "text": "Michał, proszę zachować oryginalne nagranie przed aktualizacją aplikacji. Końcowa transkrypcja powinna zawierać wszystkie wypowiedzi, również krótkie odpowiedzi i pytania. Musimy poprawić odstępy, stan ładowania oraz przejście do płatności. Potem porównamy dwa warianty wprowadzenia i omówimy, dlaczego użytkownik czasami zamyka ekran zbyt wcześnie.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-detailed",
+      "language": "pl",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 21.955,
+      "wall_seconds": 1.401,
+      "response": {
+        "decodeSeconds": 1.399826125,
+        "generationTokens": 191,
+        "id": "pl-detailed",
+        "language": null,
+        "peakMemoryGB": 2.518320592,
+        "segments": [
+          {
+            "end": 5.24,
+            "speaker": "S01",
+            "start": 0,
+            "text": "Katarzyna zaproponowała krótki nagłówek i dokładniejsze wyjaśnienie pod przyciskiem."
+          },
+          {
+            "end": 9.27,
+            "speaker": "S01",
+            "start": 5.34,
+            "text": "Zgadzam się z kierunkiem, ale tekst jest nadal zbyt ogólny."
+          },
+          {
+            "end": 11.34,
+            "speaker": "S01",
+            "start": 9.37,
+            "text": "Pokażmy konkretny rezultat."
+          },
+          {
+            "end": 17.31,
+            "speaker": "S01",
+            "start": 11.44,
+            "text": "Użytkownik wybiera zdjęcie, zmienia układ elementów i widzi gotowy projekt przed zakupem."
+          },
+          {
+            "end": 21.88,
+            "speaker": "S01",
+            "start": 17.41,
+            "text": "Trzeba też sprawdzić odzyskiwanie niedokończonej pracy po zamknięciu okna."
+          }
+        ],
+        "text": "Katarzyna zaproponowała krótki nagłówek i dokładniejsze wyjaśnienie pod przyciskiem. Zgadzam się z kierunkiem, ale tekst jest nadal zbyt ogólny. Pokażmy konkretny rezultat. Użytkownik wybiera zdjęcie, zmienia układ elementów i widzi gotowy projekt przed zakupem. Trzeba też sprawdzić odzyskiwanie niedokończonej pracy po zamknięciu okna.",
+        "truncated": false
+      }
+    }
+  ]
+}

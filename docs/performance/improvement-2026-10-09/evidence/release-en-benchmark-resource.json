@@ -1,0 +1,25 @@
+{
+  "name": "serialized English batch equivalence benchmark",
+  "pid": 72633,
+  "runner_pid": 72632,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "python3",
+    "Tools/qa/benchmark_final_pipeline.py",
+    "--app",
+    "build/Parrot-improved-2026-10-09.app/Contents/MacOS/Parrot",
+    "--audio",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/corpus/varied-long-en.wav",
+    "--model-root",
+    "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/ParrotQualityFixtures-20261009/models",
+    "--manifest",
+    ".tmp/parrot-improvement-20261009/corpus/manifest-en.json",
+    "--output",
+    "docs/performance/improvement-2026-10-09/evidence/en-benchmark"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/release-en-benchmark-progress.log",
+  "stop_condition": "completion or 600 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 32.863
+}

@@ -8,27 +8,23 @@ import WhisperKit
 /// model, then reports text and real-time factor.
 enum ParakeetIntegrationTest {
     static func run(audioPath: String) {
-        let semaphore = DispatchSemaphore(value: 0)
         Task {
             do {
-                let hasText = try await execute(audioPath: audioPath)
-                if !hasText { exit(2) }
+                let passed = try await execute(audioPath: audioPath)
+                exit(passed ? 0 : 2)
             } catch {
-                FileHandle.standardError.write(
-                    Data("diagnostic=parakeet status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
-                )
+                FileHandle.standardError.write(Data("diagnostic=parakeet status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8))
                 exit(1)
             }
-            semaphore.signal()
         }
-        semaphore.wait()
-        exit(0)
+        RunLoop.main.run()
     }
 
     private static func execute(audioPath: String) async throws -> Bool {
         let converter = AudioConverter()
         let samples = try converter.resampleAudioFile(path: audioPath)
-        let service = ParakeetModelService()
+        let legacy = CommandLine.arguments.contains("--legacy-v3")
+        let service = ParakeetModelService(modelVersion: legacy ? .v3 : .ultra)
 
         let loadStart = Date()
         async let firstPreparation: Void = service.prepare()
@@ -45,6 +41,10 @@ enum ParakeetIntegrationTest {
         let confidenceIsValid = result.confidence?.isFinite ?? true
 
         print("diagnostic: parakeet")
+        print("model: \(legacy ? "Parakeet V3" : ParakeetModelService.modelDisplayName)")
+        if CommandLine.arguments.contains("--print-fixture-transcript") {
+            print("fixture_transcript: \(result.text)")
+        }
         print(String(format: "audio_seconds: %.3f", audioSeconds))
         print(String(format: "load_seconds: %.3f", loadSeconds))
         print("preparation_launches: \(preparationLaunches)")
@@ -60,21 +60,16 @@ enum ParakeetIntegrationTest {
 /// previous build reported as "Model not found".
 enum WhisperFallbackIntegrationTest {
     static func run(audioPath: String) {
-        let semaphore = DispatchSemaphore(value: 0)
         Task {
             do {
-                let hasText = try await execute(audioPath: audioPath)
-                if !hasText { exit(2) }
+                let passed = try await execute(audioPath: audioPath)
+                exit(passed ? 0 : 2)
             } catch {
-                FileHandle.standardError.write(
-                    Data("diagnostic=whisper status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
-                )
+                FileHandle.standardError.write(Data("diagnostic=whisper status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8))
                 exit(1)
             }
-            semaphore.signal()
         }
-        semaphore.wait()
-        exit(0)
+        RunLoop.main.run()
     }
 
     private static func execute(audioPath: String) async throws -> Bool {
@@ -127,21 +122,16 @@ enum CallPipelineIntegrationTest {
     }
 
     static func run(audioPath: String) {
-        let semaphore = DispatchSemaphore(value: 0)
         Task {
             do {
-                let hasSegments = try await execute(audioPath: audioPath)
-                if !hasSegments { exit(2) }
+                let passed = try await execute(audioPath: audioPath)
+                exit(passed ? 0 : 2)
             } catch {
-                FileHandle.standardError.write(
-                    Data("diagnostic=call_pipeline status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
-                )
+                FileHandle.standardError.write(Data("diagnostic=call_pipeline status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8))
                 exit(1)
             }
-            semaphore.signal()
         }
-        semaphore.wait()
-        exit(0)
+        RunLoop.main.run()
     }
 
     private static func execute(audioPath: String) async throws -> Bool {

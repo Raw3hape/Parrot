@@ -1,0 +1,29 @@
+{
+  "name": "signed candidate nonblocking pipe repair",
+  "pid": 68752,
+  "runner_pid": 68751,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "xcodebuild",
+    "-project",
+    "Parrot.xcodeproj",
+    "-scheme",
+    "Parrot",
+    "-configuration",
+    "Release",
+    "-derivedDataPath",
+    ".tmp/parrot-improvement-20261009/candidate-derived",
+    "-clonedSourcePackagesDirPath",
+    ".tmp/parrot-improvement-20261009/main-spm",
+    "-jobs",
+    "4",
+    "ARCHS=arm64",
+    "ONLY_ACTIVE_ARCH=YES",
+    "build"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/release-pipe-build.log",
+  "stop_condition": "completion or 1200 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 203.41
+}

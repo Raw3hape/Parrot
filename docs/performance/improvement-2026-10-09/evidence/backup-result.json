@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-10-09T20:38:54.219824+00:00",
+  "rollback_app": "/Users/nikita/Documents/My_Projects/Parrot/recordings/backups/2026-10-09-improvement/Parrot-Ultra-rollback.app",
+  "main_sha256": "7a5be67795849ef393827dc347f6e0631de042e7f4d2a58304d2221e0f1bcec3",
+  "signature_verified": true,
+  "history_database_backup": "Finder copy after graceful app quit; all three files preserved",
+  "original_pid_exited": true,
+  "database_quick_check": [
+    [
+      "ok"
+    ]
+  ],
+  "database_counts": {
+    "ZCALLINSIGHT": 0,
+    "ZCALLPROFILE": 6,
+    "ZTRANSCRIPTSEGMENT": 21647,
+    "ZMEETING": 88
+  },
+  "database_files": [
+    {
+      "file": "default.store",
+      "bytes": 9363456,
+      "sha256": "f05fd928b4a78efeb78c109cd9c2e7002bfe03b55c58c1e7ee24f2bf46079683"
+    },
+    {
+      "file": "default.store-wal",
+      "bytes": 1751032,
+      "sha256": "d834f5dbe2a00d141a9e7b11a201cd4bf1f14e3c4a8817505376abfd995466f0"
+    },
+    {
+      "file": "default.store-shm",
+      "bytes": 32768,
+      "sha256": "2a60333f37d9ffaae44536ff396ed6af5eb601599ab98c5205fdb03d0ad8f038"
+    }
+  ],
+  "meeting_ids_sha256": "820bd4110f9a36a3dd8369b5b8405d9aca6db00c2eaae9ab26d6823c93bac5c7",
+  "meeting_data_sha256": "c32e1cd2bba3777050ae32fe95bf2480ed67fb7acd2923730799d5451641a57e",
+  "live_transcript_data_sha256": "62a78b3b9cf4cfa400254745b19b51db028852358792e0d3821028a51dcb3d59"
+}

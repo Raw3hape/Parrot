@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-10-09T20:33:05.413700+00:00",
+  "timed_out_parent": 63154,
+  "observed_child": 63336,
+  "both_exited": true,
+  "remaining": "",
+  "sample_file": "hybrid-first-case-sample.txt",
+  "diagnosis": "Foundation counted read waited while inbox lock was held; replaced by nonblocking POSIX read"
+}

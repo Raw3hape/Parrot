@@ -1,0 +1,327 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 602]
+[Planning deferred tasks]
+[1 / 47] InternalCollectionsUtilities
+[27 / 103]
+[34 / 139] InternalCollectionsUtilities
+[37 / 160]
+[43 / 214]
+[45 / 214]
+[59 / 215]
+[71 / 215]
+[82 / 216] FluidAudio
+[94 / 294]
+[99 / 294]
+[101 / 294]
+[106 / 294]
+[111 / 294]
+[115 / 294]
+[119 / 294]
+[125 / 294]
+[133 / 294]
+[139 / 294] InternalCollectionsUtilities
+[145 / 297]
+[151 / 316]
+[153 / 316]
+[156 / 316]
+[161 / 316]
+[164 / 316] Crypto
+[168 / 316]
+[176 / 321] Jinja
+[179 / 321] OrderedCollections
+[181 / 336] OrderedCollections
+[188 / 336] OrderedCollections
+[191 / 336] OrderedCollections
+[198 / 337] OrderedCollections
+[201 / 337] OrderedCollections
+[206 / 337]
+[210 / 337] OrderedCollections
+[211 / 337]
+[215 / 337] Jinja
+[216 / 337] Jinja
+[222 / 337] Jinja
+[224 / 337] Jinja
+[226 / 337] Jinja
+[228 / 337] Jinja
+[230 / 337] Jinja
+[232 / 337] InternalCollectionsUtilities
+[234 / 337] InternalCollectionsUtilities
+[237 / 337] InternalCollectionsUtilities
+[241 / 337] InternalCollectionsUtilities
+[244 / 337] FluidAudio
+[247 / 337] FluidAudio
+[249 / 338] FluidAudio
+[251 / 338] FluidAudio
+[253 / 338] FluidAudio
+[254 / 338] FluidAudio
+[256 / 338] FluidAudio
+[257 / 338] FluidAudio
+[258 / 338] FluidAudio
+[260 / 338] FluidAudio
+[261 / 338] FluidAudio
+[262 / 338] FluidAudio
+[263 / 338] FluidAudio
+[263 / 338] FastClusterWrapper
+[266 / 338] Crypto
+[267 / 338] Crypto
+[269 / 338] Crypto
+[271 / 338] Crypto
+[273 / 341] Hub
+[274 / 341] Crypto
+[276 / 389]
+[279 / 389]
+[281 / 389]
+[286 / 389] Crypto
+[290 / 389] Crypto
+[294 / 389] Crypto
+[300 / 389] Crypto
+[312 / 389] CSpeexDSP
+[321 / 389] Jinja
+[321 / 389]
+[325 / 389]
+[328 / 389]
+[335 / 389]
+[337 / 389]
+[338 / 389]
+[344 / 389] Hub
+[345 / 389] Hub
+[347 / 389] FluidAudio
+[353 / 396] Hub
+[355 / 396] FluidAudio
+[359 / 436] Tokenizers
+[371 / 437]
+[375 / 437] Tokenizers
+[381 / 437] Tokenizers
+[384 / 437] Tokenizers
+[390 / 437] ArgmaxCore
+[395 / 438] ArgmaxCore
+[403 / 441] ArgmaxCore
+[404 / 441] ArgmaxCore
+[410 / 477]
+[416 / 477] Tokenizers
+[421 / 477]
+[422 / 477]
+[424 / 477]
+[425 / 477]
+[430 / 477] WhisperKit
+[431 / 477] WhisperKit
+[434 / 477] WhisperKit
+[435 / 478] WhisperKit
+[437 / 478] WhisperKit
+[440 / 478] WhisperKit
+[443 / 478] WhisperKit
+[447 / 478] Parrot-product
+[449 / 478] WhisperKit
+[451 / 478] Parrot-product
+[459 / 534]
+[464 / 534]
+[465 / 534]
+[469 / 534]
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[474 / 534] Parrot-product
+[475 / 534] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[480 / 534] Parrot-product
+[481 / 535] Parrot-product
+[483 / 538] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[489 / 538] Parrot-product
+[490 / 538] Parrot-product
+[491 / 538] Parrot-product
+[492 / 538] Parrot-product
+[493 / 538] Parrot-product
+[494 / 538] Parrot-product
+[495 / 538] Parrot-product
+[497 / 538] Parrot
+[498 / 538] Parrot
+[499 / 538] Parrot
+[500 / 538] Parrot
+[502 / 538] Parrot
+[504 / 538] Parrot
+[506 / 536] ParrotTests-product
+[509 / 536] Parrot
+[510 / 536] Parrot
+[512 / 536] Parrot
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[513 / 536] Parrot
+[515 / 536] Parrot
+[515 / 536]
+[517 / 536] Parrot
+[522 / 533] ParrotTests-product
+[526 / 557]
+[527 / 557]
+[532 / 557] ParrotTests-product
+[534 / 557] ParrotTests-product
+[536 / 556] ParrotTests-product
+[540 / 556] ParrotTests-product
+[543 / 556] ParrotTests-product
+[545 / 556] ParrotTests-product
+[547 / 556] ParrotTests-product
+[549 / 556] ParrotTests-product
+[550 / 556] ParrotTests-product
+[552 / 556] ParrotTests-product
+Build complete! (38,87 с)
+Test Suite 'Selected tests' started at 2026-10-09 21:23:40.409.
+Test Suite 'ParrotTests.xctest' started at 2026-10-09 21:23:40.410.
+Test Suite 'NativeFinalTranscriptionServiceTests' started at 2026-10-09 21:23:40.410.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testFailedTerminationRemainsOwnedAndBlocksReplacementUntilVerifiedStop]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testFailedTerminationRemainsOwnedAndBlocksReplacementUntilVerifiedStop]' passed (0.003 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testIdleWorkerUnloadsBeforeAnotherRequestStartsFresh]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testIdleWorkerUnloadsBeforeAnotherRequestStartsFresh]' passed (0.038 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxPreservesSplitJSONAndCancelsReaderWithoutDroppingNextLine]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxPreservesSplitJSONAndCancelsReaderWithoutDroppingNextLine]' passed (0.000 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxRejectsOversizedOutputAndQueueOverflow]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxRejectsOversizedOutputAndQueueOverflow]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMapperClipsRangesFiltersTokensAndPreservesSourceWithoutWordTimes]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMapperClipsRangesFiltersTokensAndPreservesSourceWithoutWordTimes]' passed (0.000 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMemoryAdmissionBlocksOnlyColdWorkerLaunch]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMemoryAdmissionBlocksOnlyColdWorkerLaunch]' passed (0.002 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMismatchedIDAndWorkerErrorStopWorkerAndDoNotExposePrivateText]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMismatchedIDAndWorkerErrorStopWorkerAndDoNotExposePrivateText]' passed (0.004 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonemptyTextWithoutValidTimestampRangeIsRejected]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonemptyTextWithoutValidTimestampRangeIsRejected]' passed (0.000 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonfiniteAudioIsRejectedBeforeWorkerLaunch]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonfiniteAudioIsRejectedBeforeWorkerLaunch]' passed (0.000 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPauseCancelsBlockedInferenceCleansAudioAndResumesFreshWorker]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPauseCancelsBlockedInferenceCleansAudioAndResumesFreshWorker]' passed (0.008 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPreparationReusesOneWorkerAndWindowsRemainSerial]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPreparationReusesOneWorkerAndWindowsRemainSerial]' passed (0.004 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testQueuedCancellationDoesNotStopAnotherActiveRequest]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testQueuedCancellationDoesNotStopAnotherActiveRequest]' passed (0.009 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRapidResumeWaitsForVerifiedOldShutdownBeforeStartingReplacement]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRapidResumeWaitsForVerifiedOldShutdownBeforeStartingReplacement]' passed (0.018 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testReadyParserRejectsWrongEngineAndNegativeTiming]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testReadyParserRejectsWrongEngineAndNegativeTiming]' passed (0.000 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRequestAndRealWAVPreserveSourceWithoutInventingAlignment]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRequestAndRealWAVPreserveSourceWithoutInventingAlignment]' passed (0.002 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTaskCancellationStopsItsWorkerAndRemovesOwnedAudio]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTaskCancellationStopsItsWorkerAndRemovesOwnedAudio]' passed (0.007 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTimeoutsStopTransportInsteadOfLeavingModelWorkBehind]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTimeoutsStopTransportInsteadOfLeavingModelWorkBehind]' passed (0.102 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTruncatedSuccessResponseCannotBeSavedAsComplete]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTruncatedSuccessResponseCannotBeSavedAsComplete]' passed (0.000 seconds).
+Test Suite 'NativeFinalTranscriptionServiceTests' passed at 2026-10-09 21:23:40.612.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 0.201 (0.202) seconds
+Test Suite 'ParrotTests.xctest' passed at 2026-10-09 21:23:40.612.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 0.201 (0.202) seconds
+Test Suite 'Selected tests' passed at 2026-10-09 21:23:40.612.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 0.201 (0.203) seconds

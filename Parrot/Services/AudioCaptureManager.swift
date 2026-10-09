@@ -93,6 +93,8 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         var callbackWaiters: [CheckedContinuation<Void, Never>] = []
         var systemAudioFile: AVAudioFile?
         var micAudioFile: AVAudioFile?
+        var lastSystemLevelUptime = -Double.infinity
+        var lastMicLevelUptime = -Double.infinity
 
         init(
             token: CaptureSessionGate.Token,
@@ -127,42 +129,42 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
     @ObservationIgnored
     private let audioDeviceMonitor = DefaultAudioDeviceMonitor()
 
-    /// Throttle timestamps for pushing audio levels to the UI — the waveform needs
-    /// only ~10 updates/sec, not one per ~20 ms audio buffer per stream.
-    @ObservationIgnored private var lastSystemLevelAt = Date.distantPast
-    @ObservationIgnored private var lastMicLevelAt = Date.distantPast
-
-    private(set) var isCapturing = false
-    private(set) var systemAudioURL: URL?
-    private(set) var micAudioURL: URL?
-    private(set) var audioLevel: Float = 0
+    // Observation invokes SwiftUI synchronously on the publishing executor.
+    // Keep every observed value on MainActor; callbacks and file writes continue
+    // on their existing queues through the independent locked capture state.
+    @MainActor private(set) var isCapturing = false
+    @MainActor private(set) var systemAudioURL: URL?
+    @MainActor private(set) var micAudioURL: URL?
+    @MainActor private(set) var audioLevel: Float = 0
     /// Live mic input level (separate from system audio) so the UI can show
     /// whether the user's own voice is actually being picked up.
-    private(set) var micLevel: Float = 0
+    @MainActor private(set) var micLevel: Float = 0
     /// Whether the mic stream is actually capturing (false = system audio only).
-    private(set) var micActive = false
-    private(set) var inputDeviceName = ""
-    private(set) var outputDeviceName = ""
-    private(set) var lastTimelineManifest: AudioTimelineManifest?
+    @MainActor private(set) var micActive = false
+    @MainActor private(set) var inputDeviceName = ""
+    @MainActor private(set) var outputDeviceName = ""
+    @MainActor private(set) var lastTimelineManifest: AudioTimelineManifest?
     /// Capture-start time, or the last moment the mic carried real signal. While the
     /// mic has never been heard it stays at capture start, so it doubles as "how long
     /// the mic has been silent since recording began".
-    private(set) var lastMicSignalAt = Date.distantPast
+    @MainActor private(set) var lastMicSignalAt = Date.distantPast
 
     /// True once the mic has produced any real signal this recording. A user who is
     /// merely listening (normal while the other side talks) just hasn't spoken yet —
     /// that is not a dead mic — so once we've heard signal we never warn.
-    private(set) var micEverHadSignal = false
+    @MainActor private(set) var micEverHadSignal = false
 
     /// True when echo cancellation is enabled but the system-audio reference never
     /// arrives in the expected format — the AEC is then a silent no-op and the
     /// far end's voice can transcribe as "Me". Shown in the live device bar.
-    private(set) var echoCancellerStarved = false
+    @MainActor private(set) var echoCancellerStarved = false
+
+    @ObservationIgnored @MainActor private var stopTask: Task<Void, Never>?
 
     /// The main waveform represents whichever side is currently audible. Keeping
     /// mic and system levels separate is still useful in the device bar, but a
     /// mic-only speaker must never see a flat primary waveform.
-    var liveAudioLevel: Float {
+    @MainActor var liveAudioLevel: Float {
         Self.combinedLiveLevel(system: audioLevel, mic: micLevel)
     }
 
@@ -174,7 +176,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
     /// signal — a genuinely dead, muted, or misrouted mic. We key off "never heard"
     /// rather than recent silence, because in a call the user is routinely silent for
     /// far longer than a few seconds while the other side is speaking.
-    var micSeemsDead: Bool {
+    @MainActor var micSeemsDead: Bool {
         isCapturing && micActive && !micEverHadSignal
             && Date().timeIntervalSince(lastMicSignalAt) > 15
     }
@@ -196,8 +198,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
 
     // MARK: - Start Capture
 
-    func startCapture() async throws {
-        lastTimelineManifest = nil
+    @MainActor func startCapture() async throws {
         let storageDir = Self.storageDirectory()
         let timestamp = ISO8601DateFormatter().string(from: .now)
             .replacingOccurrences(of: ":", with: "-")
@@ -205,10 +206,6 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
 
         let nextSystemAudioURL = storageDir.appendingPathComponent("system_\(timestamp)-\(uniqueSuffix).caf")
         let nextMicAudioURL = storageDir.appendingPathComponent("mic_\(timestamp)-\(uniqueSuffix).caf")
-
-        inputDeviceName = Self.defaultDeviceName(input: true)
-        outputDeviceName = Self.defaultDeviceName(input: false)
-        NSLog("Parrot: starting capture — input: \(inputDeviceName), output: \(outputDeviceName)")
 
         // Echo cancellation on by default (defeats speaker bleed without headphones).
         let aecEnabled = UserDefaults.standard.object(forKey: "echoCancellationEnabled") as? Bool ?? true
@@ -231,6 +228,10 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         }
         guard let session else { throw CaptureError.captureAlreadyInProgress }
 
+        lastTimelineManifest = nil
+        inputDeviceName = Self.defaultDeviceName(input: true)
+        outputDeviceName = Self.defaultDeviceName(input: false)
+        NSLog("Parrot: starting capture — input: \(inputDeviceName), output: \(outputDeviceName)")
         systemAudioURL = nextSystemAudioURL
         micAudioURL = nextMicAudioURL
 
@@ -273,7 +274,22 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
 
     // MARK: - Stop Capture
 
-    func stopCapture() async {
+    @MainActor func stopCapture() async {
+        // A second Stop/termination request joins the first drain rather than
+        // returning while the hardware and CAF handles are still open.
+        if let stopTask {
+            await stopTask.value
+            return
+        }
+        let task = Task { @MainActor in
+            defer { self.stopTask = nil }
+            await self.performStopCapture()
+        }
+        stopTask = task
+        await task.value
+    }
+
+    @MainActor private func performStopCapture() async {
         // Snapshot one session. All cleanup below is scoped to this identity, so
         // even a delayed stop can never nil or close a later session's resources.
         guard let session = captureState.withLock({ state -> CaptureSession? in
@@ -319,6 +335,19 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         // write and transcription emit before closing the generation.
         await closeCallbackAdmissionAndWait(for: session)
 
+        // Echo alignment keeps a short look-ahead and a partial DSP frame. Its
+        // tail belongs to the recording, even when Stop lands between frames.
+        if let tail = session.echoCanceller?.flush(), !tail.isEmpty,
+           let format = AVAudioFormat(
+               commonFormat: .pcmFormatFloat32,
+               sampleRate: sampleRate,
+               channels: AVAudioChannelCount(channels),
+               interleaved: false
+           ), let buffer = Self.makeBuffer(tail, format: format) {
+            appendAudio(buffer, to: .mic, session: session)
+            emitAudio(buffer, source: .me, session: session)
+        }
+
         // Callback admission is already closed. Flush every queued write while
         // the session identity is still visible so successful frame counts land
         // in the timeline, then close the generation and CAF handles.
@@ -330,6 +359,10 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         let attrs = try? FileManager.default.attributesOfItem(atPath: session.systemAudioURL.path)
         let size = (attrs?[.size] as? Int) ?? 0
         NSLog("Parrot: system audio file finalized — \(size) bytes, \(session.systemCallbackCount) callbacks, \(session.systemConversionFailureCount) conversion failures")
+        if let alignment = session.echoCanceller?.alignmentStatistics {
+            NSLog("ParrotMetric event=echo_alignment aligned_frames=%d passthrough_frames=%d",
+                  alignment.alignedFrames, alignment.passthroughFrames)
+        }
     }
 
     // MARK: - System Audio (ScreenCaptureKit)
@@ -397,7 +430,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
 
     // MARK: - Microphone (AVAudioEngine)
 
-    private func startMicCapture(for session: CaptureSession) throws {
+    @MainActor private func startMicCapture(for session: CaptureSession) throws {
         let engine = AVAudioEngine()
         let inputNode = engine.inputNode
         let microphoneToken = captureState.withLock { _ -> MicrophoneCaptureGenerationGate.Token in
@@ -433,7 +466,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
 
         let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self, session] buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self, session] buffer, time in
             guard let self,
                   self.acceptsMicrophone(microphoneToken, for: session),
                   self.beginCallback(for: session) else { return }
@@ -465,15 +498,30 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
             }
 
             if error == nil {
+                let bufferUptime = ProcessInfo.processInfo.systemUptime
+                let captureTime: TimeInterval? = time.isHostTimeValid
+                    ? Self.validHostClockTime(AVAudioTime.seconds(forHostTime: time.hostTime)) : nil
+                // The saved track starts at its first captured sample, not at
+                // the later callback that releases the AEC look-ahead.
+                self.captureState.withLock { state in
+                    guard state.session === session,
+                          state.gate.accepts(session.token),
+                          session.microphoneGate.accepts(microphoneToken) else { return }
+                    session.timeline.noteFirstBuffer(
+                        for: .me,
+                        offset: (captureTime ?? bufferUptime) - session.startedUptime
+                    )
+                }
                 // Echo-cancel the mic using the system audio as reference. With AEC
                 // off, this returns the mic unchanged. With it on, it returns cleaned
                 // 10 ms frames (possibly empty until a frame fills) — fail-safe.
                 let micFloats = Self.floats(from: convertedBuffer)
-                let cleaned = session.echoCanceller?.process(mic: micFloats) ?? micFloats
+                let cleaned = session.echoCanceller?.process(
+                    mic: micFloats, at: captureTime
+                ) ?? micFloats
                 guard !cleaned.isEmpty,
                       let cleanedBuffer = Self.makeBuffer(cleaned, format: targetFormat) else { return }
 
-                let bufferUptime = ProcessInfo.processInfo.systemUptime
                 let missingFrames = self.captureState.withLock { state -> Int64 in
                     guard state.session === session,
                           state.gate.accepts(session.token),
@@ -489,17 +537,6 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
                         currentBufferUptime: bufferUptime,
                         currentBufferFrames: Int(cleanedBuffer.frameLength),
                         sampleRate: self.sampleRate
-                    )
-                }
-
-                self.captureState.withLock { state in
-                    guard state.session === session,
-                          state.gate.accepts(session.token),
-                          session.microphoneGate.accepts(microphoneToken) else { return }
-                    session.timeline.noteFirstBuffer(
-                        for: .me,
-                        offset: ProcessInfo.processInfo.systemUptime
-                            - session.startedUptime
                     )
                 }
 
@@ -548,11 +585,13 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
             object: engine,
             queue: .main
         ) { [weak self, weak session] _ in
-            guard let self, let session else { return }
-            self.handleAudioEngineConfigurationChange(
-                for: session,
-                microphoneToken: microphoneToken
-            )
+            Task { @MainActor in
+                guard let self, let session else { return }
+                self.handleAudioEngineConfigurationChange(
+                    for: session,
+                    microphoneToken: microphoneToken
+                )
+            }
         }
         captureState.withLock { _ in
             session.audioEngine = engine
@@ -571,7 +610,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         }
     }
 
-    private func handleAudioRouteChange(
+    @MainActor private func handleAudioRouteChange(
         _ route: AudioRouteSnapshot,
         for session: CaptureSession
     ) {
@@ -587,7 +626,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         )
     }
 
-    private func handleAudioEngineConfigurationChange(
+    @MainActor private func handleAudioEngineConfigurationChange(
         for session: CaptureSession,
         microphoneToken: MicrophoneCaptureGenerationGate.Token
     ) {
@@ -609,7 +648,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         )
     }
 
-    private func applyAudioRouteActions(
+    @MainActor private func applyAudioRouteActions(
         _ actions: [AudioRouteChangeAction],
         for session: CaptureSession
     ) {
@@ -634,7 +673,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
     }
 
-    private func restartMicrophone(for session: CaptureSession) {
+    @MainActor private func restartMicrophone(for session: CaptureSession) {
         guard accepts(session), !session.stopping, !session.isRestartingMicrophone else {
             return
         }
@@ -657,7 +696,7 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         session.isRestartingMicrophone = false
     }
 
-    private func stopMicrophone(
+    @MainActor private func stopMicrophone(
         for session: CaptureSession,
         expectsResume: Bool
     ) {
@@ -806,17 +845,22 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         // updates/sec, and dispatching every ~20 ms buffer (×2 streams) thrashed
         // SwiftUI. Sampling at 10 Hz still detects a live mic well within the
         // 15 s dead-mic window.
-        let now = Date()
-        if isMic {
-            guard now.timeIntervalSince(lastMicLevelAt) >= 0.1 else { return }
-            lastMicLevelAt = now
-        } else {
-            guard now.timeIntervalSince(lastSystemLevelAt) >= 0.1 else { return }
-            lastSystemLevelAt = now
+        let now = ProcessInfo.processInfo.systemUptime
+        let shouldPublish = captureState.withLock { state -> Bool in
+            guard state.session === session, !session.stopping else { return false }
+            if isMic {
+                guard now - session.lastMicLevelUptime >= 0.1 else { return false }
+                session.lastMicLevelUptime = now
+            } else {
+                guard now - session.lastSystemLevelUptime >= 0.1 else { return false }
+                session.lastSystemLevelUptime = now
+            }
+            return true
         }
+        guard shouldPublish else { return }
 
         DispatchQueue.main.async { [weak self, session] in
-            guard let self, self.accepts(session) else { return }
+            guard let self, self.acceptsUIPublication(for: session) else { return }
             if isMic {
                 self.micLevel = avg
                 // Speech sits well above room noise; treat this as "mic is alive".
@@ -848,6 +892,13 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
     private func accepts(_ session: CaptureSession) -> Bool {
         captureState.withLock { state in
             state.session === session && state.gate.accepts(session.token)
+        }
+    }
+
+    private func acceptsUIPublication(for session: CaptureSession) -> Bool {
+        captureState.withLock { state in
+            state.session === session && state.gate.accepts(session.token)
+                && !session.stopping
         }
     }
 
@@ -935,6 +986,14 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         return Array(UnsafeBufferPointer(start: ch, count: Int(buffer.frameLength)))
     }
 
+    /// SCK PTS and AVAudioTime hostTime use the host clock. If an OS/device
+    /// delivers another time domain or an invalid value, bypass AEC safely.
+    private static func validHostClockTime(_ timestamp: TimeInterval) -> TimeInterval? {
+        guard timestamp.isFinite, timestamp >= 0,
+              abs(timestamp - ProcessInfo.processInfo.systemUptime) < 5 else { return nil }
+        return timestamp
+    }
+
     /// Mono PCM buffer from float samples in the given format.
     private static func makeBuffer(_ samples: [Float], format: AVAudioFormat) -> AVAudioPCMBuffer? {
         guard !samples.isEmpty,
@@ -988,6 +1047,9 @@ extension AudioCaptureManager {
         route: SystemAudioCallbackRoute
     ) {
         guard type == .audio else { return }
+        let captureTime = Self.validHostClockTime(
+            CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
+        )
         let session = captureState.withLock { state -> CaptureSession? in
             guard let session = state.session,
                   session.token == route.token,
@@ -995,7 +1057,7 @@ extension AudioCaptureManager {
             session.systemCallbackCount += 1
             session.timeline.noteFirstBuffer(
                 for: .them,
-                offset: ProcessInfo.processInfo.systemUptime - session.startedUptime
+                offset: (captureTime ?? ProcessInfo.processInfo.systemUptime) - session.startedUptime
             )
             return session
         }
@@ -1025,7 +1087,11 @@ extension AudioCaptureManager {
         // Feed the same audio to the echo canceller as the far-end reference, so it
         // can subtract this from the mic. Only when it's the expected 16 kHz mono.
         if pcmBuffer.format.sampleRate == sampleRate, pcmBuffer.format.channelCount == channels {
-            session.echoCanceller?.pushReference(Self.floats(from: pcmBuffer))
+            if let captureTime {
+                session.echoCanceller?.pushReference(
+                    Self.floats(from: pcmBuffer), at: captureTime
+                )
+            }
         } else if session.echoCanceller != nil {
             let shouldReport = captureState.withLock { state -> Bool in
                 guard state.session === session,
@@ -1039,7 +1105,7 @@ extension AudioCaptureManager {
                 // transcribes as "Me" — surface it once instead of hiding it.
                 NSLog("Parrot: echo canceller starved — system audio is \(pcmBuffer.format.sampleRate) Hz ×\(pcmBuffer.format.channelCount)ch, expected \(sampleRate) Hz mono")
                 DispatchQueue.main.async { [weak self, session] in
-                    guard let self, self.accepts(session) else { return }
+                    guard let self, self.acceptsUIPublication(for: session) else { return }
                     self.echoCancellerStarved = true
                 }
             }

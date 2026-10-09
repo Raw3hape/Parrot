@@ -1,0 +1,269 @@
+{
+  "ready": {
+    "engine": "qwen",
+    "event": "ready",
+    "loadSeconds": 1.979340375
+  },
+  "cases": [
+    {
+      "id": "ru-general",
+      "language": "ru",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 19.786438,
+      "wall_seconds": 7.5,
+      "response": {
+        "decodeSeconds": 7.497146542,
+        "generationTokens": 99,
+        "id": "ru-general",
+        "language": "Russian",
+        "peakMemoryGB": 3.680736784,
+        "segments": [
+          {
+            "end": 19.7745625,
+            "speaker": null,
+            "start": 0,
+            "text": "Давайте сначала посмотрим на текущий макет. Мне важно, чтобы пользователь сразу понимал, что произойдет после нажатия кнопки. Сегодня мы согласуем структуру страницы, а завтра проверим новый вариант на небольшом экране. Если останутся спорные места, запишем их отдельно и вернемся к ним после созвона."
+          }
+        ],
+        "text": "Давайте сначала посмотрим на текущий макет. Мне важно, чтобы пользователь сразу понимал, что произойдет после нажатия кнопки. Сегодня мы согласуем структуру страницы, а завтра проверим новый вариант на небольшом экране. Если останутся спорные места, запишем их отдельно и вернемся к ним после созвона.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "ru-product",
+      "language": "ru",
+      "reference_words": 44,
+      "word_errors": 2,
+      "wer": 0.045454545454545456,
+      "duration": 22.473438,
+      "wall_seconds": 1.151,
+      "response": {
+        "decodeSeconds": 1.149149709,
+        "generationTokens": 110,
+        "id": "ru-product",
+        "language": "Russian",
+        "peakMemoryGB": 3.680736784,
+        "segments": [
+          {
+            "end": 22.4625625,
+            "speaker": null,
+            "start": 0,
+            "text": "Никита, пожалуйста, сохрани исходную запись перед обновлением приложения. Итоговая расшифровка должна содержать все реплики, включая короткие ответы и уточнения. В фигме нужно исправить отступы, состояние загрузки и переход к оплате. Затем сравним два варианта анбординга и обсудим, почему пользователи иногда закрывает экран раньше времени."
+          }
+        ],
+        "text": "Никита, пожалуйста, сохрани исходную запись перед обновлением приложения. Итоговая расшифровка должна содержать все реплики, включая короткие ответы и уточнения. В фигме нужно исправить отступы, состояние загрузки и переход к оплате. Затем сравним два варианта анбординга и обсудим, почему пользователи иногда закрывает экран раньше времени.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "ru-detailed",
+      "language": "ru",
+      "reference_words": 46,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 23.7455,
+      "wall_seconds": 1.143,
+      "response": {
+        "decodeSeconds": 1.139608125,
+        "generationTokens": 108,
+        "id": "ru-detailed",
+        "language": "Russian",
+        "peakMemoryGB": 3.682268388,
+        "segments": [
+          {
+            "end": 23.7425625,
+            "speaker": null,
+            "start": 0,
+            "text": "Ирина предложила оставить заголовок коротким, а подробное объяснение перенести под кнопку. Я согласен с направлением, но текст пока выглядит слишком общим. Давайте покажем конкретный результат. Пользователь выбирает фотографию, меняет расположение элементов и видит готовый вариант перед покупкой. Важно также проверить восстановление незавершенной работы после закрытия окна."
+          }
+        ],
+        "text": "Ирина предложила оставить заголовок коротким, а подробное объяснение перенести под кнопку. Я согласен с направлением, но текст пока выглядит слишком общим. Давайте покажем конкретный результат. Пользователь выбирает фотографию, меняет расположение элементов и видит готовый вариант перед покупкой. Важно также проверить восстановление незавершенной работы после закрытия окна.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-general",
+      "language": "pl",
+      "reference_words": 43,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 19.764688,
+      "wall_seconds": 1.269,
+      "response": {
+        "decodeSeconds": 1.2676350840000001,
+        "generationTokens": 112,
+        "id": "pl-general",
+        "language": "Polish",
+        "peakMemoryGB": 3.682268388,
+        "segments": [
+          {
+            "end": 19.7105625,
+            "speaker": null,
+            "start": 0,
+            "text": "Najpierw sprawdźmy obecną wersję projektu. Zależy mi na tym, żeby użytkownik rozumiał, co się stanie po naciśnięciu przycisku. Dzisiaj ustalimy strukturę strony, a jutro przetestujemy nowy wariant na małym ekranie. Jeśli zostaną niejasne miejsca, zapiszemy je osobno i wrócimy do nich po spotkaniu."
+          }
+        ],
+        "text": "Najpierw sprawdźmy obecną wersję projektu. Zależy mi na tym, żeby użytkownik rozumiał, co się stanie po naciśnięciu przycisku. Dzisiaj ustalimy strukturę strony, a jutro przetestujemy nowy wariant na małym ekranie. Jeśli zostaną niejasne miejsca, zapiszemy je osobno i wrócimy do nich po spotkaniu.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-product",
+      "language": "pl",
+      "reference_words": 42,
+      "word_errors": 2,
+      "wer": 0.047619047619047616,
+      "duration": 23.208563,
+      "wall_seconds": 1.216,
+      "response": {
+        "decodeSeconds": 1.214583375,
+        "generationTokens": 116,
+        "id": "pl-product",
+        "language": "Polish",
+        "peakMemoryGB": 3.683398684,
+        "segments": [
+          {
+            "end": 23.1665625,
+            "speaker": null,
+            "start": 0,
+            "text": "Michał, proszę zachować oryginalne nagranie przed aktualizacją aplikacji. Koncowa transkrypcja powinna zawierać wszystkie wywiedzi, również krótkie odpowiedzi i pytania. Musimy poprawić odstępy, stan ładowania oraz przejście do płatności. Potem porównamy dwa warianty wprowadzenia i omówimy, dlaczego użytkownik czasami zamyka ekran zbyt wcześnie."
+          }
+        ],
+        "text": "Michał, proszę zachować oryginalne nagranie przed aktualizacją aplikacji. Koncowa transkrypcja powinna zawierać wszystkie wywiedzi, również krótkie odpowiedzi i pytania. Musimy poprawić odstępy, stan ładowania oraz przejście do płatności. Potem porównamy dwa warianty wprowadzenia i omówimy, dlaczego użytkownik czasami zamyka ekran zbyt wcześnie.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "pl-detailed",
+      "language": "pl",
+      "reference_words": 43,
+      "word_errors": 2,
+      "wer": 0.046511627906976744,
+      "duration": 21.955,
+      "wall_seconds": 1.279,
+      "response": {
+        "decodeSeconds": 1.276037667,
+        "generationTokens": 119,
+        "id": "pl-detailed",
+        "language": "Polish",
+        "peakMemoryGB": 3.683398684,
+        "segments": [
+          {
+            "end": 21.9505625,
+            "speaker": null,
+            "start": 0,
+            "text": "Katarzyna zaproponowała krótki nagłówek i dokładniejsze wyjaśnienie pod przyciskiem. Zgadzam się z kierunkiem, ale tekst jest nadal zbyt ogólny. Pokażmy konkretny rezultat. Użytkownik wybiera zwieńczenie, zmienia układ elementów i widzi gotowy projekt przed zakupem. Trzeba też sprawdzić odezkiwanie niedokończonej pracy po zamknięciu okna."
+          }
+        ],
+        "text": "Katarzyna zaproponowała krótki nagłówek i dokładniejsze wyjaśnienie pod przyciskiem. Zgadzam się z kierunkiem, ale tekst jest nadal zbyt ogólny. Pokażmy konkretny rezultat. Użytkownik wybiera zwieńczenie, zmienia układ elementów i widzi gotowy projekt przed zakupem. Trzeba też sprawdzić odezkiwanie niedokończonej pracy po zamknięciu okna.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "en-general",
+      "language": "en",
+      "reference_words": 55,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 16.081188,
+      "wall_seconds": 1.199,
+      "response": {
+        "decodeSeconds": 1.197672708,
+        "generationTokens": 66,
+        "id": "en-general",
+        "language": "English",
+        "peakMemoryGB": 3.683398684,
+        "segments": [
+          {
+            "end": 16.0625625,
+            "speaker": null,
+            "start": 0,
+            "text": "Let's look at the current design first. I want the user to understand what happens after pressing the button. Today we will agree on the page structure, and tomorrow we will test the new version on a smaller screen. If anything is still unclear, let's write it down and return to it after the meeting."
+          }
+        ],
+        "text": "Let's look at the current design first. I want the user to understand what happens after pressing the button. Today we will agree on the page structure, and tomorrow we will test the new version on a smaller screen. If anything is still unclear, let's write it down and return to it after the meeting.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "en-product",
+      "language": "en",
+      "reference_words": 56,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 20.834563,
+      "wall_seconds": 0.756,
+      "response": {
+        "decodeSeconds": 0.752907375,
+        "generationTokens": 68,
+        "id": "en-product",
+        "language": "English",
+        "peakMemoryGB": 3.683398684,
+        "segments": [
+          {
+            "end": 20.7985625,
+            "speaker": null,
+            "start": 0,
+            "text": "Laura, please preserve the original recording before updating the application. The final transcript should include every speaker, including short replies and follow-up questions. We need to improve the spacing, the loading state, and the transition to checkout. Then we can compare the two onboarding flows and investigate why people sometimes close the screen too early."
+          }
+        ],
+        "text": "Laura, please preserve the original recording before updating the application. The final transcript should include every speaker, including short replies and follow-up questions. We need to improve the spacing, the loading state, and the transition to checkout. Then we can compare the two onboarding flows and investigate why people sometimes close the screen too early.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "en-detailed",
+      "language": "en",
+      "reference_words": 58,
+      "word_errors": 0,
+      "wer": 0.0,
+      "duration": 20.546313,
+      "wall_seconds": 0.792,
+      "response": {
+        "decodeSeconds": 0.789465125,
+        "generationTokens": 70,
+        "id": "en-detailed",
+        "language": "English",
+        "peakMemoryGB": 3.683398684,
+        "segments": [
+          {
+            "end": 20.5425625,
+            "speaker": null,
+            "start": 0,
+            "text": "Michael suggested keeping the headline short and moving the explanation below the button. I agree with the direction, but the copy still feels too generic. Let's show a concrete outcome. The user selects a photo, adjusts the layout, and sees the finished design before making a purchase. We should also verify that unfinished work survives closing the window."
+          }
+        ],
+        "text": "Michael suggested keeping the headline short and moving the explanation below the button. I agree with the direction, but the copy still feels too generic. Let's show a concrete outcome. The user selects a photo, adjusts the layout, and sees the finished design before making a purchase. We should also verify that unfinished work survives closing the window.",
+        "truncated": false
+      }
+    },
+    {
+      "id": "mixed",
+      "language": "mixed",
+      "reference_words": 43,
+      "word_errors": 13,
+      "wer": 0.3023255813953488,
+      "duration": 18.390125,
+      "wall_seconds": 0.962,
+      "response": {
+        "decodeSeconds": 0.96056075,
+        "generationTokens": 87,
+        "id": "mixed",
+        "language": "Russian",
+        "peakMemoryGB": 3.683398684,
+        "segments": [
+          {
+            "end": 18.3665625,
+            "speaker": null,
+            "start": 0,
+            "text": "Сначала исправим ошибку сохранения записей и проверим, что последние слова не пропадают. Потом поровняем якость транскрипции и исправим, что приложение поправки распознает изменение языка. Finally, let's make sure that starting a new call does not wait for the previous recording to finish processing."
+          }
+        ],
+        "text": "Сначала исправим ошибку сохранения записей и проверим, что последние слова не пропадают. Потом поровняем якость транскрипции и исправим, что приложение поправки распознает изменение языка. Finally, let's make sure that starting a new call does not wait for the previous recording to finish processing.",
+        "truncated": false
+      }
+    }
+  ]
+}

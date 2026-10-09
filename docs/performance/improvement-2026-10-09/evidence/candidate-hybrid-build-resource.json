@@ -1,0 +1,10 @@
+{
+  "name": "signed hybrid candidate build",
+  "pid": 61229,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "log": "docs/performance/improvement-2026-10-09/evidence/candidate-hybrid-build.log",
+  "stop_condition": "completion or1200 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 257.03
+}

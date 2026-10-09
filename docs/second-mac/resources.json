@@ -1,0 +1,121 @@
+{
+  "date": "2026-10-06",
+  "purpose": "Install the existing working Parrot on the second Mac",
+  "local_baseline": {
+    "free_gib": 157,
+    "swap_used_mib": 12759.75,
+    "parrot_pid": 8044
+  },
+  "remote_baseline": {
+    "computer": "MacBook Pro — Nikita",
+    "chip": "Apple M2 Pro",
+    "memory_gib": 16,
+    "os": "27.0.1",
+    "free_gib": 131,
+    "swap_used_mib": 0.12,
+    "parrot_running": false,
+    "parrot_installed": false
+  },
+  "resources": [
+    {
+      "name": "Screen Sharing connection",
+      "host": "primary Mac",
+      "purpose": "Verify and configure the new installation through its actual UI",
+      "stop_condition": "Close the connection and task-started app after validation",
+      "finished": true,
+      "note": "Screen Sharing app quit cleanly; no remote window remains."
+    },
+    {
+      "name": "app copy",
+      "pid": 92985,
+      "host": "primary Mac",
+      "purpose": "Copy the exact installed signed app via cable",
+      "stop_condition": "Successful transfer or 180 seconds timeout",
+      "exit_code": 0,
+      "finished": true
+    },
+    {
+      "name": "remote Parrot app",
+      "host": "second Mac",
+      "purpose": "Normal app launch for installation and permissions",
+      "stop_condition": "Finish validation, then quit unless actively recording or user asks to keep it running"
+    },
+    {
+      "name": "ASR diagnostic batch",
+      "session_id": 24287,
+      "host": "second Mac",
+      "pid": 7328,
+      "purpose": "Test installed Parrot CLI",
+      "stop_condition": "180 seconds timeout",
+      "finished": true,
+      "result": "Old --parakeet-test harness blocks its main thread on a semaphore; terminated by bounded driver. Main app launch succeeds."
+    },
+    {
+      "name": "Whisper model downloader",
+      "session_id": 92864,
+      "host": "second Mac",
+      "pid": 8850,
+      "purpose": "Populate the new app sandbox cache from pinned official model files",
+      "stop_condition": "All 24 files verified, or 600 seconds timeout",
+      "rate_limit_mib_s": 6,
+      "finished": true,
+      "result": "All 24 files verified after bounded Range resume; final download PID 8953 exited."
+    },
+    {
+      "name": "Remote verification directory",
+      "host": "second Mac",
+      "path": "/Users/nikita/Library/Caches/Parrot-setup-20261006",
+      "purpose": "Small manifests and setup logs",
+      "stop_condition": "Copy evidence to local docs, then remove"
+    },
+    {
+      "name": "Remote synthetic audio fixtures",
+      "host": "second Mac",
+      "path": "/Users/nikita/Library/Containers/com.uygar.parrot/Data/tmp/second-mac-setup-20261006",
+      "purpose": "Test recognition without personal recordings",
+      "stop_condition": "Copy small test results, then remove"
+    },
+    {
+      "name": "Local empty model staging",
+      "host": "primary Mac",
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/second-mac",
+      "purpose": "Attempt authorized cached-model copy through Finder; macOS denied access",
+      "stop_condition": "Remove before handback"
+    },
+    {
+      "name": "Title/summary model transfer",
+      "host": "primary and second Mac",
+      "export_pid": 53829,
+      "ssh_pid": 53828,
+      "purpose": "Export the single allowlisted model through Parrot own signed sandbox and stream it over the cable",
+      "stop_condition": "Exact byte count and SHA256 verified on second Mac, or 900 seconds timeout",
+      "timeout_seconds": 900,
+      "finished": true,
+      "export_exit": 0,
+      "ssh_exit": 0
+    },
+    {
+      "name": "Temporary signed model exporter",
+      "host": "primary Mac",
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/second-mac/ParrotModelExporter.app",
+      "purpose": "Export only the allowlisted Qwen cache file through the owning app sandbox, using the existing developer identity",
+      "stop_condition": "Remove after model transfer and verification"
+    },
+    {
+      "name": "Native Finder model copy",
+      "host": "primary Mac",
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/docs/second-mac/model-staging",
+      "purpose": "Attempt source cache copy; preparation stalled and AppleEvent timed out",
+      "stop_condition": "Task copy cancelled; verify dialog gone and remove empty staging folder"
+    }
+  ],
+  "connection": {
+    "local_interface": "en5",
+    "local_address": "169.254.214.129",
+    "remote_address": "169.254.212.174",
+    "previous_remote_address": "169.254.252.231",
+    "ssh_host_key_alias": "100.121.242.34",
+    "note": "Bind the SSH client to en5; no system routes or DNS were changed."
+  },
+  "pending_user_action": "Complete Parrot onboarding on the second Mac and grant microphone and screen/system-audio permissions."
+}

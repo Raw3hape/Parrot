@@ -1,0 +1,68 @@
+{
+  "updated_at_utc": "2026-10-06T17:07:44.268678+00:00",
+  "status": "Parakeet Ultra installed and speech/capture verified on both Macs",
+  "primary_model": "Parakeet Ultra",
+  "sdk": "FluidAudio 0.17.3",
+  "fallback": "Whisper Large V3 Turbo",
+  "installed_app": "/Applications/Parrot.app",
+  "installed_executable_sha256": "7a5be67795849ef393827dc347f6e0631de042e7f4d2a58304d2221e0f1bcec3",
+  "ultra_activated": true,
+  "unit_tests": {
+    "count": 208,
+    "failures": 0,
+    "log": "evidence/whisper-fix-unit-tests.log"
+  },
+  "capture": {
+    "primary": {
+      "diagnostic": "production_capture",
+      "input_device": "Микрофон MacBook Pro",
+      "me_frames": 191680,
+      "me_rms": 0.0001279682906283621,
+      "mic_active": true,
+      "microphone_authorization": 3,
+      "output_device": "Динамики MacBook Pro",
+      "passed": true,
+      "them_frames": 197440,
+      "them_rms": 0.0188892872958136
+    },
+    "second": {
+      "diagnostic": "production_capture",
+      "input_device": "Микрофон MacBook Pro",
+      "me_frames": 185280,
+      "me_rms": 0.00034237582141741007,
+      "mic_active": true,
+      "microphone_authorization": 3,
+      "output_device": "Динамики MacBook Pro",
+      "passed": true,
+      "them_frames": 187840,
+      "them_rms": 0.02018846124246772
+    }
+  },
+  "offline_recognition_verified": [
+    "RU/EN/PL V3 and Ultra",
+    "Silero VAD + utterance pipeline",
+    "Whisper live fallback"
+  ],
+  "primary_gui": "Ready to record, Ultra label verified",
+  "second_gui": [
+    {
+      "activation_policy": 0,
+      "active": true,
+      "hidden": false,
+      "path": "/Applications/Parrot.app",
+      "pid": 12261,
+      "visible_window_count": 1
+    }
+  ],
+  "original_app_sha256": "1da4c14b53790bbffd9cd52f554f6299d72da4d29e9c11da1cc99e1cd9f2aa86",
+  "rollback_app": {
+    "primary": "/Users/nikita/Documents/My_Projects/Parrot/build/Parrot-v3-backup-2026-10-06.app",
+    "second": "/Users/nikita/Library/Application Support/Parrot/InstallBackups/Parrot-v3-2026-10-06.app"
+  },
+  "rollback_switch_tested": false,
+  "known_limitation": "Qwen 9B auto details on M2 may be deferred by unchanged 10 GiB startup guard; latest reclaimable memory about 4.9 GiB",
+  "candidate": "build/Parrot-ultra-candidate-2026-10-06.app",
+  "candidate_excludes_uncommitted_best_transcript_optimizations": true,
+  "owned_helpers_running": 0,
+  "cleanup_verification": "Verified: owned helpers/LaunchAgents=0, temporary directories removed on both Macs"
+}

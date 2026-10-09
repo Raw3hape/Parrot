@@ -1,0 +1,10 @@
+{"case": "ru-general", "words": 43, "errors": 0, "seconds": 4.658}
+{"case": "ru-product", "words": 44, "errors": 2, "seconds": 4.605}
+{"case": "ru-detailed", "words": 46, "errors": 0, "seconds": 4.656}
+{"case": "pl-general", "words": 43, "errors": 0, "seconds": 4.185}
+{"case": "pl-product", "words": 42, "errors": 0, "seconds": 4.728}
+{"case": "pl-detailed", "words": 43, "errors": 0, "seconds": 4.658}
+{"case": "en-general", "words": 55, "errors": 0, "seconds": 3.613}
+{"case": "en-product", "words": 56, "errors": 0, "seconds": 3.902}
+{"case": "en-detailed", "words": 58, "errors": 0, "seconds": 4.195}
+{"case": "mixed", "words": 43, "errors": 1, "seconds": 4.447}

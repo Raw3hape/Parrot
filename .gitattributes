@@ -1,0 +1,4 @@
+# Captured logs and historical source patches retain their original whitespace.
+# Normal source and documentation checks remain enabled.
+docs/**/*.log -whitespace
+docs/**/*.patch -whitespace

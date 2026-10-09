@@ -1,0 +1,42 @@
+[
+  {
+    "name": "best-en-cached",
+    "language": "en",
+    "pid": 9037,
+    "timeout_seconds": 240,
+    "hf_hub_offline_environment": true,
+    "exit_code": 0,
+    "elapsed_seconds": 3.632,
+    "finished": true,
+    "network_observation_samples": 7,
+    "observed_ip_connections": [],
+    "diagnostics": [
+      "diagnostic: best_transcription",
+      "audio_seconds: 9.123",
+      "segments: 3",
+      "transcript_characters: 164",
+      "timestamps_valid: 1",
+      "contains_special_tokens: 0"
+    ]
+  },
+  {
+    "name": "best-pl-cached",
+    "language": "pl",
+    "pid": 9053,
+    "timeout_seconds": 240,
+    "hf_hub_offline_environment": true,
+    "exit_code": 0,
+    "elapsed_seconds": 3.619,
+    "finished": true,
+    "network_observation_samples": 7,
+    "observed_ip_connections": [],
+    "diagnostics": [
+      "diagnostic: best_transcription",
+      "audio_seconds: 10.952",
+      "segments: 3",
+      "transcript_characters: 168",
+      "timestamps_valid: 1",
+      "contains_special_tokens: 0"
+    ]
+  }
+]

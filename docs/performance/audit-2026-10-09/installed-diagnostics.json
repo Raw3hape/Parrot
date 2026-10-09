@@ -1,0 +1,39 @@
+[
+  {
+    "name": "ultra",
+    "pid": 2658,
+    "project": "/Users/nikita/Documents/My_Projects/Parrot",
+    "purpose": "measure installed model startup and recognition on existing synthetic Russian fixture",
+    "stop_condition": "completion or 180 seconds",
+    "status": "exited",
+    "exit_code": 0,
+    "elapsed_seconds": 0.772,
+    "diagnostic": "parakeet",
+    "model": "Parakeet Ultra",
+    "audio_seconds": "11.831",
+    "load_seconds": "0.349",
+    "preparation_launches": "1",
+    "decode_seconds": "0.251",
+    "real_time_factor": "0.0212",
+    "transcript_characters": "186",
+    "confidence_is_finite": "1"
+  },
+  {
+    "name": "whisper-turbo",
+    "pid": 2664,
+    "project": "/Users/nikita/Documents/My_Projects/Parrot",
+    "purpose": "measure installed model startup and recognition on existing synthetic Russian fixture",
+    "stop_condition": "completion or 180 seconds",
+    "status": "exited",
+    "exit_code": 0,
+    "elapsed_seconds": 3.775,
+    "diagnostic": "whisper",
+    "model": "large-v3-v20240930_turbo",
+    "audio_seconds": "11.831",
+    "load_seconds": "2.711",
+    "preparation_launches": "1",
+    "decode_seconds": "0.889",
+    "transcript_characters": "187",
+    "confidence_is_finite": "1"
+  }
+]

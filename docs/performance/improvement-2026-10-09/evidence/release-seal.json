@@ -1,0 +1,23 @@
+{
+  "sealed_at": "2026-10-09T22:00:28.327473+00:00",
+  "main_sha256": "c1c3aacfb66bae5768f6593d5ca466a0a0d7ce43712e2b433422f17c96746302",
+  "signed_helper_sha256": "40ae743eb0482925f30057d0d345ad602250bc469cb070eafaf2f57dc3636b5a",
+  "installed_matches_latest_deliverable": true,
+  "signature_deep_strict": true,
+  "entitlements_match_original": true,
+  "team": "5C2PL8729F",
+  "rollback_sha256": "7a5be67795849ef393827dc347f6e0631de042e7f4d2a58304d2221e0f1bcec3",
+  "source_snapshot_sha256": "ce0520d28e2fb7fd29253119c85031cf5cfd2b8baffb935fb704291d17582872",
+  "quality_gate_sha256": "94ba40e4670ca87edbb7fc4856a6be006e1ad9b426cb5d7107b3f1090c181ac5",
+  "gui_workflow_sha256": "597099c0334ee7bfaa13bc73eaa44d858af6bda3640a0a20eedee778063061e4",
+  "history_preservation_sha256": "7b3f786cc415ab83e4b16b19796cdb27d094261f3fa76044db02a9a5546c14c4",
+  "cleanup_sha256": "40b538179ad5732cd717846b9087d5dec64003ed992faa2fd9f1aeeb30c48984",
+  "prior_scored_candidate": "36961a5d935c7548c39ff2d0f3fd33447a8e2798f6cd48fc1b2802e602967342",
+  "prior_to_final_explanation": "Final rebuild added transport internal visibility/owned PID accessor for real-child regression; not claimed to be signing-only. Full10-case quality gate was rerun through exact installed c1.",
+  "no_commit_or_push": true,
+  "secondary_mac_not_changed": true,
+  "ready_to_record": true,
+  "retained_app_pid": 85538,
+  "all_disposable_helpers_exited": true,
+  "completed_at_local": "2026-10-10T00:03:46.806225+02:00"
+}

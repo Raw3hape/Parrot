@@ -1,0 +1,379 @@
+--- a/Package.swift
++++ b/Package.swift
+@@ -9,7 +9,7 @@
+     ],
+     dependencies: [
+         .package(url: "https://github.com/argmaxinc/WhisperKit.git", exact: "0.18.0"),
+-        .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.15.5"),
++        .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.17.3"),
+         // Vendored SpeexDSP for acoustic echo cancellation. Kept in sync with
+         // project.yml (the xcodegen source of truth) so `swift build` works too.
+         .package(path: "Vendor/CSpeexDSP"),
+--- a/project.yml
++++ b/project.yml
+@@ -12,7 +12,7 @@
+     exactVersion: "0.18.0"
+   FluidAudio:
+     url: https://github.com/FluidInference/FluidAudio.git
+-    exactVersion: "0.15.5"
++    exactVersion: "0.17.3"
+   # Vendored SpeexDSP for acoustic echo cancellation (mic + system-audio reference).
+   CSpeexDSP:
+     path: Vendor/CSpeexDSP
+--- a/Parrot/Services/ParakeetModelService.swift
++++ b/Parrot/Services/ParakeetModelService.swift
+@@ -10,6 +10,13 @@
+             case .notLoaded: "Parakeet model is not loaded"
+             }
+         }
++    }
++
++    nonisolated static let modelDisplayName = "Parakeet Ultra"
++    private let modelVersion: AsrModelVersion
++
++    init(modelVersion: AsrModelVersion = .ultra) {
++        self.modelVersion = modelVersion
+     }
+ 
+     private var manager: AsrManager?
+@@ -39,7 +46,7 @@
+             preparationLaunchCount += 1
+             task = Task {
+                 let models = try await AsrModels.downloadAndLoad(
+-                    version: .v3,
++                    version: modelVersion,
+                     encoderPrecision: .int8,
+                     progressHandler: progressHandler
+                 )
+--- a/Parrot/Services/WhisperModelService.swift
++++ b/Parrot/Services/WhisperModelService.swift
+@@ -173,16 +173,13 @@
+         policy: WhisperPreparationPolicy
+     ) async throws {
+         guard !isReady else { return }
+-        let localModelFolder: URL?
+-        if policy.allowDownload {
+-            localModelFolder = nil
+-        } else {
+-            guard let folder = WhisperLocalModelLocator.modelFolder(
+-                modelName: modelName
+-            ) else {
+-                throw ServiceError.localModelMissing
+-            }
+-            localModelFolder = folder
++        // Live fallback must also work offline after setup. Resolve a complete
++        // local model first; permit a download only when that cache is absent.
++        let localModelFolder = WhisperLocalModelLocator.modelFolder(
++            modelName: modelName
++        )
++        if localModelFolder == nil && !policy.allowDownload {
++            throw ServiceError.localModelMissing
+         }
+ 
+         let task: Task<PreparedWhisper, Error>
+@@ -202,7 +199,7 @@
+                     logLevel: .none,
+                     prewarm: true,
+                     load: true,
+-                    download: policy.allowDownload
++                    download: localModelFolder == nil && policy.allowDownload
+                 )
+                 return PreparedWhisper(try await WhisperKit(config))
+             }
+--- a/Parrot/Views/OnboardingView.swift
++++ b/Parrot/Views/OnboardingView.swift
+@@ -172,7 +172,7 @@
+             VStack(alignment: .leading, spacing: 8) {
+                 LocalModelRow(
+                     icon: "bolt.fill",
+-                    title: "NVIDIA Parakeet TDT 0.6B V3",
++                    title: ParakeetModelService.modelDisplayName,
+                     detail: "Primary model — fast multilingual transcription"
+                 )
+                 LocalModelRow(
+--- a/Parrot/Views/SettingsView.swift
++++ b/Parrot/Views/SettingsView.swift
+@@ -78,7 +78,7 @@
+ 
+             Section("Local Transcription") {
+                 LabeledContent("Primary model") {
+-                    Text("NVIDIA Parakeet TDT 0.6B V3")
++                    Text(ParakeetModelService.modelDisplayName)
+                         .fontWeight(.medium)
+                 }
+                 LabeledContent("Fallback model") {
+--- a/Parrot/SnapshotTool.swift
++++ b/Parrot/SnapshotTool.swift
+@@ -8,27 +8,23 @@
+ /// model, then reports text and real-time factor.
+ enum ParakeetIntegrationTest {
+     static func run(audioPath: String) {
+-        let semaphore = DispatchSemaphore(value: 0)
+         Task {
+             do {
+-                let hasText = try await execute(audioPath: audioPath)
+-                if !hasText { exit(2) }
++                let passed = try await execute(audioPath: audioPath)
++                exit(passed ? 0 : 2)
+             } catch {
+-                FileHandle.standardError.write(
+-                    Data("diagnostic=parakeet status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
+-                )
++                FileHandle.standardError.write(Data("diagnostic=parakeet status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8))
+                 exit(1)
+             }
+-            semaphore.signal()
+-        }
+-        semaphore.wait()
+-        exit(0)
++        }
++        RunLoop.main.run()
+     }
+ 
+     private static func execute(audioPath: String) async throws -> Bool {
+         let converter = AudioConverter()
+         let samples = try converter.resampleAudioFile(path: audioPath)
+-        let service = ParakeetModelService()
++        let legacy = CommandLine.arguments.contains("--legacy-v3")
++        let service = ParakeetModelService(modelVersion: legacy ? .v3 : .ultra)
+ 
+         let loadStart = Date()
+         async let firstPreparation: Void = service.prepare()
+@@ -45,6 +41,10 @@
+         let confidenceIsValid = result.confidence?.isFinite ?? true
+ 
+         print("diagnostic: parakeet")
++        print("model: \(legacy ? "Parakeet V3" : ParakeetModelService.modelDisplayName)")
++        if CommandLine.arguments.contains("--print-fixture-transcript") {
++            print("fixture_transcript: \(result.text)")
++        }
+         print(String(format: "audio_seconds: %.3f", audioSeconds))
+         print(String(format: "load_seconds: %.3f", loadSeconds))
+         print("preparation_launches: \(preparationLaunches)")
+@@ -60,21 +60,16 @@
+ /// previous build reported as "Model not found".
+ enum WhisperFallbackIntegrationTest {
+     static func run(audioPath: String) {
+-        let semaphore = DispatchSemaphore(value: 0)
+         Task {
+             do {
+-                let hasText = try await execute(audioPath: audioPath)
+-                if !hasText { exit(2) }
++                let passed = try await execute(audioPath: audioPath)
++                exit(passed ? 0 : 2)
+             } catch {
+-                FileHandle.standardError.write(
+-                    Data("diagnostic=whisper status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
+-                )
++                FileHandle.standardError.write(Data("diagnostic=whisper status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8))
+                 exit(1)
+             }
+-            semaphore.signal()
+-        }
+-        semaphore.wait()
+-        exit(0)
++        }
++        RunLoop.main.run()
+     }
+ 
+     private static func execute(audioPath: String) async throws -> Bool {
+@@ -127,21 +122,16 @@
+     }
+ 
+     static func run(audioPath: String) {
+-        let semaphore = DispatchSemaphore(value: 0)
+         Task {
+             do {
+-                let hasSegments = try await execute(audioPath: audioPath)
+-                if !hasSegments { exit(2) }
++                let passed = try await execute(audioPath: audioPath)
++                exit(passed ? 0 : 2)
+             } catch {
+-                FileHandle.standardError.write(
+-                    Data("diagnostic=call_pipeline status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8)
+-                )
++                FileHandle.standardError.write(Data("diagnostic=call_pipeline status=failed error_type=\(String(reflecting: type(of: error)))\n".utf8))
+                 exit(1)
+             }
+-            semaphore.signal()
+-        }
+-        semaphore.wait()
+-        exit(0)
++        }
++        RunLoop.main.run()
+     }
+ 
+     private static func execute(audioPath: String) async throws -> Bool {
+--- a/Parrot/ParrotApp.swift
++++ b/Parrot/ParrotApp.swift
+@@ -190,6 +190,10 @@
+             BestTranscriptionIntegrationTest.run(audioPath: args[i + 1])
+             return
+         }
++        if args.contains("--capture-test") {
++            CaptureIntegrationTest.run()
++            return
++        }
+         if args.contains("--profile-test") {
+             MainActor.assumeIsolated { ProfileTest.run() }
+             return
+--- /dev/null
++++ b/Parrot/CaptureIntegrationTest.swift
+@@ -0,0 +1,71 @@
++import AVFoundation
++import Foundation
++
++/// Bounded production-capture diagnostic. Counts signal only; its temporary
++/// CAF tracks are removed without exporting microphone content.
++enum CaptureIntegrationTest {
++    private final class Levels: @unchecked Sendable {
++        private let lock = NSLock()
++        private var frames: [String: Int] = [:]
++        private var energy: [String: Double] = [:]
++
++        func append(_ buffer: AVAudioPCMBuffer, source: AudioSource) {
++            let name = String(describing: source)
++            let count = Int(buffer.frameLength)
++            let samples = buffer.floatChannelData?[0]
++            var sum = 0.0
++            if let samples {
++                for index in 0..<count { sum += Double(samples[index] * samples[index]) }
++            }
++            lock.lock(); defer { lock.unlock() }
++            frames[name, default: 0] += count
++            energy[name, default: 0] += sum
++        }
++
++        func snapshot() -> [String: Any] {
++            lock.lock(); defer { lock.unlock() }
++            var result: [String: Any] = [:]
++            for (source, count) in frames {
++                result["\(source)_frames"] = count
++                result["\(source)_rms"] = sqrt(energy[source, default: 0] / Double(max(1, count)))
++            }
++            return result
++        }
++    }
++
++    static func run() {
++        Task { @MainActor in
++            let capture = AudioCaptureManager()
++            let levels = Levels()
++            capture.onAudioBuffer = { buffer, source in levels.append(buffer, source: source) }
++            do {
++                try await capture.startCapture()
++                let micWasActive = capture.micActive
++                print("capture_ready: 1"); fflush(stdout)
++                try await Task.sleep(for: .seconds(11))
++                await capture.stopCapture()
++                var result = levels.snapshot()
++                result["diagnostic"] = "production_capture"
++                result["mic_active"] = micWasActive
++                result["microphone_authorization"] = AVCaptureDevice.authorizationStatus(for: .audio).rawValue
++                result["input_device"] = capture.inputDeviceName
++                result["output_device"] = capture.outputDeviceName
++                let systemFrames = result["them_frames"] as? Int ?? 0
++                let micFrames = result["me_frames"] as? Int ?? 0
++                let signal = result["them_rms"] as? Double ?? 0
++                let passed = micWasActive && systemFrames > 16_000 && micFrames > 16_000 && signal > 0.00001
++                result["passed"] = passed
++                for url in [capture.systemAudioURL, capture.micAudioURL].compactMap({ $0 }) {
++                    try? FileManager.default.removeItem(at: url)
++                }
++                print(String(data: try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys]), encoding: .utf8)!)
++                exit(passed ? 0 : 2)
++            } catch {
++                await capture.stopCapture()
++                FileHandle.standardError.write(Data("diagnostic=capture status=failed error=\(error)\n".utf8))
++                exit(1)
++            }
++        }
++        RunLoop.main.run()
++    }
++}
+--- a/Tests/ParrotTests/CallDetectionCoordinatorTests.swift
++++ b/Tests/ParrotTests/CallDetectionCoordinatorTests.swift
+@@ -3,6 +3,22 @@
+ 
+ @MainActor
+ final class CallDetectionCoordinatorTests: XCTestCase {
++    /// A scheduling delay is not a coordinator failure. Wait for the observable
++    /// state with a deadline instead of assuming a 10 ms task runs within 30 ms.
++    private func waitUntil(
++        timeout: TimeInterval = 2,
++        file: StaticString = #filePath,
++        line: UInt = #line,
++        _ condition: () -> Bool
++    ) async {
++        let clock = ContinuousClock()
++        let deadline = clock.now.advanced(by: .seconds(timeout))
++        while !condition(), clock.now < deadline {
++            try? await Task.sleep(for: .milliseconds(5))
++        }
++        XCTAssertTrue(condition(), "Coordinator state did not settle before deadline", file: file, line: line)
++    }
++
+     func testSustainedActivityPublishesExactlyOneSuggestion() async {
+         let monitor = FakeAudioProcessMonitor()
+         let windows = FakeCallWindowProvider()
+@@ -19,7 +35,7 @@
+         monitor.emit([slackActivity()])
+         monitor.emit([slackActivity()])
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 60_000_000)
++        await waitUntil { coordinator.suggestion != nil }
+ 
+         XCTAssertEqual(coordinator.suggestion?.source.familyID, "native.slack")
+         XCTAssertEqual(published.compactMap { $0 }.count, 1)
+@@ -36,7 +52,7 @@
+         )
+         coordinator.start()
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 30_000_000)
++        await waitUntil { coordinator.suggestion != nil }
+         XCTAssertNotNil(coordinator.suggestion)
+ 
+         coordinator.setEnabled(false)
+@@ -55,13 +71,12 @@
+         )
+         coordinator.start()
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 30_000_000)
++        await waitUntil { coordinator.suggestion != nil }
+         XCTAssertNotNil(coordinator.suggestion)
+ 
+         coordinator.setRecordingActive(true)
+         coordinator.setRecordingActive(false)
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 30_000_000)
+ 
+         XCTAssertNil(coordinator.suggestion)
+         XCTAssertEqual(coordinator.suppressedSessionKey, "native.slack")
+@@ -77,11 +92,10 @@
+         )
+         coordinator.start()
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 30_000_000)
++        await waitUntil { coordinator.suggestion != nil }
+ 
+         coordinator.dismissSuggestion()
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 30_000_000)
+ 
+         XCTAssertNil(coordinator.suggestion)
+         XCTAssertEqual(coordinator.suppressedSessionKey, "native.slack")
+@@ -97,12 +111,12 @@
+         )
+         coordinator.start()
+         monitor.emit([slackActivity()])
+-        try? await Task.sleep(nanoseconds: 30_000_000)
++        await waitUntil { coordinator.suggestion != nil }
+         XCTAssertNotNil(coordinator.suggestion)
+ 
+         monitor.emit([])
+         XCTAssertNotNil(coordinator.suggestion)
+-        try? await Task.sleep(nanoseconds: 40_000_000)
++        await waitUntil { coordinator.suggestion == nil }
+ 
+         XCTAssertNil(coordinator.suggestion)
+     }

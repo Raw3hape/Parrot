@@ -1,0 +1,364 @@
+[
+  {
+    "path": "docs/benchmarks/moss-mlx.md",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/docs/benchmarks/moss-mlx.md",
+    "excerpts": [
+      {
+        "line": 5,
+        "text": "Use `moss-mlx-int5` by default. Against the matched INT8 export it reduced the"
+      },
+      {
+        "line": 6,
+        "text": "two weight files from 1,200.1 MiB to 987.0 MiB, lowered peak RSS by about"
+      },
+      {
+        "line": 7,
+        "text": "211\u2013217 MiB, and ran faster. English aggregate WER increased by 0.28"
+      },
+      {
+        "line": 11,
+        "text": "Use `moss-mlx-int8` when the small measured ASR-quality advantage matters more"
+      },
+      {
+        "line": 17,
+        "text": "- Machine: MacBook Pro, Apple M5 Pro (18 cores), 48 GB unified memory"
+      },
+      {
+        "line": 29,
+        "text": "quantized KV-cache quality. A separate short-fixture integration check found"
+      },
+      {
+        "line": 35,
+        "text": "The ASR fixture contains the first 80 English-US test clips from"
+      },
+      {
+        "line": 39,
+        "text": "| Variant | Aggregate WER | CER | Overall \u00d7RT | Elapsed | Peak RSS |"
+      },
+      {
+        "line": 40,
+        "text": "|---|---:|---:|---:|---:|---:|"
+      },
+      {
+        "line": 41,
+        "text": "| INT5 | 8.55% | 6.36% | 35.2\u00d7 | 21.60 s | 1,196 MiB |"
+      },
+      {
+        "line": 42,
+        "text": "| INT8 | **8.27%** | **5.98%** | 31.6\u00d7 | 24.04 s | 1,407 MiB |"
+      },
+      {
+        "line": 45,
+        "text": "fixture, the 213 MiB smaller decoder is a measurable speed and memory win with"
+      },
+      {
+        "line": 50,
+        "text": "The diarization fixture contains five recordings from the CC-BY-4.0"
+      },
+      {
+        "line": 51,
+        "text": "[`ggfox00000/dia-voxconverse-test`](https://huggingface.co/datasets/ggfox00000/dia-voxconverse-test)"
+      },
+      {
+        "line": 60,
+        "text": "| Variant | DER | JER | Miss | False alarm | Speaker error | Count accuracy | Overall \u00d7RT | Peak RSS |"
+      },
+      {
+        "line": 61,
+        "text": "|---|---:|---:|---:|---:|---:|---:|---:|---:|"
+      },
+      {
+        "line": 62,
+        "text": "| INT5 | 28.05% | 26.56% | 22.96% | **0.93%** | 4.16% | **40%** | **15.5\u00d7** | **1,281 MiB** |"
+      },
+      {
+        "line": 63,
+        "text": "| INT8 | **28.02%** | **25.79%** | 23.14% | 1.25% | **3.62%** | 20% | 11.8\u00d7 | 1,498 MiB |"
+      },
+      {
+        "line": 65,
+        "text": "| Reference speakers | INT5 DER | INT8 DER |"
+      },
+      {
+        "line": 66,
+        "text": "|---:|---:|---:|"
+      },
+      {
+        "line": 67,
+        "text": "| 4 | 6.95% | 6.97% |"
+      },
+      {
+        "line": 68,
+        "text": "| 7 | **24.32%** | 30.52% |"
+      },
+      {
+        "line": 69,
+        "text": "| 8 | **7.81%** | 8.11% |"
+      },
+      {
+        "line": 70,
+        "text": "| 12 | 46.55% | **45.40%** |"
+      },
+      {
+        "line": 71,
+        "text": "| 13 | 3.18% | 3.18% |"
+      },
+      {
+        "line": 84,
+        "text": "| Artifact | INT5 | INT8 |"
+      },
+      {
+        "line": 85,
+        "text": "|---|---:|---:|"
+      },
+      {
+        "line": 86,
+        "text": "| `audio_encoder.safetensors` | 596.0 MiB | 596.0 MiB |"
+      },
+      {
+        "line": 87,
+        "text": "| `decoder.safetensors` | 391.0 MiB | 604.1 MiB |"
+      },
+      {
+        "line": 88,
+        "text": "| Combined | 987.0 MiB | 1,200.1 MiB |"
+      },
+      {
+        "line": 89,
+        "text": "| Validation cosine | 0.99897182 | 0.99998456 |"
+      },
+      {
+        "line": 90,
+        "text": "| Validation max absolute error | 0.02246094 | 0.00268555 |"
+      },
+      {
+        "line": 94,
+        "text": "tensors were equal. File hashes differ because safetensors header ordering and"
+      },
+      {
+        "line": 111,
+        "text": "MOSS_MLX_INT5_MODEL_DIR=/path/to/int5 \\"
+      },
+      {
+        "line": 114,
+        "text": "  --engines moss-mlx-int5 \\"
+      },
+      {
+        "line": 115,
+        "text": "  --output moss-int5-asr.json"
+      },
+      {
+        "line": 117,
+        "text": "MOSS_MLX_INT8_MODEL_DIR=/path/to/int8 \\"
+      },
+      {
+        "line": 120,
+        "text": "  --engines moss-mlx-int8 \\"
+      },
+      {
+        "line": 123,
+        "text": "  --output moss-int8-diarization.json"
+      }
+    ]
+  },
+  {
+    "path": "docs/benchmarks/moss-coreml.md",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/docs/benchmarks/moss-coreml.md",
+    "excerpts": [
+      {
+        "line": 5,
+        "text": "Use `moss-coreml-int8`. Across two complete order-reversed runs it preserved"
+      },
+      {
+        "line": 6,
+        "text": "the same aggregate English WER as FP16, reduced pooled RTF by about 11%, and"
+      },
+      {
+        "line": 11,
+        "text": "- Machine: Apple M5 Pro, 48 GB"
+      },
+      {
+        "line": 14,
+        "text": "- Dataset: 80 English FLEURS clips from the speech-bench-data Hugging Face"
+      },
+      {
+        "line": 15,
+        "text": "  fixture"
+      },
+      {
+        "line": 30,
+        "text": "| Variant | Aggregate WER | CER | Pooled RTF | Pooled \u00d7RT | Peak RSS range |"
+      },
+      {
+        "line": 31,
+        "text": "|---|---:|---:|---:|---:|---:|"
+      },
+      {
+        "line": 32,
+        "text": "| CoreML INT8 | 8.16% | 5.90% | **0.070** | **14.3\u00d7** | **2,382\u20132,399 MB** |"
+      },
+      {
+        "line": 33,
+        "text": "| CoreML FP16 | 8.16% | 5.90% | 0.079 | 12.6\u00d7 | 3,689\u20133,735 MB |"
+      },
+      {
+        "line": 35,
+        "text": "INT8 has an 11.4% lower pooled RTF. Comparing the observed peak ranges, it"
+      },
+      {
+        "line": 40,
+        "text": "| Order | Variant | Mean RTF | Median RTF | Overall \u00d7RT | Peak RSS |"
+      },
+      {
+        "line": 41,
+        "text": "|---|---|---:|---:|---:|---:|"
+      },
+      {
+        "line": 42,
+        "text": "| Run 1, first | INT8 | 0.064 | 0.060 | 16.4\u00d7 | 2,399 MB |"
+      },
+      {
+        "line": 43,
+        "text": "| Run 1, second | FP16 | 0.088 | 0.079 | 11.8\u00d7 | 3,735 MB |"
+      },
+      {
+        "line": 44,
+        "text": "| Run 2, first | FP16 | 0.076 | 0.074 | 13.6\u00d7 | 3,689 MB |"
+      },
+      {
+        "line": 45,
+        "text": "| Run 2, second | INT8 | 0.080 | 0.070 | 12.7\u00d7 | 2,382 MB |"
+      },
+      {
+        "line": 73,
+        "text": "Convert the HF `metadata.jsonl` fixture to the TSV form accepted by"
+      },
+      {
+        "line": 81,
+        "text": "  --engines moss-coreml-int8 moss-coreml-fp16 \\"
+      },
+      {
+        "line": 88,
+        "text": "  --engines moss-coreml-fp16 moss-coreml-int8 \\"
+      }
+    ]
+  },
+  {
+    "path": "Tests/MossTranscribeTests/E2EMossTranscribeTests.swift",
+    "url": "https://raw.githubusercontent.com/soniqo/speech-swift/cbcdfc6be5e723952d29ab6e32af5e22ad8e70fa/Tests/MossTranscribeTests/E2EMossTranscribeTests.swift",
+    "excerpts": [
+      {
+        "line": 4,
+        "text": "@testable import MossTranscribe"
+      },
+      {
+        "line": 8,
+        "text": "    func testSwiftTokenizerPromptMatchesPinnedReference() async throws {"
+      },
+      {
+        "line": 53,
+        "text": "    func testINT8RoundTripProducesStructuredTranscript() async throws {"
+      },
+      {
+        "line": 54,
+        "text": "        try await assertRoundTrip("
+      },
+      {
+        "line": 55,
+        "text": "            variant: .int8,"
+      },
+      {
+        "line": 60,
+        "text": "    func testFP16RoundTripProducesStructuredTranscript() async throws {"
+      },
+      {
+        "line": 61,
+        "text": "        try await assertRoundTrip("
+      },
+      {
+        "line": 67,
+        "text": "    func testMLXINT5RoundTripProducesStructuredTranscript() async throws {"
+      },
+      {
+        "line": 68,
+        "text": "        try await assertMLXRoundTrip("
+      },
+      {
+        "line": 69,
+        "text": "            variant: .int5,"
+      },
+      {
+        "line": 74,
+        "text": "    func testMLXINT8RoundTripProducesStructuredTranscript() async throws {"
+      },
+      {
+        "line": 75,
+        "text": "        try await assertMLXRoundTrip("
+      },
+      {
+        "line": 76,
+        "text": "            variant: .int8,"
+      },
+      {
+        "line": 81,
+        "text": "    func testMLXINT5WeightsWithINT8KVCacheProduceStructuredTranscript()"
+      },
+      {
+        "line": 84,
+        "text": "        try await assertMLXINT8KVCache("
+      },
+      {
+        "line": 85,
+        "text": "            variant: .int5,"
+      },
+      {
+        "line": 90,
+        "text": "    func testMLXINT8WeightsWithINT8KVCacheProduceStructuredTranscript()"
+      },
+      {
+        "line": 93,
+        "text": "        try await assertMLXINT8KVCache("
+      },
+      {
+        "line": 94,
+        "text": "            variant: .int8,"
+      },
+      {
+        "line": 99,
+        "text": "    private func assertMLXINT8KVCache("
+      },
+      {
+        "line": 114,
+        "text": "                kvCachePrecision: .int8"
+      },
+      {
+        "line": 133,
+        "text": "    private func assertRoundTrip("
+      },
+      {
+        "line": 143,
+        "text": "                \"Tests/Qwen3ASRTests/Resources/test_audio.wav\""
+      },
+      {
+        "line": 146,
+        "text": "            throw XCTSkip(\"shared ASR test_audio.wav is unavailable\")"
+      },
+      {
+        "line": 187,
+        "text": "        let normalized = result.text.lowercased()"
+      },
+      {
+        "line": 222,
+        "text": "    private func assertMLXRoundTrip("
+      },
+      {
+        "line": 277,
+        "text": "            \"Tests/Qwen3ASRTests/Resources/test_audio.wav\""
+      },
+      {
+        "line": 280,
+        "text": "            throw XCTSkip(\"shared ASR test_audio.wav is unavailable\")"
+      }
+    ]
+  }
+]

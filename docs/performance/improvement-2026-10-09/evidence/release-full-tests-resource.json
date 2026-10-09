@@ -1,0 +1,17 @@
+{
+  "name": "final full unit suite",
+  "pid": 63150,
+  "runner_pid": 63147,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "command": [
+    "swift",
+    "test",
+    "--jobs",
+    "4"
+  ],
+  "log": "docs/performance/improvement-2026-10-09/evidence/release-full-tests.log",
+  "stop_condition": "completion or 600 seconds",
+  "status": "exited",
+  "exit_code": 1,
+  "elapsed_seconds": 302.056
+}

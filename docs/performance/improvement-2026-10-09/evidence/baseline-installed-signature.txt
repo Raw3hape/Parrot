@@ -1,0 +1,16 @@
+Executable=/Applications/Parrot.app/Contents/MacOS/Parrot
+Identifier=com.uygar.parrot
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20500 size=83932 flags=0x10000(runtime) hashes=2612+7 location=embedded
+Signature size=4793
+Authority=Apple Development: Mikita Siarhushkin (34U4CW2VY4)
+Authority=Apple Worldwide Developer Relations Certification Authority
+Authority=Apple Root CA
+Signed Time=6 Oct 2026 at 18:47:33
+Info.plist entries=24
+TeamIdentifier=5C2PL8729F
+Runtime Version=27.0.0
+Sealed Resources version=2 rules=13 files=11
+Internal requirements count=1 size=184
+Total signatures=1
+Chosen signature=1

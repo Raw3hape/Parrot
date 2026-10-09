@@ -1,0 +1,10 @@
+{
+  "name": "signed production candidate build",
+  "pid": 45803,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "log": "docs/performance/improvement-2026-10-09/evidence/candidate-build.log",
+  "stop_condition": "completion or1200 seconds",
+  "status": "exited",
+  "exit_code": 65,
+  "elapsed_seconds": 95.47
+}

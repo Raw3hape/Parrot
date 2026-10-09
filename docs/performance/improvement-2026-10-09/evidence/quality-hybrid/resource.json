@@ -1,0 +1,10 @@
+{
+  "name": "legacy Whisper quality baseline",
+  "case": "mixed",
+  "pid": 70811,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "stop_condition": "completion or120s",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 11.013
+}

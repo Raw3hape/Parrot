@@ -1,0 +1,206 @@
+Fetching https://github.com/huggingface/swift-jinja.git from cache
+Fetching https://github.com/apple/swift-argument-parser.git from cache
+Fetching https://github.com/apple/swift-crypto.git from cache
+Fetching https://github.com/ibireme/yyjson.git from cache
+Fetching https://github.com/apple/swift-collections.git from cache
+Fetching https://github.com/argmaxinc/WhisperKit.git from cache
+Fetching https://github.com/apple/swift-asn1.git from cache
+Fetching https://github.com/FluidInference/FluidAudio.git from cache
+Fetching https://github.com/huggingface/swift-transformers.git from cache
+Fetched https://github.com/huggingface/swift-jinja.git from cache (0.97s)
+Fetched https://github.com/apple/swift-crypto.git from cache (1.12s)
+Fetched https://github.com/apple/swift-collections.git from cache (1.19s)
+Fetched https://github.com/argmaxinc/WhisperKit.git from cache (1.27s)
+Fetched https://github.com/FluidInference/FluidAudio.git from cache (1.31s)
+Computing version for https://github.com/FluidInference/FluidAudio.git
+Fetched https://github.com/apple/swift-argument-parser.git from cache (1.32s)
+Fetched https://github.com/apple/swift-asn1.git from cache (1.33s)
+Fetched https://github.com/ibireme/yyjson.git from cache (1.33s)
+Fetched https://github.com/huggingface/swift-transformers.git from cache (1.35s)
+Computed https://github.com/FluidInference/FluidAudio.git at 0.17.3 (2.07s)
+Computing version for https://github.com/argmaxinc/WhisperKit.git
+Computed https://github.com/argmaxinc/WhisperKit.git at 0.18.0 (0.77s)
+Computing version for https://github.com/apple/swift-argument-parser.git
+Computed https://github.com/apple/swift-argument-parser.git at 1.8.2 (0.39s)
+Computing version for https://github.com/huggingface/swift-transformers.git
+Computed https://github.com/huggingface/swift-transformers.git at 1.1.9 (0.49s)
+Computing version for https://github.com/ibireme/yyjson.git
+Computed https://github.com/ibireme/yyjson.git at 0.12.0 (0.43s)
+Computing version for https://github.com/apple/swift-crypto.git
+Computed https://github.com/apple/swift-crypto.git at 4.5.0 (0.50s)
+Computing version for https://github.com/apple/swift-collections.git
+Computed https://github.com/apple/swift-collections.git at 1.6.0 (0.47s)
+Computing version for https://github.com/huggingface/swift-jinja.git
+Computed https://github.com/huggingface/swift-jinja.git at 2.3.6 (0.39s)
+Computing version for https://github.com/apple/swift-asn1.git
+Computed https://github.com/apple/swift-asn1.git at 1.7.1 (0.45s)
+Creating working copy for https://github.com/huggingface/swift-jinja.git
+Working copy of https://github.com/huggingface/swift-jinja.git resolved at 2.3.6
+Creating working copy for https://github.com/apple/swift-collections.git
+Working copy of https://github.com/apple/swift-collections.git resolved at 1.6.0
+Creating working copy for https://github.com/ibireme/yyjson.git
+Working copy of https://github.com/ibireme/yyjson.git resolved at 0.12.0
+Creating working copy for https://github.com/apple/swift-argument-parser.git
+Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.8.2
+Creating working copy for https://github.com/apple/swift-crypto.git
+Working copy of https://github.com/apple/swift-crypto.git resolved at 4.5.0
+Creating working copy for https://github.com/argmaxinc/WhisperKit.git
+Working copy of https://github.com/argmaxinc/WhisperKit.git resolved at 0.18.0
+Creating working copy for https://github.com/apple/swift-asn1.git
+Working copy of https://github.com/apple/swift-asn1.git resolved at 1.7.1
+Creating working copy for https://github.com/huggingface/swift-transformers.git
+Working copy of https://github.com/huggingface/swift-transformers.git resolved at 1.1.9
+Creating working copy for https://github.com/FluidInference/FluidAudio.git
+Working copy of https://github.com/FluidInference/FluidAudio.git resolved at 0.17.3
+Fetching binary artifact https://github.com/FluidInference/text-processing-rs/releases/download/v0.3.1/NemoTextProcessing.xcframework.zip from cache
+Fetched https://github.com/FluidInference/text-processing-rs/releases/download/v0.3.1/NemoTextProcessing.xcframework.zip from cache (2.29s)
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 573]
+[Planning deferred tasks]
+[120 / 267]
+[139 / 267]
+[144 / 270] InternalCollectionsUtilities
+[146 / 290] MachTaskSelfWrapper
+[150 / 324]
+[153 / 324]
+[159 / 378] InternalCollectionsUtilities
+[169 / 378]
+[176 / 378]
+[185 / 378]
+[195 / 457]
+[205 / 457] CSpeexDSP
+[212 / 457]
+[216 / 457]
+[220 / 457]
+[226 / 457]
+[231 / 457]
+[235 / 457]
+[238 / 457]
+[243 / 457]
+[246 / 457]
+[250 / 457]
+[257 / 457]
+[260 / 457] yyjson
+[267 / 457]
+[270 / 457] InternalCollectionsUtilities
+[272 / 457] InternalCollectionsUtilities
+[278 / 457]
+[282 / 457] Crypto
+[287 / 457] InternalCollectionsUtilities
+[289 / 457] Crypto
+[298 / 457]
+[302 / 457]
+[304 / 457]
+[306 / 457]
+[307 / 457]
+[308 / 457] Crypto
+[313 / 457] Crypto
+[316 / 457] Crypto-product
+[320 / 457] Crypto
+[325 / 457]
+[328 / 457]
+[331 / 457] Crypto
+[333 / 457] Crypto
+[335 / 457] Crypto
+[347 / 457] CSpeexDSP
+[354 / 458] FluidAudio
+[355 / 477] OrderedCollections
+[356 / 477] OrderedCollections
+[359 / 477] OrderedCollections
+[371 / 477] OrderedCollections
+[373 / 477] OrderedCollections-product
+[374 / 477] OrderedCollections-product
+[377 / 477] OrderedCollections
+[381 / 477] OrderedCollections
+[384 / 477] OrderedCollections
+[385 / 477] Jinja
+[389 / 477] FluidAudio
+[391 / 477] FluidAudio-product
+[393 / 477] FluidAudio
+[395 / 477] FluidAudio
+[397 / 477] FluidAudio
+[398 / 477] FluidAudio
+[400 / 477] FluidAudio
+[401 / 477] FluidAudio
+[401 / 477] CSpeexDSP
+[403 / 478] Jinja
+[405 / 493] Jinja
+[406 / 493] Jinja
+[406 / 493] FluidAudio
+[409 / 493] Jinja
+[414 / 493] Jinja
+[416 / 493] Jinja-product
+[420 / 493] Jinja
+[422 / 493] Jinja
+[424 / 493] Jinja
+[425 / 494]
+[427 / 494] Jinja
+[429 / 495] Hub
+[438 / 542]
+[441 / 542]
+[447 / 542]
+[450 / 542]
+[454 / 542]
+[457 / 542]
+[460 / 542]
+[464 / 542]
+[466 / 542]
+[467 / 542]
+[474 / 542] Hub
+[476 / 542] Hub
+[483 / 542] Tokenizers
+[485 / 544]
+[485 / 544] Tokenizers
+[488 / 584] Tokenizers
+[490 / 584] Tokenizers
+[497 / 584]
+[503 / 584]
+[509 / 584] Tokenizers
+[511 / 584]
+[512 / 584] Tokenizers-product
+[514 / 584] Tokenizers-product
+[516 / 584] Tokenizers
+[520 / 584] ArgmaxCore
+[530 / 584] ArgmaxCore
+[533 / 584] ArgmaxCore
+[536 / 584] WhisperKit
+[540 / 584] ArgmaxCore
+[542 / 585] ArgmaxCore
+[544 / 585] WhisperKit
+[551 / 621]
+[554 / 621]
+[556 / 621]
+[557 / 621]
+[558 / 621]
+[560 / 621]
+[561 / 621]
+[566 / 621] WhisperKit
+[567 / 621] WhisperKit
+[569 / 621] WhisperKit
+[577 / 621] WhisperKit
+[578 / 621] WhisperKit-product
+[579 / 621] WhisperKit-product
+[580 / 621] WhisperKit-product
+[583 / 621] WhisperKit
+[584 / 621] WhisperKit
+[585 / 621] WhisperKit
+[586 / 621] Parrot-product
+[590 / 623] WhisperKit
+[592 / 623] Parrot-product
+[601 / 679]
+[606 / 679]
+[610 / 679]
+error: SwiftCompile normal arm64 /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/BestTranscriptionCoordinator.swift failed with a nonzero exit code. Command line:     cd /Users/nikita/Documents/My_Projects
+    builtin-SwiftPerFileCompile BestTranscriptionCoordinator.swift
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/BestTranscriptionCoordinator.swift:170:13: error: failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)
+168 |         }
+169 |         let waiterID = UUID()
+170 |         try await withTaskCancellationHandler {
+    |             `- error: failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)
+171 |             try await withCheckedThrowingContinuation { continuation in
+172 |                 if Task.isCancelled {
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/nikita/Documents/My_Projects/Parrot/Parrot/BestTranscriptionIntegrationTest.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/CaptureIntegrationTest.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/AIUsage.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/BestTranscript.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/CallProfile.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/Insight.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/KindStyle.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/KnowledgeBase.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/Meeting.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/MeetingSummary.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/MeetingTitle.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Models/TranscriptSegment.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/ParrotApp.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/ProfileTest.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/AnalysisProvider.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/ApplicationPresentationController.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/AudioCaptureManager.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/AudioRouteMonitor.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/AudioTimelineStore.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/BackgroundPreferences.swift -primary-file /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/BestAudioFileReader.swift -primary-file /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/BestTranscriptionCoordinator.swift -primary-file /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/BestTranscriptionStore.swift -primary-file /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallAnalysisEngine.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallCandidateClassifier.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallDetectionCoordinator.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallDetectionModels.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallStreamProcessor.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallSuggestionStateMachine.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CallWindowProvider.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CloudTranscription.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/CoreAudioProcessMonitor.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/DiarizationEngine.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/EchoCanceller.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/ExportService.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/KnowledgeBaseService.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/LocalMeetingTitleGenerator.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/LocalRecognitionRouter.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/MeetingPresentationPolicy.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/MeetingTitleCoordinator.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/MeetingTitleSnapshotBuilder.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/MenuBarController.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/MenuBarPresentationPolicy.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/ParakeetModelService.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/ParrotInstanceCoordinator.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/PersonalBuildPolicy.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/ProfilePresets.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/ProfileStore.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/QwenMeetingSummaryGenerator.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/QwenMeetingTitleGenerator.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/RecordingManager.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/RecordingNavigationPolicy.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/TranscriptionEngine.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/UtteranceSegmentation.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Services/WhisperModelService.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/SnapshotTool.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/BestTranscriptionProgressView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/ContentView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/CopilotPanelView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/DashboardView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/LiveRecordingView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MeetingDetailView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/OnboardingView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/ProfilesSettingsView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/ReportContentView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/SentimentStripView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/SettingsView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/SidebarView.swift /Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/Theme.swift -supplementary-output-file-map /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/supplementaryOutputs-64 -target arm64-apple-macos14.0 -disable-cross-import-overlay-search -swift-module-cross-import Darwin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/Darwin.swiftcrossimport/xlocale.swiftoverlay -swift-module-cross-import ScreenCaptureKit /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/ScreenCaptureKit.framework/Modules/ScreenCaptureKit.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import ScreenCaptureKit /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/ScreenCaptureKit.framework/Modules/ScreenCaptureKit.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import SwiftData /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftData.framework/Modules/SwiftData.swiftcrossimport/CoreData.swiftoverlay -swift-module-cross-import SwiftData /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftData.framework/Modules/SwiftData.swiftcrossimport/SwiftUI.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftDataMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftDataMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/Parrot-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -I /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Products/Debug/PackageFrameworks -F /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -module-cache-path /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/SwiftExplicitPrecompiledModules -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -swift-version 5 -Onone -D SWIFT_PACKAGE -D DEBUG -D Xcode -entry-point-function-name Parrot_main -serialize-debugging-options -enable-experimental-feature DebugDescriptionMacro -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/nikita/Documents/My_Projects -enable-anonymous-context-mangled-names -file-compilation-dir /Users/nikita/Documents/My_Projects -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/GeneratedModuleMaps/yyjson.modulemap -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/checkouts/FluidAudio/Sources/MachTaskSelfWrapper/include/module.modulemap -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/checkouts/FluidAudio/Sources/FastClusterWrapper/include/module.modulemap -Xcc -fmodule-map-file\=/Users/nikita/Documents/My_Projects/Parrot/Vendor/CSpeexDSP/Sources/CSpeexDSP/include/module.modulemap -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/SDKStatCaches.noindex/macosx27.0-26A425-a0facfad118c1a7a18f0aad9463f65497231f6df4def33e022ae2eb8f782df1a.sdkstatcache -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/checkouts/yyjson/src -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/checkouts/FluidAudio/Sources/MachTaskSelfWrapper/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/checkouts/FluidAudio/Sources/FastClusterWrapper/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/Vendor/CSpeexDSP/Sources/CSpeexDSP/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Products/Debug/include -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/DerivedSources-normal/arm64 -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/DerivedSources/arm64 -Xcc -I/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name Parrot -package-name parrot -const-gather-protocols-file /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/Parrot-1AFCEFF906C2FE-testable_const_extract_protocols.json -disable-clang-spi -clang-target arm64-apple-macos27.0 -target-sdk-version 27.0 -target-sdk-name macosx27.0 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -parse-as-library -o /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/BestAudioFileReader.o -o /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/BestTranscriptionCoordinator.o -o /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/BestTranscriptionStore.o -o /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/CallAnalysisEngine.o -debug-module-path /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out/Intermediates.noindex/Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/Parrot.swiftmodule -index-unit-output-path /Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/BestAudioFileReader.o -index-unit-output-path /Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/BestTranscriptionCoordinator.o -index-unit-output-path /Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/BestTranscriptionStore.o -index-unit-output-path /Parrot.build/Debug/Parrot-1AFCEFF906C2FE-testable-t.build/Objects-normal/arm64/CallAnalysisEngine.o -index-store-path /Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009/main-spm/out -index-system-modules
+error: Build failed
+error: fatalError

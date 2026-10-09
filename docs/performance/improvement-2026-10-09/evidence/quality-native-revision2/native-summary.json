@@ -1,0 +1,36 @@
+[
+  {
+    "engine": "qwen",
+    "completed_cases": 10,
+    "declared_cases": 10,
+    "words": 473,
+    "errors": 11,
+    "wer": 0.023255813953488372,
+    "resource": {
+      "name": "qwen native corpus",
+      "pid": 53795,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "ten requests complete; startup120s, each inference120s, exact-child shutdown10s",
+      "status": "exited",
+      "exit_code": 0,
+      "elapsed_seconds": 77.594
+    }
+  },
+  {
+    "engine": "moss",
+    "completed_cases": 10,
+    "declared_cases": 10,
+    "words": 473,
+    "errors": 17,
+    "wer": 0.035940803382663845,
+    "resource": {
+      "name": "moss native corpus",
+      "pid": 54445,
+      "project": "/Users/nikita/Documents/My_Projects/Parrot",
+      "stop_condition": "ten requests complete; startup120s, each inference120s, exact-child shutdown10s",
+      "status": "exited",
+      "exit_code": 0,
+      "elapsed_seconds": 100.705
+    }
+  }
+]

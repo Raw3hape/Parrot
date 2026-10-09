@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-10-09T21:46:43.134305+00:00",
+  "installed_main_sha256": "c1c3aacfb66bae5768f6593d5ca466a0a0d7ce43712e2b433422f17c96746302",
+  "normal_stop_saved_audio_and_live": true,
+  "final_live_picker": true,
+  "automatic_final_artifacts": 6,
+  "all_known_qa_ids_have_final": true,
+  "all_final_model_ids_hybrid": true,
+  "all_qa_titles_explicit": true,
+  "playback": {
+    "live_fixture_words_preserved": true,
+    "play_button_became_pause": true,
+    "position_before_seconds": 18.282,
+    "position_after_seconds": 18.86375
+  },
+  "background_priority": {
+    "preparing_final_observed_at": "2026-10-09T21:34:10.775Z",
+    "new_recording_issued_at": "2026-10-09T21:34:13.506Z",
+    "active_capture_observed": true,
+    "observed_elapsed_ms": 6385,
+    "timing_qualification": "Includes computer-use snapshot latency; not a precise recording-start benchmark"
+  },
+  "stop_immediate_quit": {
+    "scenario": "Stop immediately followed by Cmd-Q",
+    "app_pid": 74961,
+    "issued_at": "2026-10-09T21:04:04.326Z",
+    "checked_at": "2026-10-09T21:04:24.547371+00:00",
+    "process_exited": true,
+    "check_wait_seconds": 0.004
+  },
+  "ordinary_menu_quit": {
+    "scenario": "ordinary Parrot menu Quit while recording",
+    "app_pid": 78312,
+    "issued_at": "2026-10-09T21:30:53.563Z",
+    "checked_at": "2026-10-09T21:31:06.830204+00:00",
+    "process_exited": true,
+    "check_wait_seconds": 2.282,
+    "custom_status_popover": "not reachable by CUA window scope; regression unit test passed"
+  },
+  "custom_status_popover_quit": {
+    "runtime_tested": false,
+    "unit_regression_passed": true,
+    "limitation": "CUA excludes status bar surfaces; coordinate click rejected and fn modifier unsupported"
+  },
+  "last_capture_stopped_at": "2026-10-09T21:35:18.670Z",
+  "original_history": {
+    "old_meetings": 88,
+    "old_segments": 21647,
+    "meeting_ids_unchanged": true,
+    "meeting_data_unchanged": true,
+    "live_transcripts_unchanged": true
+  },
+  "private_qa_manifest": "recordings/quality-2026-10-09/qa-meeting-manifest-labeled.json"
+}

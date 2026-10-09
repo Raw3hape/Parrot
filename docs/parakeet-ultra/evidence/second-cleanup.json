@@ -1,0 +1,47 @@
+{
+  "owned_disposable_processes": 0,
+  "owned_launchagents": 0,
+  "cache_removed": true,
+  "parrot_running": true,
+  "resources": [
+    {
+      "name": "Parrot application quit",
+      "label": "com.nikita.parrot-ultra-quit-second-20261006",
+      "pid": 12127,
+      "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+      "stop_condition": "completion or 30 seconds",
+      "finished": true,
+      "exit_code": 0
+    },
+    {
+      "name": "Parrot application open",
+      "label": "com.nikita.parrot-ultra-open-second-20261006",
+      "pid": 12321,
+      "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+      "stop_condition": "completion or 30 seconds",
+      "finished": true,
+      "exit_code": 0
+    },
+    {
+      "name": "Aqua production capture check",
+      "label": "com.nikita.parrot-ultra-capture-second-installed-20261006",
+      "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+      "stop_condition": "diagnostic ends after 11 seconds, 45 second driver timeout",
+      "finished": true,
+      "capture_pid": 12165,
+      "player_pid": 12167,
+      "exit_code": 0,
+      "elapsed_seconds": 12.719,
+      "capture_process_exited": true
+    },
+    {
+      "name": "Parrot application inspect",
+      "label": "com.nikita.parrot-ultra-inspect-second-20261006",
+      "pid": 12331,
+      "cwd": "/Users/nikita/Library/Caches/Parrot-ultra-resume-20261006",
+      "stop_condition": "completion or 30 seconds",
+      "finished": true,
+      "exit_code": 0
+    }
+  ]
+}

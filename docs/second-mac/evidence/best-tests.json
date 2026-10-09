@@ -1,0 +1,32 @@
+[
+  {
+    "name": "best-ru",
+    "language": "ru",
+    "network_denied": false,
+    "pid": 8990,
+    "timeout_seconds": 240,
+    "exit_code": 0,
+    "elapsed_seconds": 23.708,
+    "finished": true,
+    "diagnostics": [
+      "diagnostic: best_transcription",
+      "audio_seconds: 11.831",
+      "segments: 3",
+      "transcript_characters: 185",
+      "timestamps_valid: 1",
+      "contains_special_tokens: 0"
+    ]
+  },
+  {
+    "name": "best-en-offline",
+    "language": "en",
+    "network_denied": true,
+    "pid": 8997,
+    "timeout_seconds": 240,
+    "exit_code": -5,
+    "elapsed_seconds": 0.045,
+    "finished": true,
+    "diagnostics": [],
+    "log_tail": []
+  }
+]

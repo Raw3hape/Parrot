@@ -1,0 +1,1 @@
+7a5be67795849ef393827dc347f6e0631de042e7f4d2a58304d2221e0f1bcec3  /Applications/Parrot.app/Contents/MacOS/Parrot

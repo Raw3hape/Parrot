@@ -1,0 +1,33 @@
+{
+  "checked_on": "2026-10-09",
+  "hardware": {
+    "model": "MacBook Pro M5 Pro",
+    "cores": 18,
+    "ram_bytes": 68719476736
+  },
+  "installed_executable": "/Applications/Parrot.app/Contents/MacOS/Parrot",
+  "installed_sha256": "7a5be67795849ef393827dc347f6e0631de042e7f4d2a58304d2221e0f1bcec3",
+  "production_pid_before": 31493,
+  "current_production_process": "31493 S      0.0 155712 /Applications/Parrot.app/Contents/MacOS/Parrot",
+  "ui_observations": {
+    "recording_active": false,
+    "primary_model": "Parakeet Ultra",
+    "fallback_model": "Whisper Large V3 Turbo",
+    "vad": "Silero",
+    "language": "Auto-detect",
+    "automatic_titles_and_summaries": true,
+    "title_summary_status": "Ready",
+    "echo_cancellation_enabled": true,
+    "duplicate_me_and_other_utterances_seen": true
+  },
+  "live_log_selected_lines": 0,
+  "scope": "Current primary Mac; current second Mac runtime not checked. Synthetic model timings do not measure real meeting accuracy or application cold launch.",
+  "handback": {
+    "owned_helper_count_before": 0,
+    "owned_helper_count_after": 0,
+    "original_ui_restored": true,
+    "production_pid_31493_left_running": true,
+    "software_and_settings_changed": false,
+    "second_mac_runtime_checked": false
+  }
+}

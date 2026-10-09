@@ -11,6 +11,7 @@ final class RecordingManager {
     let transcriptionEngine: TranscriptionEngine
     let bestTranscriptionCoordinator: BestTranscriptionCoordinator
     let meetingTitleCoordinator: MeetingTitleCoordinator
+    let nativeFinalRecognizer: NativeFinalTranscriptionService?
     let callDetection: CallDetectionCoordinator
     let diarizationEngine = DiarizationEngine()
     let callAnalysisEngine = CallAnalysisEngine()
@@ -46,8 +47,33 @@ final class RecordingManager {
         let whisperGate = WhisperInferenceGate()
         let whisperService = WhisperModelService(inferenceGate: whisperGate)
         transcriptionEngine = TranscriptionEngine(whisperService: whisperService)
+        let native: NativeFinalTranscriptionService?
+        if let descriptor = FinalSpeechModelCatalog.selectedDescriptor(),
+           let engine = NativeFinalTranscriptionService.Engine(rawValue: descriptor.engine),
+           FileManager.default.isExecutableFile(atPath: FinalSpeechModelCatalog.workerURL.path) {
+            native = NativeFinalTranscriptionService(
+                engine: engine,
+                modelDirectoryURL: FinalSpeechModelCatalog.rootDirectory
+                    .appendingPathComponent(descriptor.directoryName, isDirectory: true),
+                executableURL: FinalSpeechModelCatalog.workerURL,
+                modelIdentity: descriptor.identity,
+                modelDisplayName: descriptor.displayName,
+                startupAdmission: {
+                    SystemQwenMemoryAdmission.speechStartupDecision() == .admitted
+                }
+            )
+        } else {
+            native = nil
+        }
+        nativeFinalRecognizer = native
+        let finalRecognizer: any BestWhisperRecognizing
+        if let native {
+            finalRecognizer = HybridFinalTranscriptionService(whisper: whisperService, native: native)
+        } else {
+            finalRecognizer = whisperService
+        }
         bestTranscriptionCoordinator = BestTranscriptionCoordinator(
-            recognizer: whisperService
+            recognizer: finalRecognizer
         )
         meetingTitleCoordinator = MeetingTitleCoordinator()
         callDetection = CallDetectionCoordinator(
@@ -67,6 +93,10 @@ final class RecordingManager {
         let resumable = Self.reconcileOrphanedRecordings(in: modelContext)
         profileStore.seedAndMigrateIfNeeded(context: modelContext, knowledgeBase: knowledgeBase)
         for meeting in resumable {
+            enqueuePostProcessing(for: meeting)
+        }
+        let finalPending = (try? modelContext.fetch(FetchDescriptor<Meeting>())) ?? []
+        for meeting in finalPending where meeting.finalTranscriptRequested && meeting.status == .done {
             enqueuePostProcessing(for: meeting)
         }
     }
@@ -149,13 +179,18 @@ final class RecordingManager {
         await prepareApplication(modelContext: modelContext)
         await meetingTitleCoordinator.pauseForRecording()
         await bestTranscriptionCoordinator.pauseForRecording()
-        var recordingDidStart = false
-        defer {
-            if !recordingDidStart {
-                meetingTitleCoordinator.resumeAfterRecording()
-                bestTranscriptionCoordinator.resumeAfterRecording()
-            }
+        do {
+            try await nativeFinalRecognizer?.pauseForRecording()
+            try await startCaptureAfterPreparation(modelContext: modelContext)
+        } catch {
+            await nativeFinalRecognizer?.resumeAfterRecording()
+            bestTranscriptionCoordinator.resumeAfterRecording()
+            meetingTitleCoordinator.resumeAfterRecording()
+            throw error
         }
+    }
+
+    private func startCaptureAfterPreparation(modelContext: ModelContext) async throws {
         if !transcriptionEngine.isReady {
             await transcriptionEngine.loadModel()
         }
@@ -248,7 +283,6 @@ final class RecordingManager {
 
         recordingStartTime = .now
         isRecording = true
-        recordingDidStart = true
 
         // Start elapsed time timer
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -300,6 +334,7 @@ final class RecordingManager {
         if let meeting = currentMeeting {
             meeting.duration = elapsedTime
             meeting.status = transcriptTimedOut ? .failed : .processing
+            meeting.finalTranscriptRequested = !transcriptTimedOut
             if transcriptTimedOut {
                 meeting.errorMessage = "Local transcription stopped responding before the final phrases completed. All recorded audio is preserved and can still be played or opened from local storage."
             }
@@ -341,6 +376,7 @@ final class RecordingManager {
         isRecording = false
         elapsedTime = 0
         recordingStartTime = nil
+        await nativeFinalRecognizer?.resumeAfterRecording()
         bestTranscriptionCoordinator.resumeAfterRecording()
         meetingTitleCoordinator.resumeAfterRecording()
     }
@@ -355,6 +391,7 @@ final class RecordingManager {
         if isRecording || isStopping {
             await stopRecording()
         }
+        try? await nativeFinalRecognizer?.shutdown()
         await meetingTitleCoordinator.prepareForTermination()
         await bestTranscriptionCoordinator.prepareForTermination()
     }
@@ -370,6 +407,30 @@ final class RecordingManager {
             let polishSeconds = 0.0
             await self.postProcess(meeting: meeting)
             guard !Task.isCancelled else { return }
+            if meeting.finalTranscriptRequested {
+                let request = self.finalTranscriptRequest(for: meeting)
+                let waiter = FinalTranscriptResultAwaiter()
+                let result: Result<BestTranscriptArtifact, Error> = await withTaskCancellationHandler {
+                    await withCheckedContinuation { continuation in
+                        waiter.install(continuation)
+                        guard !Task.isCancelled else {
+                            waiter.complete(.failure(CancellationError()))
+                            return
+                        }
+                        self.bestTranscriptionCoordinator.startOrResume(request) { waiter.complete($0) }
+                    }
+                } onCancel: {
+                    waiter.complete(.failure(CancellationError()))
+                    Task { @MainActor in
+                        self.bestTranscriptionCoordinator.cancel(meetingID: request.meetingID)
+                    }
+                }
+                guard !Task.isCancelled else { return }
+                if case .success = result {
+                    meeting.finalTranscriptRequested = false
+                    try? self.modelContext?.save()
+                }
+            }
             self.meetingTitleCoordinator.enqueue(meeting)
             if self.callAnalysisEngine.isEnabled,
                self.callAnalysisEngine.provider.isConfigured {
@@ -378,6 +439,26 @@ final class RecordingManager {
             guard !Task.isCancelled else { return }
             self.writeAIUsage(meeting: meeting, polishSeconds: polishSeconds)
         }
+    }
+
+    func finalTranscriptRequest(for meeting: Meeting) -> BestTranscriptionRequest {
+        BestTranscriptionRequest(
+            meetingID: meeting.id,
+            title: meeting.title,
+            date: meeting.date,
+            duration: meeting.duration,
+            systemAudioURL: meeting.systemAudioPath.nilIfEmpty.map { URL(fileURLWithPath: $0) },
+            micAudioURL: meeting.micAudioPath?.nilIfEmpty.map { URL(fileURLWithPath: $0) },
+            vocabulary: UserDefaults.standard.string(forKey: "customVocabulary") ?? "",
+            timeline: AudioTimelineStore.load(meetingID: meeting.id)
+        )
+    }
+
+    func retryFinalTranscript(for meeting: Meeting) {
+        guard !isRecording, !isStarting, !isStopping else { return }
+        meeting.finalTranscriptRequested = true
+        try? modelContext?.save()
+        enqueuePostProcessing(for: meeting)
     }
 
     /// Deletes a meeting and its audio files. The only removal path in the app —

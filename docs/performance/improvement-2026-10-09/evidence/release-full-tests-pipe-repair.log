@@ -1,0 +1,837 @@
+Building for debugging...
+[Computing dependencies]
+[Using on-disk description]
+[1 / 87]
+[1 / 58]
+[3 / 28] Parrot-product
+[7 / 32] Parrot
+[7 / 32] Parrot-product
+[7 / 51] Parrot-product
+[10 / 68] Parrot-product
+[11 / 68] Parrot-product
+[12 / 68] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[13 / 68] Parrot-product
+[14 / 68] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[16 / 68] Parrot-product
+[19 / 70] Parrot-product
+[26 / 73] Parrot-product
+[27 / 73] Parrot-product
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[29 / 73] Parrot-product
+[30 / 73] Parrot-product
+[31 / 73] Parrot-product
+[32 / 73] Parrot
+[33 / 73] Parrot
+[34 / 73] Parrot
+[35 / 73] Parrot
+[36 / 73] Parrot
+[37 / 73] Parrot
+[40 / 73] Parrot-product
+[42 / 73] Parrot
+[43 / 73] Parrot
+[46 / 71] Parrot
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarPopoverView.swift:5:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  3 | struct MenuBarPopoverView: View {
+  4 |     @Environment(RecordingManager.self) private var recordingManager
+  5 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+  6 | 
+  7 |     let callDetection: CallDetectionCoordinator
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[47 / 71] Parrot
+[48 / 71] Parrot
+[49 / 71] Parrot
+/Users/nikita/Documents/My_Projects/Parrot/Parrot/Views/MenuBarView.swift:19:46: warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 17 |     @Environment(RecordingManager.self) private var recordingManager
+ 18 |     @Environment(ProfileStore.self) private var profileStore
+ 19 |     @Environment(\.modelContext) private var modelContext
+    |                                              `- warning: cannot use class 'ModelContext' in a property declaration member of a type not marked '@_implementationOnly'; 'SwiftData' was not imported by this file
+ 20 | 
+ 21 |     let openMainWindow: () -> Void
+
+SwiftData.ModelContext:3:14: note: class declared here
+ 1 | @available(swift 5.9)
+ 2 | @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+ 3 | public class ModelContext : Equatable, SendableMetatype {
+   |              `- note: class declared here
+ 4 |     @available(swift 5.9)
+ 5 |     @available(macOS 15, iOS 18, tvOS 18, watchOS 11, visionOS 2, *)
+[50 / 71] Parrot
+[51 / 71] Parrot
+[51 / 71]
+[52 / 71] Parrot-product
+[53 / 72] Parrot
+[55 / 72] Parrot
+[60 / 72] ParrotTests-product
+[61 / 72] ParrotTests-product
+[66 / 91] ParrotTests-product
+[67 / 91] ParrotTests-product
+[68 / 91] ParrotTests-product
+[69 / 91] ParrotTests-product
+[70 / 91] ParrotTests-product
+[71 / 91] ParrotTests-product
+[72 / 91] ParrotTests-product
+[73 / 91] ParrotTests-product
+[74 / 91] ParrotTests-product
+[76 / 91] ParrotTests-product
+[77 / 91] ParrotTests-product
+[79 / 91] ParrotTests-product
+[80 / 91] ParrotTests-product
+[81 / 91] ParrotTests-product
+[82 / 91] ParrotTests-product
+[83 / 91] ParrotTests-product
+[84 / 91] ParrotTests-product
+[85 / 91] ParrotTests-product
+[85 / 91] AllIncludingTests
+[85 / 91] ParrotTests-product
+[87 / 91] ParrotTests-product
+[88 / 91] ParrotTests-product
+[89 / 91] ParrotTests-product
+Build complete! (129,45 с)
+Test Suite 'All tests' started at 2026-10-09 22:36:13.394.
+Test Suite 'ParrotTests.xctest' started at 2026-10-09 22:36:13.400.
+Test Suite 'AudioRouteChangePolicyTests' started at 2026-10-09 22:36:13.400.
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testDuplicateRouteNotificationDoesNothing]' started.
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testDuplicateRouteNotificationDoesNothing]' passed (0.010 seconds).
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testEngineConfigurationChangeRestartsMicrophoneEvenWhenIDsMatch]' started.
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testEngineConfigurationChangeRestartsMicrophoneEvenWhenIDsMatch]' passed (0.000 seconds).
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testInputDeviceChangeRestartsOnlyMicrophone]' started.
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testInputDeviceChangeRestartsOnlyMicrophone]' passed (0.000 seconds).
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testOutputDeviceChangeKeepsSystemCaptureRunning]' started.
+Test Case '-[ParrotTests.AudioRouteChangePolicyTests testOutputDeviceChangeKeepsSystemCaptureRunning]' passed (0.000 seconds).
+Test Suite 'AudioRouteChangePolicyTests' passed at 2026-10-09 22:36:13.414.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.011 (0.015) seconds
+Test Suite 'AudioTimelineAccumulatorTests' started at 2026-10-09 22:36:13.414.
+Test Case '-[ParrotTests.AudioTimelineAccumulatorTests testAccumulatorDoesNotInventTrackWithoutAudioFrames]' started.
+Test Case '-[ParrotTests.AudioTimelineAccumulatorTests testAccumulatorDoesNotInventTrackWithoutAudioFrames]' passed (0.004 seconds).
+Test Case '-[ParrotTests.AudioTimelineAccumulatorTests testAccumulatorKeepsFirstOffsetAndCountsEveryPersistedFrame]' started.
+Test Case '-[ParrotTests.AudioTimelineAccumulatorTests testAccumulatorKeepsFirstOffsetAndCountsEveryPersistedFrame]' passed (0.000 seconds).
+Test Suite 'AudioTimelineAccumulatorTests' passed at 2026-10-09 22:36:13.418.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'AudioTimelineStoreTests' started at 2026-10-09 22:36:13.418.
+Test Case '-[ParrotTests.AudioTimelineStoreTests testTimelineRoundTripsByMeetingID]' started.
+Test Case '-[ParrotTests.AudioTimelineStoreTests testTimelineRoundTripsByMeetingID]' passed (0.007 seconds).
+Test Suite 'AudioTimelineStoreTests' passed at 2026-10-09 22:36:13.425.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.007 (0.007) seconds
+Test Suite 'BackgroundPreferencesTests' started at 2026-10-09 22:36:13.425.
+Test Case '-[ParrotTests.BackgroundPreferencesTests testCallDetectionDefaultsToEnabledButRespectsExplicitOptOut]' started.
+Test Case '-[ParrotTests.BackgroundPreferencesTests testCallDetectionDefaultsToEnabledButRespectsExplicitOptOut]' passed (0.003 seconds).
+Test Case '-[ParrotTests.BackgroundPreferencesTests testLaunchAtLoginDefaultsToEnabledButRespectsExplicitOptOut]' started.
+Test Case '-[ParrotTests.BackgroundPreferencesTests testLaunchAtLoginDefaultsToEnabledButRespectsExplicitOptOut]' passed (0.003 seconds).
+Test Case '-[ParrotTests.BackgroundPreferencesTests testLoginItemMayOnlyBeManagedByInstalledProductionApp]' started.
+Test Case '-[ParrotTests.BackgroundPreferencesTests testLoginItemMayOnlyBeManagedByInstalledProductionApp]' passed (0.001 seconds).
+Test Suite 'BackgroundPreferencesTests' passed at 2026-10-09 22:36:13.432.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.006 (0.008) seconds
+Test Suite 'BestAudioFileReaderTests' started at 2026-10-09 22:36:13.432.
+Test Case '-[ParrotTests.BestAudioFileReaderTests testFingerprintChangesWhenAudioChanges]' started.
+Test Case '-[ParrotTests.BestAudioFileReaderTests testFingerprintChangesWhenAudioChanges]' passed (0.064 seconds).
+Test Case '-[ParrotTests.BestAudioFileReaderTests testInspectConvertsDurationToCanonicalFrameCount]' started.
+Test Case '-[ParrotTests.BestAudioFileReaderTests testInspectConvertsDurationToCanonicalFrameCount]' passed (0.005 seconds).
+Test Case '-[ParrotTests.BestAudioFileReaderTests testMissingAndEmptyFilesAreRejected]' started.
+Test Case '-[ParrotTests.BestAudioFileReaderTests testMissingAndEmptyFilesAreRejected]' passed (0.002 seconds).
+Test Case '-[ParrotTests.BestAudioFileReaderTests testReaderReturnsOnlyRequestedWindowAtCanonicalSampleRate]' started.
+Test Case '-[ParrotTests.BestAudioFileReaderTests testReaderReturnsOnlyRequestedWindowAtCanonicalSampleRate]' passed (0.030 seconds).
+Test Suite 'BestAudioFileReaderTests' passed at 2026-10-09 22:36:13.534.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.101 (0.102) seconds
+Test Suite 'BestTranscriptionCoordinatorTests' started at 2026-10-09 22:36:13.534.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testCancellingQueuedRequestDoesNotWaitForUnrelatedUncooperativeBatch]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testCancellingQueuedRequestDoesNotWaitForUnrelatedUncooperativeBatch]' passed (0.340 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testCompletedArtifactStillExportsWhenOriginalAudioWasRemoved]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testCompletedArtifactStillExportsWhenOriginalAudioWasRemoved]' passed (0.093 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testDamagedExpectedTrackRequiresExplicitPartialExportConsent]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testDamagedExpectedTrackRequiresExplicitPartialExportConsent]' passed (0.468 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testDifferentMeetingsNeverRunHeavyWhisperWindowsConcurrently]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testDifferentMeetingsNeverRunHeavyWhisperWindowsConcurrently]' passed (0.667 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testDoubleClickSharesOneJobAndNotifiesBothCallers]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testDoubleClickSharesOneJobAndNotifiesBothCallers]' passed (0.292 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testForcedReprocessResumesNewCheckpointInsteadOfResettingItAgain]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testForcedReprocessResumesNewCheckpointInsteadOfResettingItAgain]' passed (0.635 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testLongTrackBatchesWindowsAndKeepsSegmentOrder]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testLongTrackBatchesWindowsAndKeepsSegmentOrder]' passed (0.448 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testNoUsableAudioFailsWithoutPreparingModel]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testNoUsableAudioFailsWithoutPreparingModel]' passed (0.117 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testPauseDuringPreparationDoesNotLaunchInferenceWhenPreparationReturns]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testPauseDuringPreparationDoesNotLaunchInferenceWhenPreparationReturns]' passed (0.301 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testPauseReturnsBeforeUncooperativeBatchAndPersistsItsCheckpoints]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testPauseReturnsBeforeUncooperativeBatchAndPersistsItsCheckpoints]' passed (1.071 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testPreciseTimelineOffsetsTracksAndMarksAlignmentExact]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testPreciseTimelineOffsetsTracksAndMarksAlignmentExact]' passed (0.248 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testQueuedAndNewRequestsDoNotPrepareOrTranscribeWhileRecording]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testQueuedAndNewRequestsDoNotPrepareOrTranscribeWhileRecording]' passed (0.614 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testRapidResumeWaitsForOldBatchWithoutLaunchingDuplicateInference]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testRapidResumeWaitsForOldBatchWithoutLaunchingDuplicateInference]' passed (0.495 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testRecordingPauseCommitsWholeBatchBeforeResuming]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testRecordingPauseCommitsWholeBatchBeforeResuming]' passed (0.844 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testRecordingPauseFinishesCurrentCheckpointAndResumeDoesNotRepeatIt]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testRecordingPauseFinishesCurrentCheckpointAndResumeDoesNotRepeatIt]' passed (0.718 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testResumeUsesCommittedCheckpointInsteadOfRepeatingWindow]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testResumeUsesCommittedCheckpointInsteadOfRepeatingWindow]' passed (0.270 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testTwoTracksAreRecognizedSeparatelyAndMergedInTimeOrder]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testTwoTracksAreRecognizedSeparatelyAndMergedInTimeOrder]' passed (0.150 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testValidCacheReturnsWithoutLoadingOrRunningWhisper]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoordinatorTests testValidCacheReturnsWithoutLoadingOrRunningWhisper]' passed (0.072 seconds).
+Test Suite 'BestTranscriptionCoordinatorTests' passed at 2026-10-09 22:36:21.382.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 7.843 (7.848) seconds
+Test Suite 'BestTranscriptionCoreTests' started at 2026-10-09 22:36:21.382.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testBestTXTContainsOnlyProvenanceAndFullTranscript]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testBestTXTContainsOnlyProvenanceAndFullTranscript]' passed (0.003 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testCacheRequiresExactAudioAndConfigurationFingerprint]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testCacheRequiresExactAudioAndConfigurationFingerprint]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testMergeKeepsRealSimultaneousSpeechAndShortAcknowledgements]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testMergeKeepsRealSimultaneousSpeechAndShortAcknowledgements]' passed (0.008 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testMergeRemovesLongCrossTrackEchoAndPrefersSystemAudio]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testMergeRemovesLongCrossTrackEchoAndPrefersSystemAudio]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testOwnershipDropsBoundaryDuplicateButKeepsEveryUniqueWord]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testOwnershipDropsBoundaryDuplicateButKeepsEveryUniqueWord]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testSegmentOwnershipRebuildsTextFromWordsOwnedByWindow]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testSegmentOwnershipRebuildsTextFromWordsOwnedByWindow]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testSilencePolicyKeepsAQuiet150MillisecondReplyInsideLongWindow]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testSilencePolicyKeepsAQuiet150MillisecondReplyInsideLongWindow]' passed (0.068 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testTwoHourRecordingStillUsesOnlyBoundedThirtySecondWindows]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testTwoHourRecordingStillUsesOnlyBoundedThirtySecondWindows]' passed (0.001 seconds).
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testWindowPlanCoversAudioExactlyOnceThroughOwnershipIntervals]' started.
+Test Case '-[ParrotTests.BestTranscriptionCoreTests testWindowPlanCoversAudioExactlyOnceThroughOwnershipIntervals]' passed (0.001 seconds).
+Test Suite 'BestTranscriptionCoreTests' passed at 2026-10-09 22:36:21.477.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.081 (0.095) seconds
+Test Suite 'BestTranscriptionStoreTests' started at 2026-10-09 22:36:21.477.
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testBeginningReprocessDoesNotDestroyPreviousCompletedArtifact]' started.
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testBeginningReprocessDoesNotDestroyPreviousCompletedArtifact]' passed (0.019 seconds).
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testCheckpointRoundTripsAndLoadsInTrackWindowOrder]' started.
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testCheckpointRoundTripsAndLoadsInTrackWindowOrder]' passed (0.002 seconds).
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testCompletedArtifactRoundTripsOnlyForExactFingerprint]' started.
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testCompletedArtifactRoundTripsOnlyForExactFingerprint]' passed (0.002 seconds).
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testCorruptCompletedManifestIsNeverTreatedAsReady]' started.
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testCorruptCompletedManifestIsNeverTreatedAsReady]' passed (0.002 seconds).
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testRemovingMeetingDeletesArtifactAndCheckpoints]' started.
+Test Case '-[ParrotTests.BestTranscriptionStoreTests testRemovingMeetingDeletesArtifactAndCheckpoints]' passed (0.003 seconds).
+Test Suite 'BestTranscriptionStoreTests' passed at 2026-10-09 22:36:21.505.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.027 (0.028) seconds
+Test Suite 'BestWhisperResultMapperTests' started at 2026-10-09 22:36:21.505.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testBackgroundWindowCountFitsMachineCapacity]' started.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testBackgroundWindowCountFitsMachineCapacity]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testBestExportPreparationNeverDownloadsAModel]' started.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testBestExportPreparationNeverDownloadsAModel]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testLocalModelLocatorFindsOnlyCompleteCachedModelFolder]' started.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testLocalModelLocatorFindsOnlyCompleteCachedModelFolder]' passed (0.004 seconds).
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testLongFormPolicyUsesAutoLanguageTimestampsAndRequestedWorkers]' started.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testLongFormPolicyUsesAutoLanguageTimestampsAndRequestedWorkers]' passed (0.000 seconds).
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testMapperPreservesWordTimestampsLanguageAndSpeaker]' started.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testMapperPreservesWordTimestampsLanguageAndSpeaker]' passed (0.001 seconds).
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testMapperRejectsInvalidOrEmptyWhisperSegments]' started.
+Test Case '-[ParrotTests.BestWhisperResultMapperTests testMapperRejectsInvalidOrEmptyWhisperSegments]' passed (0.000 seconds).
+Test Suite 'BestWhisperResultMapperTests' passed at 2026-10-09 22:36:21.511.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.005 (0.006) seconds
+Test Suite 'CallCandidateClassifierTests' started at 2026-10-09 22:36:21.511.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testChromeInputAndOutputCreatesTruthfulGenericCandidateWithoutTabTitle]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testChromeInputAndOutputCreatesTruthfulGenericCandidateWithoutTabTitle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testFaceTimeAndTelephonyHelpersShareOneStableFamily]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testFaceTimeAndTelephonyHelpersShareOneStableFamily]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testGoogleMeetWindowLabelsChromeWithoutLeakingMeetingTitle]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testGoogleMeetWindowLabelsChromeWithoutLeakingMeetingTitle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testKnownNativeCallAppInputAloneCreatesDebounceCandidate]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testKnownNativeCallAppInputAloneCreatesDebounceCandidate]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testOutputOnlyBrowserRequiresStrongCallWindow]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testOutputOnlyBrowserRequiresStrongCallWindow]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testOutputOnlyMusicIsNotClassifiedAsCall]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testOutputOnlyMusicIsNotClassifiedAsCall]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testParrotOwnAudioIsAlwaysExcluded]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testParrotOwnAudioIsAlwaysExcluded]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testSecondaryTeamsBundleCanUseItsOwnWindowForProviderLabel]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testSecondaryTeamsBundleCanUseItsOwnWindowForProviderLabel]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testUnattributedWindowCannotLabelAnUnrelatedAudioProcess]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testUnattributedWindowCannotLabelAnUnrelatedAudioProcess]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallCandidateClassifierTests testUnknownInputOutputAppWithoutCallWindowIsIgnored]' started.
+Test Case '-[ParrotTests.CallCandidateClassifierTests testUnknownInputOutputAppWithoutCallWindowIsIgnored]' passed (0.000 seconds).
+Test Suite 'CallCandidateClassifierTests' passed at 2026-10-09 22:36:21.513.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'CallDetectionCoordinatorTests' started at 2026-10-09 22:36:21.513.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testCallEndClearsSuggestionAfterIdleGrace]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testCallEndClearsSuggestionAfterIdleGrace]' passed (0.085 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDisablingStopsMonitorAndHidesOpenSuggestion]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDisablingStopsMonitorAndHidesOpenSuggestion]' passed (0.110 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDismissalClosesSuggestionAndDoesNotRepromptSameActivity]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testDismissalClosesSuggestionAndDoesNotRepromptSameActivity]' passed (0.051 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testRecordingStateSuppressesOpenSuggestionForSameCall]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testRecordingStateSuppressesOpenSuggestionForSameCall]' passed (0.019 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testSustainedActivityPublishesExactlyOneSuggestion]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testSustainedActivityPublishesExactlyOneSuggestion]' passed (0.045 seconds).
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testWindowProviderIsConsultedOnlyAfterAudioActivity]' started.
+Test Case '-[ParrotTests.CallDetectionCoordinatorTests testWindowProviderIsConsultedOnlyAfterAudioActivity]' passed (0.000 seconds).
+Test Suite 'CallDetectionCoordinatorTests' passed at 2026-10-09 22:36:21.824.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.310 (0.311) seconds
+Test Suite 'CallSuggestionStateMachineTests' started at 2026-10-09 22:36:21.824.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testAcceptSuppressesCallEvenIfRecordingStartLaterFails]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testAcceptSuppressesCallEvenIfRecordingStartLaterFails]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testCandidateMustRemainActiveForFourSeconds]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testCandidateMustRemainActiveForFourSeconds]' passed (0.001 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testDifferentSourceCanPromptAfterCurrentSessionWasDismissed]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testDifferentSourceCanPromptAfterCurrentSessionWasDismissed]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testDismissSuppressesSameSessionUntilTwelveSecondsOfIdle]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testDismissSuppressesSameSessionUntilTwelveSecondsOfIdle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testHelperProcessChangeDoesNotRestartDebounce]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testHelperProcessChangeDoesNotRestartDebounce]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testOpenSuggestionClosesAfterCallRemainsIdle]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testOpenSuggestionClosesAfterCallRemainsIdle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testRecordingSuppressesCurrentCallBeforeAndAfterStop]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testRecordingSuppressesCurrentCallBeforeAndAfterStop]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testTransientActivityNeverCreatesSuggestion]' started.
+Test Case '-[ParrotTests.CallSuggestionStateMachineTests testTransientActivityNeverCreatesSuggestion]' passed (0.000 seconds).
+Test Suite 'CallSuggestionStateMachineTests' passed at 2026-10-09 22:36:21.830.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.002 (0.006) seconds
+Test Suite 'CaptureLifecycleReliabilityTests' started at 2026-10-09 22:36:21.830.
+Test Case '-[ParrotTests.CaptureLifecycleReliabilityTests testConcurrentStopRequestsCanJoinWithoutCaptureHardware]' started.
+Test Case '-[ParrotTests.CaptureLifecycleReliabilityTests testConcurrentStopRequestsCanJoinWithoutCaptureHardware]' passed (0.005 seconds).
+Test Case '-[ParrotTests.CaptureLifecycleReliabilityTests testMenuQuitDefersTerminationUntilAfterButtonActionReturns]' started.
+Test Case '-[ParrotTests.CaptureLifecycleReliabilityTests testMenuQuitDefersTerminationUntilAfterButtonActionReturns]' passed (0.001 seconds).
+Test Case '-[ParrotTests.CaptureLifecycleReliabilityTests testStopFromBackgroundExecutorReturnsWithIdleObservedState]' started.
+Test Case '-[ParrotTests.CaptureLifecycleReliabilityTests testStopFromBackgroundExecutorReturnsWithIdleObservedState]' passed (0.000 seconds).
+Test Suite 'CaptureLifecycleReliabilityTests' passed at 2026-10-09 22:36:21.836.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.006 (0.006) seconds
+Test Suite 'CoreAudioCallbackCoalescerTests' started at 2026-10-09 22:36:21.836.
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testDeliveryCanBeScheduledAgainAfterPreviousOneFinishes]' started.
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testDeliveryCanBeScheduledAgainAfterPreviousOneFinishes]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testDifferentCallbackKindsCanEachHaveOnePendingDelivery]' started.
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testDifferentCallbackKindsCanEachHaveOnePendingDelivery]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testNotificationDuringDeliveryRequestsOnlyOneFollowUpDelivery]' started.
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testNotificationDuringDeliveryRequestsOnlyOneFollowUpDelivery]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testRepeatedCallbackStormKeepsOnlyOnePendingDeliveryPerKind]' started.
+Test Case '-[ParrotTests.CoreAudioCallbackCoalescerTests testRepeatedCallbackStormKeepsOnlyOnePendingDeliveryPerKind]' passed (0.006 seconds).
+Test Suite 'CoreAudioCallbackCoalescerTests' passed at 2026-10-09 22:36:21.843.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.006 (0.007) seconds
+Test Suite 'CoreAudioProcessListenerDeltaTests' started at 2026-10-09 22:36:21.843.
+Test Case '-[ParrotTests.CoreAudioProcessListenerDeltaTests testDeltaAddsAndRemovesOnlyChangedProcesses]' started.
+Test Case '-[ParrotTests.CoreAudioProcessListenerDeltaTests testDeltaAddsAndRemovesOnlyChangedProcesses]' passed (0.000 seconds).
+Test Case '-[ParrotTests.CoreAudioProcessListenerDeltaTests testUnchangedProcessListDoesNotRequestListenerChurn]' started.
+Test Case '-[ParrotTests.CoreAudioProcessListenerDeltaTests testUnchangedProcessListDoesNotRequestListenerChurn]' passed (0.000 seconds).
+Test Suite 'CoreAudioProcessListenerDeltaTests' passed at 2026-10-09 22:36:21.844.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'DockVisibilityPreferenceTests' started at 2026-10-09 22:36:21.844.
+Test Case '-[ParrotTests.DockVisibilityPreferenceTests testDockIsHiddenByDefault]' started.
+Test Case '-[ParrotTests.DockVisibilityPreferenceTests testDockIsHiddenByDefault]' passed (0.001 seconds).
+Test Case '-[ParrotTests.DockVisibilityPreferenceTests testExplicitDockPreferenceIsRestored]' started.
+Test Case '-[ParrotTests.DockVisibilityPreferenceTests testExplicitDockPreferenceIsRestored]' passed (0.003 seconds).
+Test Suite 'DockVisibilityPreferenceTests' passed at 2026-10-09 22:36:21.848.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'EchoCancellerReliabilityTests' started at 2026-10-09 22:36:21.848.
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testDoubleTalkKeepsNearEndVoiceAudibleAndRecognizable]' started.
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testDoubleTalkKeepsNearEndVoiceAudibleAndRecognizable]' passed (0.606 seconds).
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testLateReferenceStillCancelsSyntheticSpeakerBleed]' started.
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testLateReferenceStillCancelsSyntheticSpeakerBleed]' passed (0.449 seconds).
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testMissingHostTimeAndRouteGapPreserveBufferedNearEndVoice]' started.
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testMissingHostTimeAndRouteGapPreserveBufferedNearEndVoice]' passed (0.001 seconds).
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testMissingReferencePreservesAllSamplesIncludingStopTail]' started.
+Test Case '-[ParrotTests.EchoCancellerReliabilityTests testMissingReferencePreservesAllSamplesIncludingStopTail]' passed (0.003 seconds).
+Test Suite 'EchoCancellerReliabilityTests' passed at 2026-10-09 22:36:22.907.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 1.058 (1.059) seconds
+Test Suite 'EchoReferenceTimelineTests' started at 2026-10-09 22:36:22.907.
+Test Case '-[ParrotTests.EchoReferenceTimelineTests testFrameCrossesReferenceCallbacksByTimestamp]' started.
+Test Case '-[ParrotTests.EchoReferenceTimelineTests testFrameCrossesReferenceCallbacksByTimestamp]' passed (0.004 seconds).
+Test Case '-[ParrotTests.EchoReferenceTimelineTests testGapAndStaleReferenceCannotInventAudio]' started.
+Test Case '-[ParrotTests.EchoReferenceTimelineTests testGapAndStaleReferenceCannotInventAudio]' passed (0.005 seconds).
+Test Case '-[ParrotTests.EchoReferenceTimelineTests testNinetyMinuteCallKeepsReferenceAlignedDespiteIndependentClockDrift]' started.
+Test Case '-[ParrotTests.EchoReferenceTimelineTests testNinetyMinuteCallKeepsReferenceAlignedDespiteIndependentClockDrift]' passed (0.008 seconds).
+Test Suite 'EchoReferenceTimelineTests' passed at 2026-10-09 22:36:22.925.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.016 (0.018) seconds
+Test Suite 'FinalTranscriptResultAwaiterTests' started at 2026-10-09 22:36:22.925.
+Test Case '-[ParrotTests.FinalTranscriptResultAwaiterTests testCancellationAndLateCompletionResumeOnlyOnce]' started.
+Test Case '-[ParrotTests.FinalTranscriptResultAwaiterTests testCancellationAndLateCompletionResumeOnlyOnce]' passed (0.000 seconds).
+Test Case '-[ParrotTests.FinalTranscriptResultAwaiterTests testCancellationBeforeCallbackInstallationReturnsWithoutWaiting]' started.
+Test Case '-[ParrotTests.FinalTranscriptResultAwaiterTests testCancellationBeforeCallbackInstallationReturnsWithoutWaiting]' passed (0.000 seconds).
+Test Case '-[ParrotTests.FinalTranscriptResultAwaiterTests testNormalFailureIsPreservedInsteadOfBecomingCancellation]' started.
+Test Case '-[ParrotTests.FinalTranscriptResultAwaiterTests testNormalFailureIsPreservedInsteadOfBecomingCancellation]' passed (0.000 seconds).
+Test Suite 'FinalTranscriptResultAwaiterTests' passed at 2026-10-09 22:36:22.926.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'HybridFinalTranscriptionServiceTests' started at 2026-10-09 22:36:22.926.
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testActualLanguageSwitchUsesRefinementAndSkipsBaseline]' started.
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testActualLanguageSwitchUsesRefinementAndSkipsBaseline]' passed (0.000 seconds).
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testAliasesAndUnknownTagsDoNotFabricateLanguageSwitches]' started.
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testAliasesAndUnknownTagsDoNotFabricateLanguageSwitches]' passed (0.000 seconds).
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testMonolingualWindowRetainsBaselineEvenWhenRefinerDisagrees]' started.
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testMonolingualWindowRetainsBaselineEvenWhenRefinerDisagrees]' passed (0.000 seconds).
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testRecordingCancellationNeverStartsMoreBaselineInference]' started.
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testRecordingCancellationNeverStartsMoreBaselineInference]' passed (0.000 seconds).
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testUnavailableRefinementFallsBackWithoutDroppingTheWindow]' started.
+Test Case '-[ParrotTests.HybridFinalTranscriptionServiceTests testUnavailableRefinementFallsBackWithoutDroppingTheWindow]' passed (0.000 seconds).
+Test Suite 'HybridFinalTranscriptionServiceTests' passed at 2026-10-09 22:36:22.928.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'LaunchAtLoginControllerTests' started at 2026-10-09 22:36:22.928.
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testDisablingUnregistersAndPersistsPreference]' started.
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testDisablingUnregistersAndPersistsPreference]' passed (0.004 seconds).
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testStartupDoesNotRegisterAgainWhenApprovalIsPending]' started.
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testStartupDoesNotRegisterAgainWhenApprovalIsPending]' passed (0.006 seconds).
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testStartupRegistersWhenPreferenceIsEnabled]' started.
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testStartupRegistersWhenPreferenceIsEnabled]' passed (0.010 seconds).
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testUnavailableBuildNeverTouchesSystemService]' started.
+Test Case '-[ParrotTests.LaunchAtLoginControllerTests testUnavailableBuildNeverTouchesSystemService]' passed (0.035 seconds).
+Test Suite 'LaunchAtLoginControllerTests' passed at 2026-10-09 22:36:22.982.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.054 (0.055) seconds
+Test Suite 'LiveTranscriptPresentationPolicyTests' started at 2026-10-09 22:36:22.982.
+Test Case '-[ParrotTests.LiveTranscriptPresentationPolicyTests testEmptyLiveTranscriptAlwaysShowsImmediateStatus]' started.
+Test Case '-[ParrotTests.LiveTranscriptPresentationPolicyTests testEmptyLiveTranscriptAlwaysShowsImmediateStatus]' passed (0.000 seconds).
+Test Case '-[ParrotTests.LiveTranscriptPresentationPolicyTests testInterimTextReplacesListeningStatusWithoutWaitingForCommittedSegment]' started.
+Test Case '-[ParrotTests.LiveTranscriptPresentationPolicyTests testInterimTextReplacesListeningStatusWithoutWaitingForCommittedSegment]' passed (0.000 seconds).
+Test Case '-[ParrotTests.LiveTranscriptPresentationPolicyTests testPersistedTranscriptReturnsImmediatelyWithoutEmptyStatus]' started.
+Test Case '-[ParrotTests.LiveTranscriptPresentationPolicyTests testPersistedTranscriptReturnsImmediatelyWithoutEmptyStatus]' passed (0.000 seconds).
+Test Suite 'LiveTranscriptPresentationPolicyTests' passed at 2026-10-09 22:36:22.983.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'LocalMeetingTitleGeneratorTests' started at 2026-10-09 22:36:22.983.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testBloomWebsiteCaseStudiesWinsOverConversationNoise]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testBloomWebsiteCaseStudiesWinsOverConversationNoise]' passed (0.004 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testCancellationReturnsPromptlyWithoutClaimingCompleteCoverage]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testCancellationReturnsPromptlyWithoutClaimingCompleteCoverage]' passed (0.500 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testCreateTournamentTopicRemainsAvailable]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testCreateTournamentTopicRemainsAvailable]' passed (0.001 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testEnglishBackchannelsCannotOutrankRepeatedMeetingTopic]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testEnglishBackchannelsCannotOutrankRepeatedMeetingTopic]' passed (0.003 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testEquallySupportedUnrelatedTopicsUseSafeFallback]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testEquallySupportedUnrelatedTopicsUseSafeFallback]' passed (0.001 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testEveryGeneratedTitleIsStrictlyTwoToFourWords]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testEveryGeneratedTitleIsStrictlyTwoToFourWords]' passed (0.003 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testFillerOnlyTranscriptReturnsNoGeneratedTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testFillerOnlyTranscriptReturnsNoGeneratedTitle]' passed (0.001 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testGeneratesDeterministicEnglishTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testGeneratesDeterministicEnglishTitle]' passed (0.001 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testGeneratesDeterministicPolishTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testGeneratesDeterministicPolishTitle]' passed (0.002 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testGeneratesDeterministicRussianTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testGeneratesDeterministicRussianTitle]' passed (0.002 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testHighUniquenessTranscriptKeepsEvidenceBoundedAndConsumesEveryLeaf]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testHighUniquenessTranscriptKeepsEvidenceBoundedAndConsumesEveryLeaf]' passed (22.014 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testHyphenAndApostropheVariantsShareEvidence]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testHyphenAndApostropheVariantsShareEvidence]' passed (0.003 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testLongHierarchyConsumesEveryLeafExactlyOnce]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testLongHierarchyConsumesEveryLeafExactlyOnce]' passed (1.931 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testMixedLanguageDeicticPhrasesCannotOutrankSharedTopic]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testMixedLanguageDeicticPhrasesCannotOutrankSharedTopic]' passed (0.005 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testMixedLanguageMeetingKeepsSharedTopic]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testMixedLanguageMeetingKeepsSharedTopic]' passed (0.001 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testPolishDiscourseFillersCannotBecomeMeetingTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testPolishDiscourseFillersCannotBecomeMeetingTitle]' passed (0.005 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testPolishOnboardingPasswordAnchorsBeatFrequentFillers]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testPolishOnboardingPasswordAnchorsBeatFrequentFillers]' passed (0.006 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testPolishScreenRecordingTopicRemainsAvailable]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testPolishScreenRecordingTopicRemainsAvailable]' passed (0.002 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testRepetitionsRemainCoveredButDoNotCreateDuplicateWordTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testRepetitionsRemainCoveredButDoNotCreateDuplicateWordTitle]' passed (0.019 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testRussianDiscourseFillersCannotBecomeMeetingTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testRussianDiscourseFillersCannotBecomeMeetingTitle]' passed (0.007 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testShortCallWithoutTwoMeaningfulWordsKeepsFallback]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testShortCallWithoutTwoMeaningfulWordsKeepsFallback]' passed (0.000 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testSilenceAndServiceTokensDoNotInventATitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testSilenceAndServiceTokensDoNotInventATitle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testStaleSummaryCannotInfluenceTranscriptOnlyGenerator]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testStaleSummaryCannotInfluenceTranscriptOnlyGenerator]' passed (0.003 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testSubmissionFlowReviewFeedbackBecomesSpecificTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testSubmissionFlowReviewFeedbackBecomesSpecificTitle]' passed (0.002 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testTopicSeenOnlyAtFirstAndLastLeavesSurvivesBoundedReduction]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testTopicSeenOnlyAtFirstAndLastLeavesSurvivesBoundedReduction]' passed (0.606 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testTranscriptInstructionsAreOnlyData]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testTranscriptInstructionsAreOnlyData]' passed (0.002 seconds).
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testUncorroboratedConversationalPhraseFallsBackToDateTitle]' started.
+Test Case '-[ParrotTests.LocalMeetingTitleGeneratorTests testUncorroboratedConversationalPhraseFallsBackToDateTitle]' passed (0.002 seconds).
+Test Suite 'LocalMeetingTitleGeneratorTests' passed at 2026-10-09 22:36:48.115.
+	 Executed 27 tests, with 0 failures (0 unexpected) in 25.128 (25.132) seconds
+Test Suite 'MainWindowPresentationCoordinatorTests' started at 2026-10-09 22:36:48.115.
+Test Case '-[ParrotTests.MainWindowPresentationCoordinatorTests testPresentCreatesWindowWhenSwiftUISceneDoesNotExist]' started.
+Test Case '-[ParrotTests.MainWindowPresentationCoordinatorTests testPresentCreatesWindowWhenSwiftUISceneDoesNotExist]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MainWindowPresentationCoordinatorTests testPresentFailsCleanlyWhenNoWindowCanBeCreated]' started.
+Test Case '-[ParrotTests.MainWindowPresentationCoordinatorTests testPresentFailsCleanlyWhenNoWindowCanBeCreated]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MainWindowPresentationCoordinatorTests testPresentReusesExistingWindowAndBringsItForward]' started.
+Test Case '-[ParrotTests.MainWindowPresentationCoordinatorTests testPresentReusesExistingWindowAndBringsItForward]' passed (0.000 seconds).
+Test Suite 'MainWindowPresentationCoordinatorTests' passed at 2026-10-09 22:36:48.116.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'MeetingPresentationPolicyTests' started at 2026-10-09 22:36:48.116.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testBlankRenamePreservesExistingTitle]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testBlankRenamePreservesExistingTitle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testDoneMeetingWithoutSegmentsHasHonestEmptyMessage]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testDoneMeetingWithoutSegmentsHasHonestEmptyMessage]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testFailedPresentationHasSafeFallbackMessage]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testFailedPresentationHasSafeFallbackMessage]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testFailedPresentationUsesStoredErrorAndKeepsPartialTranscript]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testFailedPresentationUsesStoredErrorAndKeepsPartialTranscript]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testNotesDisclosureOnlyAppearsForMeaningfulNotes]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testNotesDisclosureOnlyAppearsForMeaningfulNotes]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testPendingDeletionIsRemovedFromSidebarBeforeSwiftDataDelete]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testPendingDeletionIsRemovedFromSidebarBeforeSwiftDataDelete]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testPlayerRequiresFinishedCaptureAndReadableAudio]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testPlayerRequiresFinishedCaptureAndReadableAudio]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testProcessingPresentationKeepsPartialTranscriptVisible]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testProcessingPresentationKeepsPartialTranscriptVisible]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testSearchMatchesTitleAndTranscriptCaseInsensitively]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testSearchMatchesTitleAndTranscriptCaseInsensitively]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testSidebarRowUsesAValueSnapshotInsteadOfReadingTheModelDuringRemoval]' started.
+Test Case '-[ParrotTests.MeetingPresentationPolicyTests testSidebarRowUsesAValueSnapshotInsteadOfReadingTheModelDuringRemoval]' passed (0.000 seconds).
+Test Suite 'MeetingPresentationPolicyTests' passed at 2026-10-09 22:36:48.118.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'MeetingSummaryCoordinatorTests' started at 2026-10-09 22:36:48.118.
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testContextualTitleFromWholeMeetingSummaryReplacesOldAutomaticTitle]' started.
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testContextualTitleFromWholeMeetingSummaryReplacesOldAutomaticTitle]' passed (0.014 seconds).
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testExistingLegacySummaryIsNeverOverwritten]' started.
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testExistingLegacySummaryIsNeverOverwritten]' passed (0.015 seconds).
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testManualTitleDoesNotPreventLocalSummaryGeneration]' started.
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testManualTitleDoesNotPreventLocalSummaryGeneration]' passed (0.014 seconds).
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testNilResultForSubstantialTranscriptPreservesPreviousLocalArtifact]' started.
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testNilResultForSubstantialTranscriptPreservesPreviousLocalArtifact]' passed (0.009 seconds).
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testUnchangedLocalSummaryUsesCacheWithoutAnotherModelCall]' started.
+Test Case '-[ParrotTests.MeetingSummaryCoordinatorTests testUnchangedLocalSummaryUsesCacheWithoutAnotherModelCall]' passed (0.008 seconds).
+Test Suite 'MeetingSummaryCoordinatorTests' passed at 2026-10-09 22:36:48.180.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.061 (0.062) seconds
+Test Suite 'MeetingTitleCoordinatorTests' started at 2026-10-09 22:36:48.180.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testCompletedPlaceholderMeetingReceivesAutomaticTitle]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testCompletedPlaceholderMeetingReceivesAutomaticTitle]' passed (0.007 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testCustomLegacyTitleIsConservativelyProtected]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testCustomLegacyTitleIsConservativelyProtected]' passed (0.008 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testGenerateMissingTitlesImmediatelyRestartsDeferredQueuedMeeting]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testGenerateMissingTitlesImmediatelyRestartsDeferredQueuedMeeting]' passed (0.047 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testInvalidCoverageNeverChangesTitle]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testInvalidCoverageNeverChangesTitle]' passed (0.007 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testManualRenameRollsBackWhenPersistenceFails]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testManualRenameRollsBackWhenPersistenceFails]' passed (0.011 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testManualTitleAlwaysWins]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testManualTitleAlwaysWins]' passed (0.006 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testMemoryDeferralPreservesExistingTitleAndRetriesLater]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testMemoryDeferralPreservesExistingTitleAndRetriesLater]' passed (0.317 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testPauseForRecordingCooperativelyCancelsLongGeneration]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testPauseForRecordingCooperativelyCancelsLongGeneration]' passed (0.132 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testPauseTracksRuntimeShutdownAndTerminationDrainsIt]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testPauseTracksRuntimeShutdownAndTerminationDrainsIt]' passed (0.048 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testRapidDisableEnableRescansCanceledCurrentMeeting]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testRapidDisableEnableRescansCanceledCurrentMeeting]' passed (0.083 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testRenamingCurrentJobDoesNotStrandNextQueuedMeeting]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testRenamingCurrentJobDoesNotStrandNextQueuedMeeting]' passed (0.074 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testReturningGenerationWhilePausedPreservesMeetingAndWaitsForResume]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testReturningGenerationWhilePausedPreservesMeetingAndWaitsForResume]' passed (0.072 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testStricterGeneratorRevertsRejectedAutomaticTitleToDateFallback]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testStricterGeneratorRevertsRejectedAutomaticTitleToDateFallback]' passed (0.011 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testTerminationStopsRuntimeBeforeWaitingForBlockedGeneration]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testTerminationStopsRuntimeBeforeWaitingForBlockedGeneration]' passed (0.137 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testUnchangedTranscriptIsNotReprocessed]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testUnchangedTranscriptIsNotReprocessed]' passed (0.008 seconds).
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testUncooperativeGenerationCannotDelayRecordingOrPersistAfterRapidResume]' started.
+Test Case '-[ParrotTests.MeetingTitleCoordinatorTests testUncooperativeGenerationCannotDelayRecordingOrPersistAfterRapidResume]' passed (0.124 seconds).
+Test Suite 'MeetingTitleCoordinatorTests' passed at 2026-10-09 22:36:49.274.
+	 Executed 16 tests, with 0 failures (0 unexpected) in 1.091 (1.094) seconds
+Test Suite 'MeetingTitleProvenanceTests' started at 2026-10-09 22:36:49.274.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testBlankManualRenamePreservesExistingTitle]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testBlankManualRenamePreservesExistingTitle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testDefaultTitleFormatNeverMixesWithTheCurrentLocale]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testDefaultTitleFormatNeverMixesWithTheCurrentLocale]' passed (0.001 seconds).
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testLegacyPlaceholderSurvivesLocaleOrTimeZoneChange]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testLegacyPlaceholderSurvivesLocaleOrTimeZoneChange]' passed (0.015 seconds).
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testManualRenameTrimsOnlyDraftAndProtectsTitle]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testManualRenameTrimsOnlyDraftAndProtectsTitle]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testNewMeetingStartsWithDefaultTitleProvenance]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testNewMeetingStartsWithDefaultTitleProvenance]' passed (0.001 seconds).
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testPlaceholderRecognitionIsStrict]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testPlaceholderRecognitionIsStrict]' passed (0.002 seconds).
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testSortedSegmentsHasDeterministicTieBreakers]' started.
+Test Case '-[ParrotTests.MeetingTitleProvenanceTests testSortedSegmentsHasDeterministicTieBreakers]' passed (0.001 seconds).
+Test Suite 'MeetingTitleProvenanceTests' passed at 2026-10-09 22:36:49.295.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.020 (0.021) seconds
+Test Suite 'MeetingTitleSnapshotBuilderTests' started at 2026-10-09 22:36:49.295.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testDefaultLeafBudgetFitsEightKRuntimeContextWithPromptHeadroom]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testDefaultLeafBudgetFitsEightKRuntimeContextWithPromptHeadroom]' passed (0.003 seconds).
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testEmptySegmentsStillParticipateInCoverage]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testEmptySegmentsStillParticipateInCoverage]' passed (0.001 seconds).
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testFingerprintChangesForAnyRawTranscriptChange]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testFingerprintChangesForAnyRawTranscriptChange]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testOversizedSegmentIsBoundedAndReconstructsWithoutLoss]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testOversizedSegmentIsBoundedAndReconstructsWithoutLoss]' passed (0.002 seconds).
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testSnapshotPreservesWhitespaceAndUnicodeByteForByte]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testSnapshotPreservesWhitespaceAndUnicodeByteForByte]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testSnapshotUsesStableChronologicalOrderingWithDeterministicTieBreaks]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testSnapshotUsesStableChronologicalOrderingWithDeterministicTieBreaks]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testTenThousandSegmentsHaveExactOnceCoverage]' started.
+Test Case '-[ParrotTests.MeetingTitleSnapshotBuilderTests testTenThousandSegmentsHaveExactOnceCoverage]' passed (0.132 seconds).
+Test Suite 'MeetingTitleSnapshotBuilderTests' passed at 2026-10-09 22:36:49.436.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.139 (0.140) seconds
+Test Suite 'MenuBarPresentationPolicyTests' started at 2026-10-09 22:36:49.436.
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testIdleWithoutSuggestionShowsManualControls]' started.
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testIdleWithoutSuggestionShowsManualControls]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testRecordingTakesPrecedenceOverSuggestion]' started.
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testRecordingTakesPrecedenceOverSuggestion]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testStartingTakesPrecedenceOverSuggestion]' started.
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testStartingTakesPrecedenceOverSuggestion]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testSuggestionTakesPrecedenceOverIdleMenu]' started.
+Test Case '-[ParrotTests.MenuBarPresentationPolicyTests testSuggestionTakesPrecedenceOverIdleMenu]' passed (0.000 seconds).
+Test Suite 'MenuBarPresentationPolicyTests' passed at 2026-10-09 22:36:49.437.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'MicrophoneCaptureGenerationGateTests' started at 2026-10-09 22:36:49.437.
+Test Case '-[ParrotTests.MicrophoneCaptureGenerationGateTests testRestartRejectsCallbacksFromPreviousMicrophone]' started.
+Test Case '-[ParrotTests.MicrophoneCaptureGenerationGateTests testRestartRejectsCallbacksFromPreviousMicrophone]' passed (0.000 seconds).
+Test Suite 'MicrophoneCaptureGenerationGateTests' passed at 2026-10-09 22:36:49.437.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'MicrophoneGapCompensationTests' started at 2026-10-09 22:36:49.437.
+Test Case '-[ParrotTests.MicrophoneGapCompensationTests testNormalAdjacentBuffersDoNotInventSilence]' started.
+Test Case '-[ParrotTests.MicrophoneGapCompensationTests testNormalAdjacentBuffersDoNotInventSilence]' passed (0.000 seconds).
+Test Case '-[ParrotTests.MicrophoneGapCompensationTests testRouteSwitchGapBecomesSilenceInSavedMicTrack]' started.
+Test Case '-[ParrotTests.MicrophoneGapCompensationTests testRouteSwitchGapBecomesSilenceInSavedMicTrack]' passed (0.000 seconds).
+Test Suite 'MicrophoneGapCompensationTests' passed at 2026-10-09 22:36:49.438.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'NativeFinalTranscriptionServiceTests' started at 2026-10-09 22:36:49.438.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testFailedTerminationRemainsOwnedAndBlocksReplacementUntilVerifiedStop]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testFailedTerminationRemainsOwnedAndBlocksReplacementUntilVerifiedStop]' passed (0.004 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testIdleWorkerUnloadsBeforeAnotherRequestStartsFresh]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testIdleWorkerUnloadsBeforeAnotherRequestStartsFresh]' passed (0.115 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxPreservesSplitJSONAndCancelsReaderWithoutDroppingNextLine]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxPreservesSplitJSONAndCancelsReaderWithoutDroppingNextLine]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxRejectsOversizedOutputAndQueueOverflow]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testLineInboxRejectsOversizedOutputAndQueueOverflow]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMapperClipsRangesFiltersTokensAndPreservesSourceWithoutWordTimes]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMapperClipsRangesFiltersTokensAndPreservesSourceWithoutWordTimes]' passed (0.000 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMemoryAdmissionBlocksOnlyColdWorkerLaunch]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMemoryAdmissionBlocksOnlyColdWorkerLaunch]' passed (0.006 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMismatchedIDAndWorkerErrorStopWorkerAndDoNotExposePrivateText]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testMismatchedIDAndWorkerErrorStopWorkerAndDoNotExposePrivateText]' passed (0.009 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonemptyTextWithoutValidTimestampRangeIsRejected]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonemptyTextWithoutValidTimestampRangeIsRejected]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonfiniteAudioIsRejectedBeforeWorkerLaunch]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testNonfiniteAudioIsRejectedBeforeWorkerLaunch]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testOpenPipeDeliversShortReadyLineAndLeavesCancellationResponsive]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testOpenPipeDeliversShortReadyLineAndLeavesCancellationResponsive]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPauseCancelsBlockedInferenceCleansAudioAndResumesFreshWorker]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPauseCancelsBlockedInferenceCleansAudioAndResumesFreshWorker]' passed (0.021 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPreparationReusesOneWorkerAndWindowsRemainSerial]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testPreparationReusesOneWorkerAndWindowsRemainSerial]' passed (0.009 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testQueuedCancellationDoesNotStopAnotherActiveRequest]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testQueuedCancellationDoesNotStopAnotherActiveRequest]' passed (0.011 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRapidResumeWaitsForVerifiedOldShutdownBeforeStartingReplacement]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRapidResumeWaitsForVerifiedOldShutdownBeforeStartingReplacement]' passed (0.021 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testReadyParserRejectsWrongEngineAndNegativeTiming]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testReadyParserRejectsWrongEngineAndNegativeTiming]' passed (0.001 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRealOpenWorkerPipeCancelsReaderAndStopsExactChild]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRealOpenWorkerPipeCancelsReaderAndStopsExactChild]' passed (0.253 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRequestAndRealWAVPreserveSourceWithoutInventingAlignment]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testRequestAndRealWAVPreserveSourceWithoutInventingAlignment]' passed (0.005 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTaskCancellationStopsItsWorkerAndRemovesOwnedAudio]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTaskCancellationStopsItsWorkerAndRemovesOwnedAudio]' passed (0.027 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTimeoutsStopTransportInsteadOfLeavingModelWorkBehind]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTimeoutsStopTransportInsteadOfLeavingModelWorkBehind]' passed (0.220 seconds).
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTruncatedSuccessResponseCannotBeSavedAsComplete]' started.
+Test Case '-[ParrotTests.NativeFinalTranscriptionServiceTests testTruncatedSuccessResponseCannotBeSavedAsComplete]' passed (0.001 seconds).
+Test Suite 'NativeFinalTranscriptionServiceTests' passed at 2026-10-09 22:36:50.147.
+	 Executed 20 tests, with 0 failures (0 unexpected) in 0.707 (0.709) seconds
+Test Suite 'ParrotApplicationDelegateLifecycleTests' started at 2026-10-09 22:36:50.147.
+Test Case '-[ParrotTests.ParrotApplicationDelegateLifecycleTests testDidFinishLaunchingBootstrapsMenuBarWithoutAnyWindowAppearing]' started.
+Test Case '-[ParrotTests.ParrotApplicationDelegateLifecycleTests testDidFinishLaunchingBootstrapsMenuBarWithoutAnyWindowAppearing]' passed (0.147 seconds).
+Test Suite 'ParrotApplicationDelegateLifecycleTests' passed at 2026-10-09 22:36:50.294.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.147 (0.147) seconds
+Test Suite 'ParrotInstancePolicyTests' started at 2026-10-09 22:36:50.294.
+Test Case '-[ParrotTests.ParrotInstancePolicyTests testDebugCopyHandsOffToInstalledCopy]' started.
+Test Case '-[ParrotTests.ParrotInstancePolicyTests testDebugCopyHandsOffToInstalledCopy]' passed (0.001 seconds).
+Test Case '-[ParrotTests.ParrotInstancePolicyTests testInstalledCopyKeepsItselfAndClosesOnlyNonInstalledDuplicates]' started.
+Test Case '-[ParrotTests.ParrotInstancePolicyTests testInstalledCopyKeepsItselfAndClosesOnlyNonInstalledDuplicates]' passed (0.000 seconds).
+Test Case '-[ParrotTests.ParrotInstancePolicyTests testSecondInstalledProcessHandsOffToExistingInstalledProcess]' started.
+Test Case '-[ParrotTests.ParrotInstancePolicyTests testSecondInstalledProcessHandsOffToExistingInstalledProcess]' passed (0.000 seconds).
+Test Suite 'ParrotInstancePolicyTests' passed at 2026-10-09 22:36:50.296.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'QwenMeetingSummaryGeneratorTests' started at 2026-10-09 22:36:50.296.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testDefersBeforeLoadingModelWhenMemoryAdmissionFails]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testDefersBeforeLoadingModelWhenMemoryAdmissionFails]' passed (0.007 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testExplicitEmptyFillerLeafStillCountsAsCovered]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testExplicitEmptyFillerLeafStillCountsAsCovered]' passed (0.010 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testFinalNaturalTitleOutranksAKeywordPileOfOneOffASRTerms]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testFinalNaturalTitleOutranksAKeywordPileOfOneOffASRTerms]' passed (0.009 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testFinalPassCannotEraseDistinctiveAnchorOrDegradeSummary]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testFinalPassCannotEraseDistinctiveAnchorOrDegradeSummary]' passed (0.003 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testFinalWholeMeetingPassReplacesGenericSingleLeafTitle]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testFinalWholeMeetingPassReplacesGenericSingleLeafTitle]' passed (0.003 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testGroundedLowConfidenceResponseIsNotDiscarded]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testGroundedLowConfidenceResponseIsNotDiscarded]' passed (0.006 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testInformativeTitleMayUseTwelveWordsWhenContextRequiresIt]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testInformativeTitleMayUseTwelveWordsWhenContextRequiresIt]' passed (0.000 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testLongRepeatedFillerMayStillBeAcceptedAsEmpty]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testLongRepeatedFillerMayStillBeAcceptedAsEmpty]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testMapMapsParaphrasedEvidenceBackToExactTranscriptExcerpt]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testMapMapsParaphrasedEvidenceBackToExactTranscriptExcerpt]' passed (0.005 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testMixedNoisyMeetingUsesLanguageOfWholeMeetingSummary]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testMixedNoisyMeetingUsesLanguageOfWholeMeetingSummary]' passed (0.011 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testPolishEditorialTitleOutranksEnglishUILabelPile]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testPolishEditorialTitleOutranksEnglishUILabelPile]' passed (0.007 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRecurringWholeMeetingAnchorOutranksOneDetailedSideTopic]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRecurringWholeMeetingAnchorOutranksOneDetailedSideTopic]' passed (0.009 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testReductionMapsParaphrasedEvidenceBackToRealSourceQuote]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testReductionMapsParaphrasedEvidenceBackToRealSourceQuote]' passed (0.013 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectedMapLeafCannotSilentlyDropMeetingPart]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectedMapLeafCannotSilentlyDropMeetingPart]' passed (0.006 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectedReductionBatchCannotSilentlyDropMeetingPart]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectedReductionBatchCannotSilentlyDropMeetingPart]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectsLongerTitleMadeOnlyOfGenericProductWords]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectsLongerTitleMadeOnlyOfGenericProductWords]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectsShortVagueTitleEvenWhenSummaryIsUseful]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectsShortVagueTitleEvenWhenSummaryIsUseful]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectsSummaryWhoseEvidenceWasNotPresentInSource]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRejectsSummaryWhoseEvidenceWasNotPresentInSource]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRussianEditorialTitleOutranksRepeatedEnglishASRLabel]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testRussianEditorialTitleOutranksRepeatedEnglishASRLabel]' passed (0.008 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testSubstantiveNoisyFragmentCannotBeAcceptedAsSilence]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testSubstantiveNoisyFragmentCannotBeAcceptedAsSilence]' passed (0.006 seconds).
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testUsesEveryTranscriptLeafAndReturnsGroundedSummary]' started.
+Test Case '-[ParrotTests.QwenMeetingSummaryGeneratorTests testUsesEveryTranscriptLeafAndReturnsGroundedSummary]' passed (0.007 seconds).
+Test Suite 'QwenMeetingSummaryGeneratorTests' passed at 2026-10-09 22:36:50.416.
+	 Executed 21 tests, with 0 failures (0 unexpected) in 0.116 (0.119) seconds
+Test Suite 'QwenMeetingTitleGeneratorTests' started at 2026-10-09 22:36:50.416.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testCancellationReturnsNilAndAlwaysShutsRuntimeDown]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testCancellationReturnsNilAndAlwaysShutsRuntimeDown]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testDefaultStartupHeadroomIncludesMeasuredModelAndTransientMargin]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testDefaultStartupHeadroomIncludesMeasuredModelAndTransientMargin]' passed (0.000 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testFluentButUngroundedTitleIsRejected]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testFluentButUngroundedTitleIsRejected]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testGenericModelTitleIsRejected]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testGenericModelTitleIsRejected]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testGroundedAnchorAllowsConciseParaphrase]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testGroundedAnchorAllowsConciseParaphrase]' passed (0.001 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testLoadedModelMayContinueBelowStartupHeadroomOnlyAtNormalPressure]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testLoadedModelMayContinueBelowStartupHeadroomOnlyAtNormalPressure]' passed (0.000 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testMapsEveryWholeTranscriptLeafBeforeReducing]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testMapsEveryWholeTranscriptLeafBeforeReducing]' passed (0.002 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testMemoryAdmissionRequiresNormalPressureAndConfiguredHeadroom]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testMemoryAdmissionRequiresNormalPressureAndConfiguredHeadroom]' passed (0.000 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testMemoryPressureDefersBeforeStartingRuntime]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testMemoryPressureDefersBeforeStartingRuntime]' passed (0.000 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testTimeoutReturnsNilAndAlwaysShutsRuntimeDown]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testTimeoutReturnsNilAndAlwaysShutsRuntimeDown]' passed (0.031 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testUnavailableRuntimeReturnsSafeNilWithoutStartingInference]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testUnavailableRuntimeReturnsSafeNilWithoutStartingInference]' passed (0.000 seconds).
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testVagueUncertainAndDiscussionTitlesAreRejected]' started.
+Test Case '-[ParrotTests.QwenMeetingTitleGeneratorTests testVagueUncertainAndDiscussionTitlesAreRejected]' passed (0.001 seconds).
+Test Suite 'QwenMeetingTitleGeneratorTests' passed at 2026-10-09 22:36:50.456.
+	 Executed 12 tests, with 0 failures (0 unexpected) in 0.038 (0.040) seconds
+Test Suite 'RecordingManagerPreparationTests' started at 2026-10-09 22:36:50.456.
+Test Case '-[ParrotTests.RecordingManagerPreparationTests testApplicationPreparationDoesNotLoadSpeechModels]' started.
+Test Case '-[ParrotTests.RecordingManagerPreparationTests testApplicationPreparationDoesNotLoadSpeechModels]' passed (0.012 seconds).
+Test Case '-[ParrotTests.RecordingManagerPreparationTests testMenuBarStartupPreparationDoesNotDependOnContentViewTask]' started.
+Test Case '-[ParrotTests.RecordingManagerPreparationTests testMenuBarStartupPreparationDoesNotDependOnContentViewTask]' passed (0.008 seconds).
+Test Suite 'RecordingManagerPreparationTests' passed at 2026-10-09 22:36:50.476.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.020 (0.020) seconds
+Test Suite 'RecordingNavigationPolicyTests' started at 2026-10-09 22:36:50.476.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testIdleNavigationNeverShowsRecordingControls]' started.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testIdleNavigationNeverShowsRecordingControls]' passed (0.000 seconds).
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testInactiveSessionShowsNewRecordingInsteadOfActiveRecording]' started.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testInactiveSessionShowsNewRecordingInsteadOfActiveRecording]' passed (0.000 seconds).
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testNewRecordingDestinationReturnsToLiveView]' started.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testNewRecordingDestinationReturnsToLiveView]' passed (0.000 seconds).
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testRecordingCanContinueWhileAnotherSectionIsVisible]' started.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testRecordingCanContinueWhileAnotherSectionIsVisible]' passed (0.000 seconds).
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testStartingSessionImmediatelyOwnsAnActiveRecordingDestination]' started.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testStartingSessionImmediatelyOwnsAnActiveRecordingDestination]' passed (0.000 seconds).
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testStoppingSessionRemainsReachableUntilFinalizationCompletes]' started.
+Test Case '-[ParrotTests.RecordingNavigationPolicyTests testStoppingSessionRemainsReachableUntilFinalizationCompletes]' passed (0.000 seconds).
+Test Suite 'RecordingNavigationPolicyTests' passed at 2026-10-09 22:36:50.477.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'TypographyTests' started at 2026-10-09 22:36:50.477.
+Test Case '-[ParrotTests.TypographyTests testMeetingTitleUsesDefaultSystemDesign]' started.
+Test Case '-[ParrotTests.TypographyTests testMeetingTitleUsesDefaultSystemDesign]' passed (0.000 seconds).
+Test Suite 'TypographyTests' passed at 2026-10-09 22:36:50.478.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'WhisperInferenceGateTests' started at 2026-10-09 22:36:50.478.
+Test Case '-[ParrotTests.WhisperInferenceGateTests testLiveInferenceGetsNextPermitBeforeBackgroundWork]' started.
+Test Case '-[ParrotTests.WhisperInferenceGateTests testLiveInferenceGetsNextPermitBeforeBackgroundWork]' passed (0.001 seconds).
+Test Suite 'WhisperInferenceGateTests' passed at 2026-10-09 22:36:50.478.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'ParrotTests.xctest' passed at 2026-10-09 22:36:50.478.
+	 Executed 258 tests, with 0 failures (0 unexpected) in 37.020 (37.079) seconds
+Test Suite 'All tests' passed at 2026-10-09 22:36:50.479.
+	 Executed 258 tests, with 0 failures (0 unexpected) in 37.020 (37.084) seconds
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

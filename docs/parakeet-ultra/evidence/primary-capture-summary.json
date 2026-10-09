@@ -1,0 +1,12 @@
+{
+  "diagnostic": "production_capture",
+  "input_device": "Микрофон MacBook Pro",
+  "me_frames": 191680,
+  "me_rms": 0.0001279682906283621,
+  "mic_active": true,
+  "microphone_authorization": 3,
+  "output_device": "Динамики MacBook Pro",
+  "passed": true,
+  "them_frames": 197440,
+  "them_rms": 0.0188892872958136
+}

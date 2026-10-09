@@ -1,0 +1,8 @@
+{
+  "engine": "hybrid",
+  "completed_cases": 10,
+  "declared_cases": 10,
+  "words": 473,
+  "errors": 3,
+  "wer": 0.006342494714587738
+}

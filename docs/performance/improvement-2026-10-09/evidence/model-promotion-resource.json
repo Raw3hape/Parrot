@@ -1,0 +1,9 @@
+{
+  "name": "pinned final model promotion",
+  "pid": 73685,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "status": "exited",
+  "stop_condition": "completion or120s",
+  "evidence_sha256": "74349df5b4efe7bdabfa28b556fa9b8b40bad1f97c5c334c9535ea4d9fd1b97c",
+  "exit_code": 0
+}

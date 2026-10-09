@@ -1,0 +1,10 @@
+diagnostic: parakeet
+model: Parakeet V3
+fixture_transcript: To jest krótki test nagrywania spotkania na drugim komputerze. Omawiamy projekt produktu i plan pracy na jutro. Rozpoznawanie mowy powinno działać lokalnie bez internetu.
+audio_seconds: 10.952
+load_seconds: 0.266
+preparation_launches: 1
+decode_seconds: 0.194
+real_time_factor: 0.0177
+transcript_characters: 170
+confidence_is_finite: 1

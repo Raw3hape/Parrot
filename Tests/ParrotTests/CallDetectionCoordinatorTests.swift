@@ -3,6 +3,22 @@ import XCTest
 
 @MainActor
 final class CallDetectionCoordinatorTests: XCTestCase {
+    /// A scheduling delay is not a coordinator failure. Wait for the observable
+    /// state with a deadline instead of assuming a 10 ms task runs within 30 ms.
+    private func waitUntil(
+        timeout: TimeInterval = 2,
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        _ condition: () -> Bool
+    ) async {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: .seconds(timeout))
+        while !condition(), clock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(5))
+        }
+        XCTAssertTrue(condition(), "Coordinator state did not settle before deadline", file: file, line: line)
+    }
+
     func testSustainedActivityPublishesExactlyOneSuggestion() async {
         let monitor = FakeAudioProcessMonitor()
         let windows = FakeCallWindowProvider()
@@ -19,7 +35,7 @@ final class CallDetectionCoordinatorTests: XCTestCase {
         monitor.emit([slackActivity()])
         monitor.emit([slackActivity()])
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 60_000_000)
+        await waitUntil { coordinator.suggestion != nil }
 
         XCTAssertEqual(coordinator.suggestion?.source.familyID, "native.slack")
         XCTAssertEqual(published.compactMap { $0 }.count, 1)
@@ -36,7 +52,7 @@ final class CallDetectionCoordinatorTests: XCTestCase {
         )
         coordinator.start()
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 30_000_000)
+        await waitUntil { coordinator.suggestion != nil }
         XCTAssertNotNil(coordinator.suggestion)
 
         coordinator.setEnabled(false)
@@ -55,13 +71,12 @@ final class CallDetectionCoordinatorTests: XCTestCase {
         )
         coordinator.start()
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 30_000_000)
+        await waitUntil { coordinator.suggestion != nil }
         XCTAssertNotNil(coordinator.suggestion)
 
         coordinator.setRecordingActive(true)
         coordinator.setRecordingActive(false)
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 30_000_000)
 
         XCTAssertNil(coordinator.suggestion)
         XCTAssertEqual(coordinator.suppressedSessionKey, "native.slack")
@@ -77,11 +92,10 @@ final class CallDetectionCoordinatorTests: XCTestCase {
         )
         coordinator.start()
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 30_000_000)
+        await waitUntil { coordinator.suggestion != nil }
 
         coordinator.dismissSuggestion()
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 30_000_000)
 
         XCTAssertNil(coordinator.suggestion)
         XCTAssertEqual(coordinator.suppressedSessionKey, "native.slack")
@@ -97,12 +111,12 @@ final class CallDetectionCoordinatorTests: XCTestCase {
         )
         coordinator.start()
         monitor.emit([slackActivity()])
-        try? await Task.sleep(nanoseconds: 30_000_000)
+        await waitUntil { coordinator.suggestion != nil }
         XCTAssertNotNil(coordinator.suggestion)
 
         monitor.emit([])
         XCTAssertNotNil(coordinator.suggestion)
-        try? await Task.sleep(nanoseconds: 40_000_000)
+        await waitUntil { coordinator.suggestion == nil }
 
         XCTAssertNil(coordinator.suggestion)
     }

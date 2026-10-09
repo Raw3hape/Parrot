@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "models": [
+    {
+      "engine": "qwen",
+      "displayName": "Qwen3-ASR 1.7B",
+      "modelID": "mlx-community/Qwen3-ASR-1.7B-8bit",
+      "revision": "a8379a2e2f9e313c9292cdf1af4055ab56d50d55",
+      "directoryName": "qwen",
+      "weightFile": "model.safetensors",
+      "weightBytes": 2463307541,
+      "weightSHA256": "bf304b009cc7eca79283056f787b44c952d24ac22cec787b39732bba3c23c13c",
+      "requiredFiles": ["config.json", "vocab.json", "merges.txt", "tokenizer_config.json"]
+    },
+    {
+      "engine": "moss",
+      "displayName": "MOSS Transcribe Diarize 0.9B",
+      "modelID": "OpenMOSS-Team/MOSS-Transcribe-Diarize",
+      "revision": "704aa4a9c304e8520be88901e0d1960158ef5b15",
+      "directoryName": "moss",
+      "weightFile": "model-00000-of-00001.safetensors",
+      "weightBytes": 1817113576,
+      "weightSHA256": "9a0ceb4ab7330357db3ff583dba8d83625d5b733b00e1d55d6970e11b07026c4",
+      "requiredFiles": ["config.json", "tokenizer.json", "tokenizer_config.json", "model.safetensors.index.json"]
+    }
+  ]
+}

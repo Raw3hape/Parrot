@@ -1,0 +1,9 @@
+diagnostic: best_transcription
+audio_seconds: 10.952
+decode_seconds: 3.381
+real_time_factor: 0.309
+segments: 3
+transcript_characters: 168
+timestamps_valid: 1
+contains_special_tokens: 0
+warnings: 1

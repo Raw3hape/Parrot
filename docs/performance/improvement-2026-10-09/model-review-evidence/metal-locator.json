@@ -1,0 +1,937 @@
+{
+  "url": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/backend/metal/device.cpp",
+  "excerpts": [
+    {
+      "line": 27,
+      "text": "};"
+    },
+    {
+      "line": 28,
+      "text": ""
+    },
+    {
+      "line": 29,
+      "text": "} // namespace std"
+    },
+    {
+      "line": 30,
+      "text": ""
+    },
+    {
+      "line": 31,
+      "text": "namespace mlx::core::metal {"
+    },
+    {
+      "line": 32,
+      "text": ""
+    },
+    {
+      "line": 33,
+      "text": "namespace {"
+    },
+    {
+      "line": 34,
+      "text": ""
+    },
+    {
+      "line": 35,
+      "text": "constexpr const char* default_mtllib_path = METAL_PATH;"
+    },
+    {
+      "line": 36,
+      "text": ""
+    },
+    {
+      "line": 37,
+      "text": "void set_compile_options("
+    },
+    {
+      "line": 38,
+      "text": "    MTL::CompileOptions* mtl_options,"
+    },
+    {
+      "line": 39,
+      "text": "    const CompileOptions& compile_options) {"
+    },
+    {
+      "line": 40,
+      "text": "  if (__builtin_available(macOS 15, iOS 18, tvOS 18, visionOS 2, *)) {"
+    },
+    {
+      "line": 41,
+      "text": "    switch (compile_options.math_mode) {"
+    },
+    {
+      "line": 42,
+      "text": "      case MathMode::Safe:"
+    },
+    {
+      "line": 43,
+      "text": "        mtl_options->setMathMode(MTL::MathModeSafe);"
+    },
+    {
+      "line": 44,
+      "text": "        break;"
+    },
+    {
+      "line": 45,
+      "text": "      case MathMode::Relaxed:"
+    },
+    {
+      "line": 46,
+      "text": "        mtl_options->setMathMode(MTL::MathModeRelaxed);"
+    },
+    {
+      "line": 47,
+      "text": "        break;"
+    },
+    {
+      "line": 48,
+      "text": "      case MathMode::Fast:"
+    },
+    {
+      "line": 49,
+      "text": "        mtl_options->setMathMode(MTL::MathModeFast);"
+    },
+    {
+      "line": 50,
+      "text": "        break;"
+    },
+    {
+      "line": 51,
+      "text": "      default:"
+    },
+    {
+      "line": 52,
+      "text": "        throw std::invalid_argument(\"[metal::Device] Invalid math mode.\");"
+    },
+    {
+      "line": 53,
+      "text": "    }"
+    },
+    {
+      "line": 54,
+      "text": "  } else {"
+    },
+    {
+      "line": 55,
+      "text": "    if (compile_options.math_mode == MathMode::Relaxed) {"
+    },
+    {
+      "line": 56,
+      "text": "      throw std::runtime_error("
+    },
+    {
+      "line": 106,
+      "text": "    const char* path) {"
+    },
+    {
+      "line": 107,
+      "text": "  auto library = NS::String::string(path, NS::UTF8StringEncoding);"
+    },
+    {
+      "line": 108,
+      "text": "  NS::Error* error;"
+    },
+    {
+      "line": 109,
+      "text": "  auto lib = device->newLibrary(library, &error);"
+    },
+    {
+      "line": 110,
+      "text": ""
+    },
+    {
+      "line": 111,
+      "text": "  return std::make_pair(lib, error);"
+    },
+    {
+      "line": 112,
+      "text": "}"
+    },
+    {
+      "line": 113,
+      "text": ""
+    },
+    {
+      "line": 114,
+      "text": "#ifdef SWIFTPM_BUNDLE"
+    },
+    {
+      "line": 115,
+      "text": "MTL::Library* try_load_bundle("
+    },
+    {
+      "line": 116,
+      "text": "    MTL::Device* device,"
+    },
+    {
+      "line": 117,
+      "text": "    NS::URL* url,"
+    },
+    {
+      "line": 118,
+      "text": "    const std::string& lib_name) {"
+    },
+    {
+      "line": 119,
+      "text": "  std::string bundle_path = std::string(url->fileSystemRepresentation()) + \"/\" +"
+    },
+    {
+      "line": 120,
+      "text": "      SWIFTPM_BUNDLE + \".bundle\";"
+    },
+    {
+      "line": 121,
+      "text": "  auto bundle = NS::Bundle::alloc()->init("
+    },
+    {
+      "line": 122,
+      "text": "      NS::String::string(bundle_path.c_str(), NS::UTF8StringEncoding));"
+    },
+    {
+      "line": 123,
+      "text": "  if (bundle != nullptr) {"
+    },
+    {
+      "line": 124,
+      "text": "    std::string resource_path ="
+    },
+    {
+      "line": 125,
+      "text": "        std::string(bundle->resourceURL()->fileSystemRepresentation()) + \"/\" +"
+    },
+    {
+      "line": 126,
+      "text": "        lib_name + \".metallib\";"
+    },
+    {
+      "line": 127,
+      "text": "    auto [lib, error] = load_library_from_path(device, resource_path.c_str());"
+    },
+    {
+      "line": 128,
+      "text": "    if (lib) {"
+    },
+    {
+      "line": 129,
+      "text": "      return lib;"
+    },
+    {
+      "line": 130,
+      "text": "    }"
+    },
+    {
+      "line": 131,
+      "text": "  }"
+    },
+    {
+      "line": 132,
+      "text": "  return nullptr;"
+    },
+    {
+      "line": 133,
+      "text": "}"
+    },
+    {
+      "line": 134,
+      "text": ""
+    },
+    {
+      "line": 135,
+      "text": "MTL::Library* try_load_framework("
+    },
+    {
+      "line": 136,
+      "text": "    MTL::Device* device,"
+    },
+    {
+      "line": 137,
+      "text": "    NS::URL* url,"
+    },
+    {
+      "line": 138,
+      "text": "    const std::string& lib_name) {"
+    },
+    {
+      "line": 139,
+      "text": "  std::string resource_path = std::string(url->fileSystemRepresentation()) +"
+    },
+    {
+      "line": 140,
+      "text": "      \"/\" + lib_name + \".metallib\";"
+    },
+    {
+      "line": 141,
+      "text": "  auto [lib, error] = load_library_from_path(device, resource_path.c_str());"
+    },
+    {
+      "line": 156,
+      "text": "  }"
+    },
+    {
+      "line": 157,
+      "text": ""
+    },
+    {
+      "line": 158,
+      "text": "  return load_library_from_path(device, path.c_str());"
+    },
+    {
+      "line": 159,
+      "text": "}"
+    },
+    {
+      "line": 160,
+      "text": ""
+    },
+    {
+      "line": 161,
+      "text": "std::pair<MTL::Library*, NS::Error*> load_swiftpm_library("
+    },
+    {
+      "line": 162,
+      "text": "    MTL::Device* device,"
+    },
+    {
+      "line": 163,
+      "text": "    const std::string& lib_name) {"
+    },
+    {
+      "line": 164,
+      "text": "#ifdef SWIFTPM_BUNDLE"
+    },
+    {
+      "line": 165,
+      "text": "  MTL::Library* library ="
+    },
+    {
+      "line": 166,
+      "text": "      try_load_bundle(device, NS::Bundle::mainBundle()->bundleURL(), lib_name);"
+    },
+    {
+      "line": 167,
+      "text": "  if (library != nullptr) {"
+    },
+    {
+      "line": 168,
+      "text": "    return {library, nullptr};"
+    },
+    {
+      "line": 169,
+      "text": "  }"
+    },
+    {
+      "line": 170,
+      "text": "  auto bundles = NS::Bundle::allBundles();"
+    },
+    {
+      "line": 171,
+      "text": "  for (int i = 0, c = (int)bundles->count(); i < c; i++) {"
+    },
+    {
+      "line": 172,
+      "text": "    auto bundle = reinterpret_cast<NS::Bundle*>(bundles->object(i));"
+    },
+    {
+      "line": 173,
+      "text": "    library = try_load_bundle(device, bundle->resourceURL(), lib_name);"
+    },
+    {
+      "line": 174,
+      "text": "    if (library != nullptr) {"
+    },
+    {
+      "line": 175,
+      "text": "      return {library, nullptr};"
+    },
+    {
+      "line": 176,
+      "text": "    }"
+    },
+    {
+      "line": 177,
+      "text": "  }"
+    },
+    {
+      "line": 178,
+      "text": "  // if SWIFTPM_BUNDLE is a framework identifier, try loading from that"
+    },
+    {
+      "line": 179,
+      "text": "  auto frameworks = NS::Bundle::allFrameworks();"
+    },
+    {
+      "line": 180,
+      "text": "  for (int i = 0, c = (int)frameworks->count(); i < c; i++) {"
+    },
+    {
+      "line": 181,
+      "text": "    const auto bundle = reinterpret_cast<NS::Bundle*>(frameworks->object(i));"
+    },
+    {
+      "line": 182,
+      "text": "    const auto identifier = bundle->bundleIdentifier();"
+    },
+    {
+      "line": 183,
+      "text": "    if (identifier != nullptr &&"
+    },
+    {
+      "line": 184,
+      "text": "        !strcmp(identifier->utf8String(), SWIFTPM_BUNDLE)) {"
+    },
+    {
+      "line": 185,
+      "text": "      library = try_load_framework(device, bundle->resourceURL(), lib_name);"
+    },
+    {
+      "line": 186,
+      "text": "      if (library != nullptr) {"
+    },
+    {
+      "line": 187,
+      "text": "        return {library, nullptr};"
+    },
+    {
+      "line": 188,
+      "text": "      }"
+    },
+    {
+      "line": 189,
+      "text": "    }"
+    },
+    {
+      "line": 190,
+      "text": "  }"
+    },
+    {
+      "line": 191,
+      "text": "#endif"
+    },
+    {
+      "line": 192,
+      "text": "  return {nullptr, nullptr};"
+    },
+    {
+      "line": 193,
+      "text": "}"
+    },
+    {
+      "line": 194,
+      "text": ""
+    },
+    {
+      "line": 195,
+      "text": "MTL::Library* load_default_library(MTL::Device* device) {"
+    },
+    {
+      "line": 196,
+      "text": "  // Check override path before automatic lookup"
+    },
+    {
+      "line": 197,
+      "text": "  if (!get_metallib_path().empty()) {"
+    },
+    {
+      "line": 198,
+      "text": "    auto [lib, error] ="
+    },
+    {
+      "line": 199,
+      "text": "        load_library_from_path(device, get_metallib_path().c_str());"
+    },
+    {
+      "line": 200,
+      "text": "    if (!lib) {"
+    },
+    {
+      "line": 201,
+      "text": "      throw std::runtime_error("
+    },
+    {
+      "line": 202,
+      "text": "          fmt::format("
+    },
+    {
+      "line": 203,
+      "text": "              \"Can not load metallib from specified location \\\"{}\\\": {}.\","
+    },
+    {
+      "line": 204,
+      "text": "              get_metallib_path(),"
+    },
+    {
+      "line": 205,
+      "text": "              error->localizedDescription()->utf8String()));"
+    },
+    {
+      "line": 206,
+      "text": "    }"
+    },
+    {
+      "line": 207,
+      "text": "    return lib;"
+    },
+    {
+      "line": 208,
+      "text": "  }"
+    },
+    {
+      "line": 209,
+      "text": ""
+    },
+    {
+      "line": 210,
+      "text": "  NS::Error* error[5];"
+    },
+    {
+      "line": 211,
+      "text": "  MTL::Library* lib;"
+    },
+    {
+      "line": 212,
+      "text": "  // First try the colocated mlx.metallib"
+    },
+    {
+      "line": 213,
+      "text": "  std::tie(lib, error[0]) = load_colocated_library(device, \"mlx\");"
+    },
+    {
+      "line": 214,
+      "text": "  if (lib) {"
+    },
+    {
+      "line": 215,
+      "text": "    return lib;"
+    },
+    {
+      "line": 216,
+      "text": "  }"
+    },
+    {
+      "line": 217,
+      "text": ""
+    },
+    {
+      "line": 218,
+      "text": "  std::tie(lib, error[1]) = load_colocated_library(device, \"Resources/mlx\");"
+    },
+    {
+      "line": 219,
+      "text": "  if (lib) {"
+    },
+    {
+      "line": 220,
+      "text": "    return lib;"
+    },
+    {
+      "line": 221,
+      "text": "  }"
+    },
+    {
+      "line": 222,
+      "text": ""
+    },
+    {
+      "line": 223,
+      "text": "  // Then try default.metallib in a SwiftPM bundle if we have one"
+    },
+    {
+      "line": 224,
+      "text": "  std::tie(lib, error[2]) = load_swiftpm_library(device, \"default\");"
+    },
+    {
+      "line": 225,
+      "text": "  if (lib) {"
+    },
+    {
+      "line": 226,
+      "text": "    return lib;"
+    },
+    {
+      "line": 227,
+      "text": "  }"
+    },
+    {
+      "line": 228,
+      "text": ""
+    },
+    {
+      "line": 229,
+      "text": "  // Try lo load resources from Framework resources if SwiftPM wrapped as a"
+    },
+    {
+      "line": 230,
+      "text": "  // dynamic framework."
+    },
+    {
+      "line": 231,
+      "text": "  std::tie(lib, error[3]) = load_colocated_library(device, \"Resources/default\");"
+    },
+    {
+      "line": 232,
+      "text": "  if (lib) {"
+    },
+    {
+      "line": 233,
+      "text": "    return lib;"
+    },
+    {
+      "line": 234,
+      "text": "  }"
+    },
+    {
+      "line": 235,
+      "text": ""
+    },
+    {
+      "line": 236,
+      "text": "  // Finally try default_mtllib_path"
+    },
+    {
+      "line": 237,
+      "text": "  std::tie(lib, error[4]) = load_library_from_path(device, default_mtllib_path);"
+    },
+    {
+      "line": 238,
+      "text": "  if (!lib) {"
+    },
+    {
+      "line": 239,
+      "text": "    std::ostringstream msg;"
+    },
+    {
+      "line": 240,
+      "text": "    msg << \"Failed to load the default metallib. \";"
+    },
+    {
+      "line": 241,
+      "text": "    for (int i = 0; i < 5; i++) {"
+    },
+    {
+      "line": 242,
+      "text": "      if (error[i] != nullptr) {"
+    },
+    {
+      "line": 243,
+      "text": "        msg << error[i]->localizedDescription()->utf8String() << \" \";"
+    },
+    {
+      "line": 244,
+      "text": "      }"
+    },
+    {
+      "line": 245,
+      "text": "    }"
+    },
+    {
+      "line": 246,
+      "text": "    throw std::runtime_error(msg.str());"
+    },
+    {
+      "line": 247,
+      "text": "  }"
+    },
+    {
+      "line": 248,
+      "text": "  return lib;"
+    },
+    {
+      "line": 249,
+      "text": "}"
+    },
+    {
+      "line": 250,
+      "text": ""
+    },
+    {
+      "line": 251,
+      "text": "MTL::Library* load_library("
+    },
+    {
+      "line": 252,
+      "text": "    MTL::Device* device,"
+    },
+    {
+      "line": 253,
+      "text": "    const std::string& lib_name,"
+    },
+    {
+      "line": 254,
+      "text": "    const std::string& lib_path) {"
+    },
+    {
+      "line": 255,
+      "text": "  // We have been given a path that ends in metallib so try to load it"
+    },
+    {
+      "line": 256,
+      "text": "  if (lib_path.size() > 9 &&"
+    },
+    {
+      "line": 257,
+      "text": "      std::equal(lib_path.end() - 9, lib_path.end(), \".metallib\")) {"
+    },
+    {
+      "line": 258,
+      "text": "    auto [lib, error] = load_library_from_path(device, lib_path.c_str());"
+    },
+    {
+      "line": 259,
+      "text": "    if (!lib) {"
+    },
+    {
+      "line": 260,
+      "text": "      std::ostringstream msg;"
+    },
+    {
+      "line": 261,
+      "text": "      msg << \"Failed to load the metallib from <\" << lib_path << \"> with error \""
+    },
+    {
+      "line": 262,
+      "text": "          << error->localizedDescription()->utf8String();"
+    },
+    {
+      "line": 263,
+      "text": "      throw std::runtime_error(msg.str());"
+    },
+    {
+      "line": 264,
+      "text": "    }"
+    },
+    {
+      "line": 265,
+      "text": "    return lib;"
+    },
+    {
+      "line": 266,
+      "text": "  }"
+    },
+    {
+      "line": 267,
+      "text": ""
+    },
+    {
+      "line": 268,
+      "text": "  // We have been given a path so try to load from lib_path / lib_name.metallib"
+    },
+    {
+      "line": 269,
+      "text": "  if (lib_path.size() > 0) {"
+    },
+    {
+      "line": 270,
+      "text": "    std::string full_path = lib_path + \"/\" + lib_name + \".metallib\";"
+    },
+    {
+      "line": 271,
+      "text": "    auto [lib, error] = load_library_from_path(device, full_path.c_str());"
+    },
+    {
+      "line": 272,
+      "text": "    if (!lib) {"
+    },
+    {
+      "line": 273,
+      "text": "      std::ostringstream msg;"
+    },
+    {
+      "line": 274,
+      "text": "      msg << \"Failed to load the metallib from <\" << full_path"
+    },
+    {
+      "line": 275,
+      "text": "          << \"> with error \" << error->localizedDescription()->utf8String();"
+    },
+    {
+      "line": 276,
+      "text": "      throw std::runtime_error(msg.str());"
+    },
+    {
+      "line": 277,
+      "text": "    }"
+    },
+    {
+      "line": 278,
+      "text": "    return lib;"
+    },
+    {
+      "line": 279,
+      "text": "  }"
+    },
+    {
+      "line": 280,
+      "text": ""
+    },
+    {
+      "line": 281,
+      "text": "  // Try to load the colocated library"
+    },
+    {
+      "line": 282,
+      "text": "  {"
+    },
+    {
+      "line": 283,
+      "text": "    auto [lib, error] = load_colocated_library(device, lib_name);"
+    },
+    {
+      "line": 284,
+      "text": "    if (lib) {"
+    },
+    {
+      "line": 285,
+      "text": "      return lib;"
+    },
+    {
+      "line": 286,
+      "text": "    }"
+    },
+    {
+      "line": 287,
+      "text": "  }"
+    },
+    {
+      "line": 288,
+      "text": ""
+    },
+    {
+      "line": 289,
+      "text": "  // Try to load the library from swiftpm"
+    },
+    {
+      "line": 290,
+      "text": "  {"
+    },
+    {
+      "line": 291,
+      "text": "    auto [lib, error] = load_swiftpm_library(device, lib_name);"
+    },
+    {
+      "line": 292,
+      "text": "    if (lib) {"
+    },
+    {
+      "line": 293,
+      "text": "      return lib;"
+    },
+    {
+      "line": 294,
+      "text": "    }"
+    },
+    {
+      "line": 295,
+      "text": "  }"
+    },
+    {
+      "line": 296,
+      "text": ""
+    },
+    {
+      "line": 297,
+      "text": "  std::ostringstream msg;"
+    },
+    {
+      "line": 298,
+      "text": "  msg << \"Failed to load the metallib \" << lib_name << \".metallib. \""
+    },
+    {
+      "line": 299,
+      "text": "      << \"We attempted to load it from <\" << current_binary_dir() << \"/\""
+    },
+    {
+      "line": 300,
+      "text": "      << lib_name << \".metallib>\";"
+    },
+    {
+      "line": 301,
+      "text": "#ifdef SWIFTPM_BUNDLE"
+    },
+    {
+      "line": 302,
+      "text": "  msg << \" and from the Swift PM bundle.\";"
+    },
+    {
+      "line": 303,
+      "text": "#endif"
+    },
+    {
+      "line": 304,
+      "text": "  throw std::runtime_error(msg.str());"
+    },
+    {
+      "line": 305,
+      "text": "}"
+    },
+    {
+      "line": 306,
+      "text": ""
+    },
+    {
+      "line": 307,
+      "text": "} // namespace"
+    },
+    {
+      "line": 308,
+      "text": ""
+    },
+    {
+      "line": 309,
+      "text": "CommandEncoder::CommandEncoder("
+    },
+    {
+      "line": 310,
+      "text": "    Device& d,"
+    },
+    {
+      "line": 311,
+      "text": "    int index,"
+    },
+    {
+      "line": 312,
+      "text": "    ResidencySets& residency_sets)"
+    },
+    {
+      "line": 313,
+      "text": "    : device_(d), residency_sets_(residency_sets) {"
+    },
+    {
+      "line": 314,
+      "text": "  auto pool = new_scoped_memory_pool();"
+    },
+    {
+      "line": 315,
+      "text": "  queue_ = NS::TransferPtr(device_.mtl_device()->newCommandQueue());"
+    },
+    {
+      "line": 316,
+      "text": "  if (!queue_) {"
+    },
+    {
+      "line": 317,
+      "text": "    throw std::runtime_error("
+    },
+    {
+      "line": 318,
+      "text": "        \"[metal::CommandEncoder] Failed to make new command queue.\");"
+    },
+    {
+      "line": 319,
+      "text": "  }"
+    },
+    {
+      "line": 320,
+      "text": "  // Sets created later are attached in commit()."
+    },
+    {
+      "line": 321,
+      "text": "  residency_sets_.attach_new_sets(queue_.get(), sets_attached_);"
+    },
+    {
+      "line": 322,
+      "text": "  debug_set_stream_queue_label(queue_.get(), index);"
+    }
+  ]
+}

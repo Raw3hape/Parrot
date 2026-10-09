@@ -1,0 +1,9 @@
+{
+  "scenario": "ordinary Parrot menu Quit while recording",
+  "app_pid": 78312,
+  "issued_at": "2026-10-09T21:30:53.563Z",
+  "checked_at": "2026-10-09T21:31:06.830204+00:00",
+  "process_exited": true,
+  "check_wait_seconds": 2.282,
+  "custom_status_popover": "not reachable by CUA window scope; regression unit test passed"
+}

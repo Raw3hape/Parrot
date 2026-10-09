@@ -1,0 +1,354 @@
+{
+  "checked_at": "2026-10-09T21:58:43.635577+00:00",
+  "resources": [
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/candidate-build-resource.json",
+      "pid": 45803,
+      "name": "signed production candidate build",
+      "status": "exited",
+      "exit_code": 65
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/gui-playback-priority-resource.json",
+      "pid": 85894,
+      "name": "GUI synthetic recording playback verified background priority",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/gui-playback-two-resource.json",
+      "pid": 76714,
+      "name": "GUI synthetic recording playback two",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-final-build-resource.json",
+      "pid": 70965,
+      "name": "final source signed release build",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-production-capture-resource.json",
+      "pid": 73928,
+      "name": "signed production capture and synthetic playback",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/gui-playback-four-resource.json",
+      "pid": 83665,
+      "name": "GUI synthetic recording playback four",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/native-adapter-resource.json",
+      "pid": 40089,
+      "name": "native supervisor tests",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/candidate-build-repair1-resource.json",
+      "pid": 50666,
+      "name": "signed candidate build after standard helper bundle packaging",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-full-tests-resource.json",
+      "pid": 63150,
+      "name": "final full unit suite",
+      "status": "exited",
+      "exit_code": 1
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-pipe-build-resource.json",
+      "pid": 68752,
+      "name": "signed candidate nonblocking pipe repair",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-long-benchmark-resource.json",
+      "pid": 71831,
+      "name": "serialized varied long model benchmark",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-en-benchmark-resource.json",
+      "pid": 72633,
+      "name": "serialized English batch equivalence benchmark",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-installed-resource.json",
+      "pid": 77124,
+      "name": "exact installed c1 full hybrid quality gate",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-offline-hybrid-resource.json",
+      "pid": 73681,
+      "name": "final signed speech pipeline with network denied",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/full-tests-resource.json",
+      "pid": 57285,
+      "name": "full integrated unit tests",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-hybrid-pipe-repair-resource.json",
+      "pid": 70181,
+      "name": "signed hybrid corpus after pipe repair",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/gui-playback-one-resource.json",
+      "pid": 75523,
+      "name": "GUI synthetic recording playback one",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/integration-compile-resource.json",
+      "pid": 43871,
+      "name": "integrated catalog/automatic-final compile tests",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/focused-repair1-resource.json",
+      "pid": 32335,
+      "name": "focused tests after explicit continuation type repair",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-full-tests-pipe-repair-resource.json",
+      "pid": 69854,
+      "name": "final full unit suite after pipe repair",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/release-hybrid-resource.json",
+      "pid": 63151,
+      "name": "signed hybrid quality corpus",
+      "status": "exited",
+      "exit_code": 1
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/original-best-smoke-long-resource.json",
+      "pid": 70077,
+      "name": "original installed whisper smoke varied long",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/candidate-hybrid-build-resource.json",
+      "pid": 61229,
+      "name": "signed hybrid candidate build",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/gui-playback-background-resource.json",
+      "pid": 82809,
+      "name": "GUI synthetic recording playback background priority",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/model-promotion-resource.json",
+      "pid": 73685,
+      "name": "pinned final model promotion",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/metal-setup-resource.json",
+      "pid": 35561,
+      "name": "official Xcode Metal Toolchain setup",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/long-benchmark/resource.json",
+      "pid": 72019,
+      "name": "serialized final pipeline benchmark",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-native-revision2/qwen-resource.json",
+      "pid": 53795,
+      "name": "qwen native corpus",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-native-revision2/moss-resource.json",
+      "pid": 54445,
+      "name": "moss native corpus",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-native/qwen-resource.json",
+      "pid": 41486,
+      "name": "qwen native corpus",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-native/moss-resource.json",
+      "pid": 41528,
+      "name": "moss native corpus",
+      "status": "exited",
+      "exit_code": -15
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/en-benchmark/resource.json",
+      "pid": 72783,
+      "name": "serialized final pipeline benchmark",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-hybrid-pipe-failure/resource.json",
+      "pid": 63154,
+      "name": "legacy Whisper quality baseline",
+      "status": "exited",
+      "exit_code": 124
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-installed/resource.json",
+      "pid": 77273,
+      "name": "legacy Whisper quality baseline",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-hybrid/resource.json",
+      "pid": 70811,
+      "name": "legacy Whisper quality baseline",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "docs/performance/improvement-2026-10-09/evidence/quality-whisper/resource.json",
+      "pid": 55041,
+      "name": "legacy Whisper quality baseline",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "Tools/ASRWorker/worker-resources.json",
+      "pid": 32732,
+      "name": "xcode-build",
+      "status": "exited",
+      "exit_code": 65
+    },
+    {
+      "file": "Tools/ASRWorker/worker-resources.json",
+      "pid": 37247,
+      "name": "xcode-build",
+      "status": "terminated",
+      "exit_code": null
+    },
+    {
+      "file": "Tools/ASRWorker/worker-resources.json",
+      "pid": 38535,
+      "name": "xcode-build",
+      "status": "exited",
+      "exit_code": 0
+    },
+    {
+      "file": "Tools/ASRWorker/worker-resources.json",
+      "pid": 44783,
+      "name": "xcode-build",
+      "status": "exited",
+      "exit_code": 0
+    }
+  ],
+  "live_recorded_jobs": [],
+  "artifacts_removed": [
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/.tmp/parrot-improvement-20261009",
+      "bytes_before": 7275061248,
+      "purpose": "owned build/model/corpus/helper scratch",
+      "stop_condition": "validation complete; all recorded jobs verified exited",
+      "exists_after": false
+    },
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/.build",
+      "bytes_before": 1597829120,
+      "purpose": "owned build/model/corpus/helper scratch",
+      "stop_condition": "validation complete; all recorded jobs verified exited",
+      "exists_after": false
+    },
+    {
+      "path": "/Users/nikita/Documents/My_Projects/Parrot/Tools/ASRWorker/Build/DerivedData",
+      "bytes_before": 1735938048,
+      "purpose": "owned build/model/corpus/helper scratch",
+      "stop_condition": "validation complete; all recorded jobs verified exited",
+      "exists_after": false
+    }
+  ],
+  "protected_qa_removed": {
+    "diagnostic": "qa_cleanup",
+    "exists_after": false,
+    "removed": "ParrotQualityFixtures-20261009"
+  },
+  "retained": [
+    "build/Parrot-improved-2026-10-09.app",
+    "/Applications/Parrot.app",
+    "recordings/backups/2026-10-09-improvement",
+    "recordings/quality-2026-10-09",
+    "Tools/ASRWorker/Build/portable/ASRWorker.app",
+    "Tools/ASRWorker/Build small protocol/build evidence",
+    "docs/performance/improvement-2026-10-09/evidence"
+  ],
+  "baseline": {
+    "comparison": "Original installed app replaced intentionally; disposable helpers returned to none",
+    "initial_free_memory_percent": 63,
+    "initial_swap_used_mb": 11590.44,
+    "initial_free_disk_gib": 97
+  },
+  "user_apps_and_system_helpers": "Untouched, including caffeinate, home-mac agents, sync and other-project game/browser work",
+  "retained_app": {
+    "path": "/Applications/Parrot.app",
+    "project": "/Users/nikita/Documents/My_Projects/Parrot",
+    "pid": 85538,
+    "port": null,
+    "purpose": "user deliverable restored to Ready state",
+    "stop": "Parrot menu Quit or Cmd-Q",
+    "ready_to_record": true,
+    "owned_model_helpers_remaining": []
+  },
+  "finder_task_window": "closed exact task Applications window; original Downloads preserved",
+  "temporary_top_bar_screenshots": "removed exact two owned PNGs",
+  "closed_at": "2026-10-09T22:00:27.462926+00:00",
+  "all_disposable_jobs_exited": true,
+  "local_scratch_exists_after": false,
+  "disk_after": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   926Gi   789Gi    99Gi    89%    5.7M  1.0G    1%   /System/Volumes/Data",
+  "memory_after": [
+    "Pageouts: 64796 ",
+    "",
+    "System-wide memory free percentage: 62%"
+  ],
+  "swap_after": "total = 13312.00M  used = 11574.44M  free = 1737.56M  (encrypted)",
+  "owned_cua_repl_reset": true,
+  "handoff_local_time": "2026-10-10T00:03:46.806225+02:00"
+}

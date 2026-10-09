@@ -172,7 +172,7 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 8) {
                 LocalModelRow(
                     icon: "bolt.fill",
-                    title: "NVIDIA Parakeet TDT 0.6B V3",
+                    title: ParakeetModelService.modelDisplayName,
                     detail: "Primary model — fast multilingual transcription"
                 )
                 LocalModelRow(

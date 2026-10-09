@@ -1,0 +1,10 @@
+{
+  "name": "integrated catalog/automatic-final compile tests",
+  "pid": 43871,
+  "project": "/Users/nikita/Documents/My_Projects/Parrot",
+  "log": "docs/performance/improvement-2026-10-09/evidence/integration-compile-tests.log",
+  "stop_condition": "completion or600 seconds",
+  "status": "exited",
+  "exit_code": 0,
+  "elapsed_seconds": 16.89
+}
